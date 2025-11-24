@@ -18,11 +18,13 @@ public class CoreDbContext : DbContext
     public DbSet<SystemParameter> SystemParameters => Set<SystemParameter>();
     public DbSet<TenantTheme> TenantThemes => Set<TenantTheme>();
     
-    // License System
+    // License & Branding System
     public DbSet<LicensePackage> LicensePackages => Set<LicensePackage>();
     public DbSet<TenantLicense> TenantLicenses => Set<TenantLicense>();
-    public DbSet<SystemFeature> SystemFeatures => Set<SystemFeature>();
-    public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<TenantBrandingSettings> TenantBrandingSettings => Set<TenantBrandingSettings>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<UsageTracking> UsageTrackings => Set<UsageTracking>();
+    // TODO: Add SystemFeature and UserPermission entities later
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -175,9 +177,7 @@ public class CoreDbContext : DbContext
             entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Currency).HasMaxLength(10);
-            entity.Property(e => e.FeaturesJson).HasColumnType("jsonb");
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.Property(e => e.Tags).HasColumnType("text[]");
+            entity.Property(e => e.Features).HasColumnType("text[]"); // string[] for features
             
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
@@ -187,61 +187,129 @@ public class CoreDbContext : DbContext
         {
             entity.ToTable("tenant_licenses");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.LicenseKey).IsUnique();
             entity.HasIndex(e => e.TenantId);
-            entity.HasIndex(e => e.ExpiryDate);
-            entity.HasIndex(e => new { e.TenantId, e.IsActive });
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.EndDate);
+            entity.HasIndex(e => new { e.TenantId, e.Status });
             
-            entity.Property(e => e.LicenseKey).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.BillingPeriod).HasMaxLength(20);
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.Property(e => e.CustomLimitsJson).HasColumnType("jsonb");
             entity.Property(e => e.CustomFeaturesJson).HasColumnType("jsonb");
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.Property(e => e.Tags).HasColumnType("text[]");
+            entity.Property(e => e.CurrentUsageJson).HasColumnType("jsonb");
             
             entity.HasOne(e => e.LicensePackage)
                 .WithMany(p => p.TenantLicenses)
                 .HasForeignKey(e => e.LicensePackageId);
                 
             entity.HasOne(e => e.Tenant)
-                .WithMany(t => t.Licenses)
+                .WithMany()
                 .HasForeignKey(e => e.TenantId);
             
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
 
-        // SystemFeature configuration
-        modelBuilder.Entity<SystemFeature>(entity =>
+        // TODO: SystemFeature configuration (will be added later)
+        // modelBuilder.Entity<SystemFeature>(entity =>
+        // {
+        //     entity.ToTable("system_features");
+        //     entity.HasKey(e => e.Id);
+        //     entity.HasIndex(e => e.Code).IsUnique();
+        //     entity.HasIndex(e => e.Category);
+        //     
+        //     entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+        //     entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+        //     entity.Property(e => e.Category).HasMaxLength(50);
+        //     entity.Property(e => e.Metadata).HasColumnType("jsonb");
+        //     entity.Property(e => e.Tags).HasColumnType("text[]");
+        //     
+        //     entity.HasQueryFilter(e => e.DeletedAt == null);
+        // });
+
+        // TenantBrandingSettings configuration
+        modelBuilder.Entity<TenantBrandingSettings>(entity =>
         {
-            entity.ToTable("system_features");
+            entity.ToTable("tenant_branding_settings");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.Code).IsUnique();
-            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.TenantId).IsUnique();
+            entity.HasIndex(e => e.Subdomain).IsUnique();
+            entity.HasIndex(e => e.CustomDomain);
             
-            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Category).HasMaxLength(50);
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.Property(e => e.Tags).HasColumnType("text[]");
+            entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Subdomain).HasMaxLength(100);
+            entity.Property(e => e.CustomDomain).HasMaxLength(255);
+            entity.Property(e => e.DefaultLanguage).HasMaxLength(10);
+            entity.Property(e => e.DefaultCurrency).HasMaxLength(10);
+            entity.Property(e => e.ColorThemeJson).HasColumnType("jsonb");
+            entity.Property(e => e.AdvancedSettingsJson).HasColumnType("jsonb");
+            entity.Property(e => e.FeatureFlagsJson).HasColumnType("jsonb");
+            
+            entity.HasOne(e => e.Tenant)
+                .WithOne()
+                .HasForeignKey<TenantBrandingSettings>(e => e.TenantId);
             
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
 
-        // UserPermission configuration
-        modelBuilder.Entity<UserPermission>(entity =>
+        // Invoice configuration
+        modelBuilder.Entity<Invoice>(entity =>
         {
-            entity.ToTable("user_permissions");
+            entity.ToTable("invoices");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.PermissionCode);
-            entity.HasIndex(e => new { e.UserId, e.PermissionCode });
-            entity.HasIndex(e => new { e.UserId, e.ResourceType, e.ResourceId });
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.DueDate);
             
-            entity.Property(e => e.PermissionCode).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.ResourceType).HasMaxLength(50);
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.Property(e => e.Tags).HasColumnType("text[]");
+            entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.Property(e => e.ItemsJson).HasColumnType("jsonb");
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId);
+                
+            entity.HasOne(e => e.License)
+                .WithMany()
+                .HasForeignKey(e => e.LicenseId);
             
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
+
+        // UsageTracking configuration
+        modelBuilder.Entity<UsageTracking>(entity =>
+        {
+            entity.ToTable("usage_tracking");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.TrackingDate, e.TrackingHour }).IsUnique();
+            entity.HasIndex(e => e.TrackingDate);
+            
+            entity.Property(e => e.MetricsJson).HasColumnType("jsonb");
+            
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId);
+        });
+
+        // TODO: UserPermission configuration (will be added later)
+        // modelBuilder.Entity<UserPermission>(entity =>
+        // {
+        //     entity.ToTable("user_permissions");
+        //     entity.HasKey(e => e.Id);
+        //     entity.HasIndex(e => e.UserId);
+        //     entity.HasIndex(e => e.PermissionCode);
+        //     entity.HasIndex(e => new { e.UserId, e.PermissionCode });
+        //     entity.HasIndex(e => new { e.UserId, e.ResourceType, e.ResourceId });
+        //     
+        //     entity.Property(e => e.PermissionCode).IsRequired().HasMaxLength(100);
+        //     entity.Property(e => e.ResourceType).HasMaxLength(50);
+        //     entity.Property(e => e.Metadata).HasColumnType("jsonb");
+        //     entity.Property(e => e.Tags).HasColumnType("text[]");
+        //     
+        //     entity.HasQueryFilter(e => e.DeletedAt == null);
+        // });
 
         base.OnModelCreating(modelBuilder);
     }

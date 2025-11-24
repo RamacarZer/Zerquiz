@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Domain.Entities;
 using Zerquiz.Core.Infrastructure.Persistence;
-using Zerquiz.Shared.Contracts.DTOs;
 
 namespace Zerquiz.Core.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/tenants/{tenantId}/license")]
 public class TenantLicensesController : ControllerBase
 {
     private readonly CoreDbContext _context;
@@ -19,220 +18,238 @@ public class TenantLicensesController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("tenant/{tenantId}")]
-    public async Task<ActionResult<ApiResponse<List<TenantLicenseDto>>>> GetByTenant(Guid tenantId)
-    {
-        var licenses = await _context.TenantLicenses
-            .Include(tl => tl.LicensePackage)
-            .Where(tl => tl.TenantId == tenantId && tl.DeletedAt == null)
-            .OrderByDescending(tl => tl.StartDate)
-            .ToListAsync();
-
-        var dtos = licenses.Select(l => new TenantLicenseDto
-        {
-            Id = l.Id,
-            TenantId = l.TenantId,
-            LicensePackageId = l.LicensePackageId,
-            LicensePackageName = l.LicensePackage.Name,
-            LicensePackageCode = l.LicensePackage.Code,
-            StartDate = l.StartDate,
-            ExpiryDate = l.ExpiryDate,
-            IsActive = l.IsActive,
-            CreatedAt = l.CreatedAt
-        }).ToList();
-
-        return Ok(ApiResponse<List<TenantLicenseDto>>.SuccessResult(dtos));
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<TenantLicenseDto>>> GetById(Guid id)
+    // GET: api/tenants/{tenantId}/license
+    [HttpGet]
+    public async Task<ActionResult<object>> GetTenantLicense(Guid tenantId)
     {
         var license = await _context.TenantLicenses
-            .Include(tl => tl.LicensePackage)
-            .Include(tl => tl.Tenant)
-            .FirstOrDefaultAsync(tl => tl.Id == id && tl.DeletedAt == null);
+            .Include(l => l.LicensePackage)
+            .Where(l => l.TenantId == tenantId && l.DeletedAt == null)
+            .OrderByDescending(l => l.CreatedAt)
+            .Select(l => new
+            {
+                l.Id,
+                l.TenantId,
+                Package = new
+                {
+                    l.LicensePackage!.Id,
+                    l.LicensePackage.Code,
+                    l.LicensePackage.Name,
+                    l.LicensePackage.MonthlyPrice,
+                    l.LicensePackage.YearlyPrice,
+                    l.LicensePackage.Currency
+                },
+                l.StartDate,
+                l.EndDate,
+                l.TrialEndDate,
+                l.Status,
+                l.AutoRenew,
+                l.Amount,
+                l.Currency,
+                l.BillingPeriod,
+                l.CustomLimitsJson,
+                l.CustomFeaturesJson,
+                l.CurrentUsageJson,
+                l.NextBillingDate,
+                l.CreatedAt
+            })
+            .FirstOrDefaultAsync();
 
         if (license == null)
-            return NotFound(ApiResponse<TenantLicenseDto>.ErrorResult("Tenant license not found"));
+            return NotFound(new { isSuccess = false, message = "No license found for this tenant" });
 
-        var dto = new TenantLicenseDto
-        {
-            Id = license.Id,
-            TenantId = license.TenantId,
-            TenantName = license.Tenant.Name,
-            LicensePackageId = license.LicensePackageId,
-            LicensePackageName = license.LicensePackage.Name,
-            LicensePackageCode = license.LicensePackage.Code,
-            StartDate = license.StartDate,
-            ExpiryDate = license.ExpiryDate,
-            IsActive = license.IsActive,
-            CreatedAt = license.CreatedAt
-        };
-
-        return Ok(ApiResponse<TenantLicenseDto>.SuccessResult(dto));
+        return Ok(new { isSuccess = true, data = license });
     }
 
-    [HttpPost]
-    public async Task<ActionResult<ApiResponse<TenantLicenseDto>>> Create([FromBody] CreateTenantLicenseRequest request)
+    // POST: api/tenants/{tenantId}/license/assign
+    [HttpPost("assign")]
+    public async Task<ActionResult<object>> AssignLicense(Guid tenantId, [FromBody] AssignLicenseRequest request)
     {
-        // Check if package exists
-        var package = await _context.LicensePackages.FindAsync(request.LicensePackageId);
-        if (package == null)
-            return BadRequest(ApiResponse<TenantLicenseDto>.ErrorResult("License package not found"));
-
         // Check if tenant exists
-        var tenant = await _context.Tenants.FindAsync(request.TenantId);
+        var tenant = await _context.Tenants.FindAsync(tenantId);
         if (tenant == null)
-            return BadRequest(ApiResponse<TenantLicenseDto>.ErrorResult("Tenant not found"));
+            return NotFound(new { isSuccess = false, message = "Tenant not found" });
 
+        // Check if package exists
+        var package = await _context.LicensePackages.FindAsync(request.PackageId);
+        if (package == null)
+            return NotFound(new { isSuccess = false, message = "License package not found" });
+
+        // Deactivate existing licenses
+        var existingLicenses = await _context.TenantLicenses
+            .Where(l => l.TenantId == tenantId && l.Status == "active")
+            .ToListAsync();
+
+        foreach (var existingLicense in existingLicenses)
+        {
+            existingLicense.Status = "cancelled";
+            existingLicense.CancelledAt = DateTime.UtcNow;
+        }
+
+        // Create new license
         var license = new TenantLicense
         {
             Id = Guid.NewGuid(),
-            TenantId = request.TenantId,
-            LicensePackageId = request.LicensePackageId,
-            StartDate = request.StartDate,
-            ExpiryDate = request.ExpiryDate,
-            IsActive = true,
+            TenantId = tenantId,
+            LicensePackageId = request.PackageId,
+            StartDate = request.StartDate ?? DateTime.UtcNow,
+            EndDate = request.EndDate ?? DateTime.UtcNow.AddYears(1),
+            TrialEndDate = package.TrialDays > 0 ? DateTime.UtcNow.AddDays(package.TrialDays) : null,
+            Status = package.TrialDays > 0 ? "trial" : "active",
+            AutoRenew = request.AutoRenew,
+            Amount = request.BillingPeriod == "yearly" ? package.YearlyPrice : package.MonthlyPrice,
+            Currency = package.Currency,
+            BillingPeriod = request.BillingPeriod ?? "monthly",
+            CustomLimitsJson = request.CustomLimitsJson,
+            CustomFeaturesJson = request.CustomFeaturesJson,
+            NextBillingDate = request.BillingPeriod == "yearly" 
+                ? DateTime.UtcNow.AddYears(1) 
+                : DateTime.UtcNow.AddMonths(1),
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedBy = null // TODO: Get from authenticated user (Guid)
         };
 
         _context.TenantLicenses.Add(license);
         await _context.SaveChangesAsync();
 
-        // Reload with includes
-        license = await _context.TenantLicenses
-            .Include(tl => tl.LicensePackage)
-            .Include(tl => tl.Tenant)
-            .FirstAsync(tl => tl.Id == license.Id);
+        return Ok(new { isSuccess = true, message = "License assigned successfully", data = license.Id });
+    }
 
-        var dto = new TenantLicenseDto
+    // PUT: api/tenants/{tenantId}/license/upgrade
+    [HttpPut("upgrade")]
+    public async Task<ActionResult<object>> UpgradeLicense(Guid tenantId, [FromBody] UpgradeLicenseRequest request)
+    {
+        var currentLicense = await _context.TenantLicenses
+            .Where(l => l.TenantId == tenantId && l.Status == "active")
+            .FirstOrDefaultAsync();
+
+        if (currentLicense == null)
+            return NotFound(new { isSuccess = false, message = "No active license found" });
+
+        var newPackage = await _context.LicensePackages.FindAsync(request.NewPackageId);
+        if (newPackage == null)
+            return NotFound(new { isSuccess = false, message = "License package not found" });
+
+        // Cancel current license
+        currentLicense.Status = "cancelled";
+        currentLicense.CancelledAt = DateTime.UtcNow;
+
+        // Create upgraded license
+        var upgradedLicense = new TenantLicense
         {
-            Id = license.Id,
-            TenantId = license.TenantId,
-            TenantName = license.Tenant.Name,
-            LicensePackageId = license.LicensePackageId,
-            LicensePackageName = license.LicensePackage.Name,
-            LicensePackageCode = license.LicensePackage.Code,
-            StartDate = license.StartDate,
-            ExpiryDate = license.ExpiryDate,
-            IsActive = license.IsActive,
-            CreatedAt = license.CreatedAt
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            LicensePackageId = request.NewPackageId,
+            StartDate = DateTime.UtcNow,
+            EndDate = currentLicense.EndDate, // Keep same end date
+            Status = "active",
+            AutoRenew = currentLicense.AutoRenew,
+            Amount = request.BillingPeriod == "yearly" ? newPackage.YearlyPrice : newPackage.MonthlyPrice,
+            Currency = newPackage.Currency,
+            BillingPeriod = request.BillingPeriod ?? currentLicense.BillingPeriod,
+            NextBillingDate = currentLicense.NextBillingDate,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = null
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = license.Id }, ApiResponse<TenantLicenseDto>.SuccessResult(dto));
-    }
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<TenantLicenseDto>>> Update(Guid id, [FromBody] UpdateTenantLicenseRequest request)
-    {
-        var license = await _context.TenantLicenses
-            .Include(tl => tl.LicensePackage)
-            .Include(tl => tl.Tenant)
-            .FirstOrDefaultAsync(tl => tl.Id == id && tl.DeletedAt == null);
-
-        if (license == null)
-            return NotFound(ApiResponse<TenantLicenseDto>.ErrorResult("Tenant license not found"));
-
-        license.StartDate = request.StartDate;
-        license.ExpiryDate = request.ExpiryDate;
-        license.UpdatedAt = DateTime.UtcNow;
-
+        _context.TenantLicenses.Add(upgradedLicense);
         await _context.SaveChangesAsync();
 
-        var dto = new TenantLicenseDto
+        return Ok(new { isSuccess = true, message = "License upgraded successfully" });
+    }
+
+    // PUT: api/tenants/{tenantId}/license/suspend
+    [HttpPut("suspend")]
+    public async Task<ActionResult<object>> SuspendLicense(Guid tenantId)
+    {
+        var license = await _context.TenantLicenses
+            .Where(l => l.TenantId == tenantId && l.Status == "active")
+            .FirstOrDefaultAsync();
+
+        if (license == null)
+            return NotFound(new { isSuccess = false, message = "No active license found" });
+
+        license.Status = "suspended";
+        license.SuspendedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { isSuccess = true, message = "License suspended successfully" });
+    }
+
+    // PUT: api/tenants/{tenantId}/license/activate
+    [HttpPut("activate")]
+    public async Task<ActionResult<object>> ActivateLicense(Guid tenantId)
+    {
+        var license = await _context.TenantLicenses
+            .Where(l => l.TenantId == tenantId && l.Status == "suspended")
+            .FirstOrDefaultAsync();
+
+        if (license == null)
+            return NotFound(new { isSuccess = false, message = "No suspended license found" });
+
+        license.Status = "active";
+        license.SuspendedAt = null;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { isSuccess = true, message = "License activated successfully" });
+    }
+
+    // GET: api/tenants/{tenantId}/license/usage
+    [HttpGet("usage")]
+    public async Task<ActionResult<object>> GetUsage(Guid tenantId)
+    {
+        var license = await _context.TenantLicenses
+            .Include(l => l.LicensePackage)
+            .Where(l => l.TenantId == tenantId && l.Status == "active")
+            .FirstOrDefaultAsync();
+
+        if (license == null)
+            return NotFound(new { isSuccess = false, message = "No active license found" });
+
+        // TODO: Calculate actual usage from other services
+        var usage = new
         {
-            Id = license.Id,
-            TenantId = license.TenantId,
-            TenantName = license.Tenant.Name,
-            LicensePackageId = license.LicensePackageId,
-            LicensePackageName = license.LicensePackage.Name,
-            LicensePackageCode = license.LicensePackage.Code,
-            StartDate = license.StartDate,
-            ExpiryDate = license.ExpiryDate,
-            IsActive = license.IsActive,
-            CreatedAt = license.CreatedAt
+            limits = new
+            {
+                maxUsers = license.LicensePackage!.MaxUsers,
+                maxQuestions = license.LicensePackage.MaxQuestions,
+                maxExams = license.LicensePackage.MaxExams,
+                maxStorageGB = license.LicensePackage.MaxStorageGB
+            },
+            current = new
+            {
+                users = 0, // TODO: Get from Identity service
+                questions = 0, // TODO: Get from Questions service
+                exams = 0, // TODO: Get from Exams service
+                storageGB = 0.0 // TODO: Calculate
+            },
+            percentage = new
+            {
+                users = 0.0,
+                questions = 0.0,
+                exams = 0.0,
+                storage = 0.0
+            }
         };
 
-        return Ok(ApiResponse<TenantLicenseDto>.SuccessResult(dto));
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
-    {
-        var license = await _context.TenantLicenses
-            .FirstOrDefaultAsync(tl => tl.Id == id && tl.DeletedAt == null);
-
-        if (license == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("Tenant license not found"));
-
-        // Soft delete
-        license.DeletedAt = DateTime.UtcNow;
-        license.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ApiResponse<bool>.SuccessResult(true));
-    }
-
-    [HttpPut("{id}/suspend")]
-    public async Task<ActionResult<ApiResponse<bool>>> Suspend(Guid id)
-    {
-        var license = await _context.TenantLicenses
-            .FirstOrDefaultAsync(tl => tl.Id == id && tl.DeletedAt == null);
-
-        if (license == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("Tenant license not found"));
-
-        license.IsActive = false;
-        license.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ApiResponse<bool>.SuccessResult(true));
-    }
-
-    [HttpPut("{id}/activate")]
-    public async Task<ActionResult<ApiResponse<bool>>> Activate(Guid id)
-    {
-        var license = await _context.TenantLicenses
-            .FirstOrDefaultAsync(tl => tl.Id == id && tl.DeletedAt == null);
-
-        if (license == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("Tenant license not found"));
-
-        license.IsActive = true;
-        license.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ApiResponse<bool>.SuccessResult(true));
+        return Ok(new { isSuccess = true, data = usage });
     }
 }
 
 // DTOs
-public class TenantLicenseDto
+public record AssignLicenseRequest
 {
-    public Guid Id { get; set; }
-    public Guid TenantId { get; set; }
-    public string? TenantName { get; set; }
-    public Guid LicensePackageId { get; set; }
-    public string LicensePackageName { get; set; } = string.Empty;
-    public string LicensePackageCode { get; set; } = string.Empty;
-    public DateTime StartDate { get; set; }
-    public DateTime ExpiryDate { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public Guid PackageId { get; init; }
+    public DateTime? StartDate { get; init; }
+    public DateTime? EndDate { get; init; }
+    public bool AutoRenew { get; init; } = true;
+    public string? BillingPeriod { get; init; } // monthly, yearly
+    public string? CustomLimitsJson { get; init; }
+    public string? CustomFeaturesJson { get; init; }
 }
 
-public class CreateTenantLicenseRequest
+public record UpgradeLicenseRequest
 {
-    public Guid TenantId { get; set; }
-    public Guid LicensePackageId { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime ExpiryDate { get; set; }
+    public Guid NewPackageId { get; init; }
+    public string? BillingPeriod { get; init; }
 }
-
-public class UpdateTenantLicenseRequest
-{
-    public DateTime StartDate { get; set; }
-    public DateTime ExpiryDate { get; set; }
-}
-

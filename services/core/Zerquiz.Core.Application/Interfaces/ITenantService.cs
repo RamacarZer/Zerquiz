@@ -9,5 +9,6 @@ public interface ITenantService
     Task<Tenant> CreateAsync(string name, string slug, string? customDomain = null);
     Task<Tenant> UpdateAsync(Guid id, string name, bool isActive, TenantSettings? settings = null);
     Task<List<Tenant>> GetAllAsync();
+    Task DeleteAsync(Guid id);
 }
 

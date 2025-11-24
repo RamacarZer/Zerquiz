@@ -29,6 +29,20 @@ public class Tenant
     public string? Email { get; set; }
     public string? Website { get; set; }
     
+    // Company Representative (Şirket Temsilcisi)
+    public string? RepresentativeFirstName { get; set; }
+    public string? RepresentativeLastName { get; set; }
+    public string? RepresentativeTitle { get; set; } // Genel Müdür, İşletme Müdürü vb.
+    public string? RepresentativeEmail { get; set; }
+    public string? RepresentativePhone { get; set; }
+    
+    // IT Contact (Bilgi İşlem Sorumlusu)
+    public string? TechnicalContactFirstName { get; set; }
+    public string? TechnicalContactLastName { get; set; }
+    public string? TechnicalContactTitle { get; set; } // Bilgi İşlem Müdürü, Sistem Yöneticisi vb.
+    public string? TechnicalContactEmail { get; set; }
+    public string? TechnicalContactPhone { get; set; }
+    
     // Subscription Info
     public string SubscriptionStatus { get; set; } = "trial"; // trial, active, suspended, expired
     public DateTime? SubscriptionStartDate { get; set; }

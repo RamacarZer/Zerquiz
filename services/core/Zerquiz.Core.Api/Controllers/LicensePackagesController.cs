@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Domain.Entities;
 using Zerquiz.Core.Infrastructure.Persistence;
-using Zerquiz.Shared.Contracts.DTOs;
 
 namespace Zerquiz.Core.Api.Controllers;
 
@@ -19,247 +18,229 @@ public class LicensePackagesController : ControllerBase
         _logger = logger;
     }
 
+    // GET: api/licensepackages
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<LicensePackageDto>>>> GetAll()
+    public async Task<ActionResult<IEnumerable<object>>> GetAll()
     {
         var packages = await _context.LicensePackages
-            .Where(lp => lp.DeletedAt == null)
-            .OrderBy(lp => lp.DisplayOrder)
+            .Where(p => p.DeletedAt == null)
+            .OrderBy(p => p.DisplayOrder)
+            .Select(p => new
+            {
+                p.Id,
+                p.Code,
+                p.Name,
+                p.Description,
+                p.MonthlyPrice,
+                p.YearlyPrice,
+                p.Currency,
+                p.TrialDays,
+                p.MaxUsers,
+                p.MaxStudents,
+                p.MaxQuestions,
+                p.MaxExams,
+                p.MaxStorageGB,
+                p.MaxApiCallsPerMonth,
+                p.MaxModules,
+                p.MaxCases,
+                p.MaxDocuments,
+                p.Features,
+                p.IsActive,
+                p.IsPublic,
+                p.IsHighlighted,
+                p.HighlightText,
+                p.DisplayOrder,
+                p.CreatedAt
+            })
             .ToListAsync();
 
-        var dtos = packages.Select(p => new LicensePackageDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Code = p.Code,
-            Description = p.Description,
-            MonthlyPrice = p.MonthlyPrice,
-            YearlyPrice = p.YearlyPrice,
-            Currency = p.Currency,
-            MaxUsers = p.MaxUsers,
-            MaxStudents = p.MaxStudents,
-            MaxQuestions = p.MaxQuestions,
-            MaxExams = p.MaxExams,
-            MaxStorage = p.MaxStorage,
-            IsActive = p.IsActive,
-            DisplayOrder = p.DisplayOrder
-        }).ToList();
-
-        return Ok(ApiResponse<List<LicensePackageDto>>.SuccessResult(dtos));
+        return Ok(new { isSuccess = true, data = packages });
     }
 
+    // GET: api/licensepackages/{id}
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<LicensePackageDto>>> GetById(Guid id)
+    public async Task<ActionResult<object>> GetById(Guid id)
     {
         var package = await _context.LicensePackages
-            .FirstOrDefaultAsync(lp => lp.Id == id && lp.DeletedAt == null);
+            .Where(p => p.Id == id && p.DeletedAt == null)
+            .Select(p => new
+            {
+                p.Id,
+                p.Code,
+                p.Name,
+                p.Description,
+                p.MonthlyPrice,
+                p.YearlyPrice,
+                p.Currency,
+                p.TrialDays,
+                p.MaxUsers,
+                p.MaxStudents,
+                p.MaxQuestions,
+                p.MaxExams,
+                p.MaxStorageGB,
+                p.MaxApiCallsPerMonth,
+                p.MaxModules,
+                p.MaxCases,
+                p.MaxDocuments,
+                p.Features,
+                p.IsActive,
+                p.IsPublic,
+                p.IsHighlighted,
+                p.HighlightText,
+                p.DisplayOrder,
+                p.CreatedAt,
+                p.UpdatedAt
+            })
+            .FirstOrDefaultAsync();
 
         if (package == null)
-            return NotFound(ApiResponse<LicensePackageDto>.ErrorResult("License package not found"));
+            return NotFound(new { isSuccess = false, message = "License package not found" });
 
-        var dto = new LicensePackageDto
-        {
-            Id = package.Id,
-            Name = package.Name,
-            Code = package.Code,
-            Description = package.Description,
-            MonthlyPrice = package.MonthlyPrice,
-            YearlyPrice = package.YearlyPrice,
-            Currency = package.Currency,
-            MaxUsers = package.MaxUsers,
-            MaxStudents = package.MaxStudents,
-            MaxQuestions = package.MaxQuestions,
-            MaxExams = package.MaxExams,
-            MaxStorage = package.MaxStorage,
-            IsActive = package.IsActive,
-            DisplayOrder = package.DisplayOrder
-        };
-
-        return Ok(ApiResponse<LicensePackageDto>.SuccessResult(dto));
+        return Ok(new { isSuccess = true, data = package });
     }
 
+    // POST: api/licensepackages
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<LicensePackageDto>>> Create([FromBody] CreateLicensePackageRequest request)
+    public async Task<ActionResult<object>> Create([FromBody] CreateLicensePackageRequest request)
     {
-        var exists = await _context.LicensePackages
-            .AnyAsync(lp => lp.Code == request.Code && lp.DeletedAt == null);
-
-        if (exists)
-            return BadRequest(ApiResponse<LicensePackageDto>.ErrorResult("Package with this code already exists"));
-
         var package = new LicensePackage
         {
             Id = Guid.NewGuid(),
-            TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111"), // System level
-            Name = request.Name,
+            TenantId = Guid.Empty, // Global package
             Code = request.Code,
+            Name = request.Name,
             Description = request.Description,
             MonthlyPrice = request.MonthlyPrice,
             YearlyPrice = request.YearlyPrice,
-            Currency = request.Currency,
+            Currency = request.Currency ?? "TRY",
+            TrialDays = request.TrialDays,
             MaxUsers = request.MaxUsers,
             MaxStudents = request.MaxStudents,
             MaxQuestions = request.MaxQuestions,
             MaxExams = request.MaxExams,
-            MaxStorage = request.MaxStorage,
-            DisplayOrder = request.DisplayOrder,
+            MaxStorageGB = request.MaxStorageGB,
+            MaxApiCallsPerMonth = request.MaxApiCallsPerMonth,
+            MaxModules = request.MaxModules,
+            MaxCases = request.MaxCases,
+            MaxDocuments = request.MaxDocuments,
+            Features = request.Features,
             IsActive = true,
+            IsPublic = request.IsPublic,
+            IsHighlighted = request.IsHighlighted,
+            HighlightText = request.HighlightText,
+            DisplayOrder = request.DisplayOrder,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Version = 1
+            CreatedBy = null // TODO: Get from authenticated user (Guid)
         };
 
         _context.LicensePackages.Add(package);
         await _context.SaveChangesAsync();
 
-        var dto = new LicensePackageDto
-        {
-            Id = package.Id,
-            Name = package.Name,
-            Code = package.Code,
-            Description = package.Description,
-            MonthlyPrice = package.MonthlyPrice,
-            YearlyPrice = package.YearlyPrice,
-            Currency = package.Currency,
-            MaxUsers = package.MaxUsers,
-            MaxStudents = package.MaxStudents,
-            MaxQuestions = package.MaxQuestions,
-            MaxExams = package.MaxExams,
-            MaxStorage = package.MaxStorage,
-            IsActive = package.IsActive,
-            DisplayOrder = package.DisplayOrder
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = package.Id }, ApiResponse<LicensePackageDto>.SuccessResult(dto));
+        return CreatedAtAction(nameof(GetById), new { id = package.Id }, 
+            new { isSuccess = true, message = "License package created successfully", data = package.Id });
     }
 
+    // PUT: api/licensepackages/{id}
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<LicensePackageDto>>> Update(Guid id, [FromBody] UpdateLicensePackageRequest request)
+    public async Task<ActionResult<object>> Update(Guid id, [FromBody] UpdateLicensePackageRequest request)
     {
-        var package = await _context.LicensePackages
-            .FirstOrDefaultAsync(lp => lp.Id == id && lp.DeletedAt == null);
-
-        if (package == null)
-            return NotFound(ApiResponse<LicensePackageDto>.ErrorResult("License package not found"));
+        var package = await _context.LicensePackages.FindAsync(id);
+        if (package == null || package.DeletedAt != null)
+            return NotFound(new { isSuccess = false, message = "License package not found" });
 
         package.Name = request.Name;
         package.Description = request.Description;
         package.MonthlyPrice = request.MonthlyPrice;
         package.YearlyPrice = request.YearlyPrice;
-        package.Currency = request.Currency;
+        package.Currency = request.Currency ?? "TRY";
+        package.TrialDays = request.TrialDays;
         package.MaxUsers = request.MaxUsers;
         package.MaxStudents = request.MaxStudents;
         package.MaxQuestions = request.MaxQuestions;
         package.MaxExams = request.MaxExams;
-        package.MaxStorage = request.MaxStorage;
+        package.MaxStorageGB = request.MaxStorageGB;
+        package.MaxApiCallsPerMonth = request.MaxApiCallsPerMonth;
+        package.MaxModules = request.MaxModules;
+        package.MaxCases = request.MaxCases;
+        package.MaxDocuments = request.MaxDocuments;
+        package.Features = request.Features;
+        package.IsActive = request.IsActive;
+        package.IsPublic = request.IsPublic;
+        package.IsHighlighted = request.IsHighlighted;
+        package.HighlightText = request.HighlightText;
         package.DisplayOrder = request.DisplayOrder;
         package.UpdatedAt = DateTime.UtcNow;
-        package.Version++;
+        package.UpdatedBy = null; // TODO: Get from authenticated user (Guid)
 
         await _context.SaveChangesAsync();
 
-        var dto = new LicensePackageDto
-        {
-            Id = package.Id,
-            Name = package.Name,
-            Code = package.Code,
-            Description = package.Description,
-            MonthlyPrice = package.MonthlyPrice,
-            YearlyPrice = package.YearlyPrice,
-            Currency = package.Currency,
-            MaxUsers = package.MaxUsers,
-            MaxStudents = package.MaxStudents,
-            MaxQuestions = package.MaxQuestions,
-            MaxExams = package.MaxExams,
-            MaxStorage = package.MaxStorage,
-            IsActive = package.IsActive,
-            DisplayOrder = package.DisplayOrder
-        };
-
-        return Ok(ApiResponse<LicensePackageDto>.SuccessResult(dto));
+        return Ok(new { isSuccess = true, message = "License package updated successfully" });
     }
 
+    // DELETE: api/licensepackages/{id}
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
+    public async Task<ActionResult<object>> Delete(Guid id)
     {
-        var package = await _context.LicensePackages
-            .FirstOrDefaultAsync(lp => lp.Id == id && lp.DeletedAt == null);
-
-        if (package == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("License package not found"));
+        var package = await _context.LicensePackages.FindAsync(id);
+        if (package == null || package.DeletedAt != null)
+            return NotFound(new { isSuccess = false, message = "License package not found" });
 
         // Soft delete
         package.DeletedAt = DateTime.UtcNow;
-        package.UpdatedAt = DateTime.UtcNow;
+        package.DeletedBy = null; // TODO: Get from authenticated user (Guid)
         await _context.SaveChangesAsync();
 
-        return Ok(ApiResponse<bool>.SuccessResult(true));
-    }
-
-    [HttpPut("{id}/toggle-status")]
-    public async Task<ActionResult<ApiResponse<bool>>> ToggleStatus(Guid id)
-    {
-        var package = await _context.LicensePackages
-            .FirstOrDefaultAsync(lp => lp.Id == id && lp.DeletedAt == null);
-
-        if (package == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("License package not found"));
-
-        package.IsActive = !package.IsActive;
-        package.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ApiResponse<bool>.SuccessResult(true));
+        return Ok(new { isSuccess = true, message = "License package deleted successfully" });
     }
 }
 
 // DTOs
-public class LicensePackageDto
+public record CreateLicensePackageRequest
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal MonthlyPrice { get; set; }
-    public decimal YearlyPrice { get; set; }
-    public string Currency { get; set; } = "TRY";
-    public int MaxUsers { get; set; }
-    public int MaxStudents { get; set; }
-    public int MaxQuestions { get; set; }
-    public int MaxExams { get; set; }
-    public int MaxStorage { get; set; }
-    public bool IsActive { get; set; }
-    public int DisplayOrder { get; set; }
+    public string Code { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public decimal MonthlyPrice { get; init; }
+    public decimal YearlyPrice { get; init; }
+    public string? Currency { get; init; }
+    public int TrialDays { get; init; }
+    public int MaxUsers { get; init; }
+    public int MaxStudents { get; init; }
+    public int MaxQuestions { get; init; }
+    public int MaxExams { get; init; }
+    public int MaxStorageGB { get; init; }
+    public int MaxApiCallsPerMonth { get; init; }
+    public int MaxModules { get; init; }
+    public int MaxCases { get; init; }
+    public int MaxDocuments { get; init; }
+    public string[]? Features { get; init; }
+    public bool IsPublic { get; init; } = true;
+    public bool IsHighlighted { get; init; }
+    public string? HighlightText { get; init; }
+    public int DisplayOrder { get; init; }
 }
 
-public class CreateLicensePackageRequest
+public record UpdateLicensePackageRequest
 {
-    public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal MonthlyPrice { get; set; }
-    public decimal YearlyPrice { get; set; }
-    public string Currency { get; set; } = "TRY";
-    public int MaxUsers { get; set; }
-    public int MaxStudents { get; set; }
-    public int MaxQuestions { get; set; }
-    public int MaxExams { get; set; }
-    public int MaxStorage { get; set; }
-    public int DisplayOrder { get; set; }
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public decimal MonthlyPrice { get; init; }
+    public decimal YearlyPrice { get; init; }
+    public string? Currency { get; init; }
+    public int TrialDays { get; init; }
+    public int MaxUsers { get; init; }
+    public int MaxStudents { get; init; }
+    public int MaxQuestions { get; init; }
+    public int MaxExams { get; init; }
+    public int MaxStorageGB { get; init; }
+    public int MaxApiCallsPerMonth { get; init; }
+    public int MaxModules { get; init; }
+    public int MaxCases { get; init; }
+    public int MaxDocuments { get; init; }
+    public string[]? Features { get; init; }
+    public bool IsActive { get; init; }
+    public bool IsPublic { get; init; }
+    public bool IsHighlighted { get; init; }
+    public string? HighlightText { get; init; }
+    public int DisplayOrder { get; init; }
 }
-
-public class UpdateLicensePackageRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal MonthlyPrice { get; set; }
-    public decimal YearlyPrice { get; set; }
-    public string Currency { get; set; } = "TRY";
-    public int MaxUsers { get; set; }
-    public int MaxStudents { get; set; }
-    public int MaxQuestions { get; set; }
-    public int MaxExams { get; set; }
-    public int MaxStorage { get; set; }
-    public int DisplayOrder { get; set; }
-}
-

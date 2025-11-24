@@ -216,6 +216,122 @@ const TenantDetailPage = () => {
                 </dl>
               </div>
             )}
+
+            {/* Şirket Temsilcisi */}
+            {(tenant.representativeFirstName || tenant.representativeLastName || 
+              tenant.representativeEmail || tenant.representativePhone) && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>👤</span>
+                  Şirket Temsilcisi
+                </h2>
+                <dl className="space-y-3">
+                  {(tenant.representativeFirstName || tenant.representativeLastName) && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Ad Soyad
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.representativeFirstName} {tenant.representativeLastName}
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.representativeTitle && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Ünvan
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.representativeTitle}
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.representativeEmail && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        E-posta
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        <a
+                          href={`mailto:${tenant.representativeEmail}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {tenant.representativeEmail}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.representativePhone && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Telefon
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.representativePhone}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+
+            {/* Bilgi İşlem Sorumlusu */}
+            {(tenant.itContactFirstName || tenant.itContactLastName || 
+              tenant.itContactEmail || tenant.itContactPhone) && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>💻</span>
+                  Bilgi İşlem Sorumlusu
+                </h2>
+                <dl className="space-y-3">
+                  {(tenant.itContactFirstName || tenant.itContactLastName) && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Ad Soyad
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.itContactFirstName} {tenant.itContactLastName}
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.itContactTitle && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Ünvan
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.itContactTitle}
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.itContactEmail && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        E-posta
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        <a
+                          href={`mailto:${tenant.itContactEmail}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {tenant.itContactEmail}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                  {tenant.itContactPhone && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Telefon
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {tenant.itContactPhone}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
           </div>
         </div>
 
@@ -227,9 +343,11 @@ const TenantDetailPage = () => {
                 Lisans Durumu
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Başlangıç: {new Date(tenant.startDate).toLocaleDateString("tr-TR")}
-                {tenant.endDate && (
-                  <> · Bitiş: {new Date(tenant.endDate).toLocaleDateString("tr-TR")}</>
+                {tenant.subscriptionStartDate && (
+                  <>Başlangıç: {new Date(tenant.subscriptionStartDate).toLocaleDateString("tr-TR")}</>
+                )}
+                {tenant.subscriptionEndDate && (
+                  <> · Bitiş: {new Date(tenant.subscriptionEndDate).toLocaleDateString("tr-TR")}</>
                 )}
               </p>
             </div>

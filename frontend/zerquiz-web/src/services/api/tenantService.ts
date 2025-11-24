@@ -5,8 +5,9 @@ export interface TenantDto {
   id: string;
   name: string;
   slug: string;
+  subdomain?: string;
   customDomain?: string;
-  companyName: string;
+  companyName?: string;
   taxNumber?: string;
   address?: string;
   city?: string;
@@ -14,9 +15,24 @@ export interface TenantDto {
   phone?: string;
   email?: string;
   website?: string;
+  
+  // Company Representative (Şirket Temsilcisi)
+  representativeFirstName?: string;
+  representativeLastName?: string;
+  representativeTitle?: string;
+  representativeEmail?: string;
+  representativePhone?: string;
+  
+  // IT Contact (Bilgi İşlem Sorumlusu)
+  itContactFirstName?: string;
+  itContactLastName?: string;
+  itContactTitle?: string;
+  itContactEmail?: string;
+  itContactPhone?: string;
+  
   subscriptionStatus: string;
-  startDate: string;
-  endDate?: string;
+  subscriptionStartDate?: string;
+  subscriptionEndDate?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -55,8 +71,10 @@ export interface TenantLicenseDto {
 export interface CreateTenantRequest {
   name: string;
   slug: string;
+  isActive?: boolean;
+  subdomain?: string;
   customDomain?: string;
-  companyName: string;
+  companyName?: string;
   taxNumber?: string;
   address?: string;
   city?: string;
@@ -64,11 +82,26 @@ export interface CreateTenantRequest {
   phone?: string;
   email?: string;
   website?: string;
+  
+  // Company Representative
+  representativeFirstName?: string;
+  representativeLastName?: string;
+  representativeTitle?: string;
+  representativeEmail?: string;
+  representativePhone?: string;
+  
+  // IT Contact
+  itContactFirstName?: string;
+  itContactLastName?: string;
+  itContactTitle?: string;
+  itContactEmail?: string;
+  itContactPhone?: string;
 }
 
 export interface UpdateTenantRequest {
   name: string;
-  companyName: string;
+  isActive: boolean;
+  companyName?: string;
   taxNumber?: string;
   address?: string;
   city?: string;
@@ -76,6 +109,24 @@ export interface UpdateTenantRequest {
   phone?: string;
   email?: string;
   website?: string;
+  
+  // Company Representative
+  representativeFirstName?: string;
+  representativeLastName?: string;
+  representativeTitle?: string;
+  representativeEmail?: string;
+  representativePhone?: string;
+  
+  // IT Contact
+  itContactFirstName?: string;
+  itContactLastName?: string;
+  itContactTitle?: string;
+  itContactEmail?: string;
+  itContactPhone?: string;
+  
+  subscriptionStatus?: string;
+  subscriptionStartDate?: string;
+  subscriptionEndDate?: string;
 }
 
 export interface CreateLicensePackageRequest {
@@ -111,7 +162,7 @@ export const tenantService = {
 
   getTenant: async (id: string) => {
     const response = await apiClient.get<ApiResponse<TenantDto>>(
-      `/core/tenants/${id}`
+      `/core/tenants/by-id/${id}`
     );
     return response.data.data;
   },

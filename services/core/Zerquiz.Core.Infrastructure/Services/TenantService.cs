@@ -65,5 +65,16 @@ public class TenantService : ITenantService
             .OrderBy(t => t.Name)
             .ToListAsync();
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var tenant = await _context.Tenants.FindAsync(id);
+        if (tenant == null)
+            throw new KeyNotFoundException($"Tenant with ID {id} not found");
+
+        tenant.DeletedAt = DateTime.UtcNow;
+        tenant.IsActive = false;
+        await _context.SaveChangesAsync();
+    }
 }
 
