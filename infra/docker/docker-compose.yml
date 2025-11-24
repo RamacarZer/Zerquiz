@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: zerquiz_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: zerquiz
+      RABBITMQ_DEFAULT_PASS: zerquiz_pass
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - zerquiz_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: zerquiz_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - zerquiz_network
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  zerquiz_network:
+    driver: bridge
+

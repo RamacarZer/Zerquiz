@@ -1,0 +1,108 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Shared.Contracts", "shared\Zerquiz.Shared.Contracts\Zerquiz.Shared.Contracts.csproj", "{E1C8F1A1-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Shared.Common", "shared\Zerquiz.Shared.Common\Zerquiz.Shared.Common.csproj", "{E1C8F1A2-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{8BC9CEB9-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "services\core", "{8BC9CEBA-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Core.Domain", "services\core\Zerquiz.Core.Domain\Zerquiz.Core.Domain.csproj", "{E1C8F1A3-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Core.Application", "services\core\Zerquiz.Core.Application\Zerquiz.Core.Application.csproj", "{E1C8F1A4-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Core.Infrastructure", "services\core\Zerquiz.Core.Infrastructure\Zerquiz.Core.Infrastructure.csproj", "{E1C8F1A5-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Core.Api", "services\core\Zerquiz.Core.Api\Zerquiz.Core.Api.csproj", "{E1C8F1A6-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "services\identity", "{8BC9CEBC-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Identity.Domain", "services\identity\Zerquiz.Identity.Domain\Zerquiz.Identity.Domain.csproj", "{E1C8F1A7-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Identity.Application", "services\identity\Zerquiz.Identity.Application\Zerquiz.Identity.Application.csproj", "{E1C8F1A8-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Identity.Infrastructure", "services\identity\Zerquiz.Identity.Infrastructure\Zerquiz.Identity.Infrastructure.csproj", "{E1C8F1A9-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Identity.Api", "services\identity\Zerquiz.Identity.Api\Zerquiz.Identity.Api.csproj", "{E1C8F1AA-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curriculum", "services\curriculum", "{8BC9CEBD-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Curriculum.Domain", "services\curriculum\Zerquiz.Curriculum.Domain\Zerquiz.Curriculum.Domain.csproj", "{E1C8F1AB-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Curriculum.Application", "services\curriculum\Zerquiz.Curriculum.Application\Zerquiz.Curriculum.Application.csproj", "{E1C8F1AC-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Curriculum.Infrastructure", "services\curriculum\Zerquiz.Curriculum.Infrastructure\Zerquiz.Curriculum.Infrastructure.csproj", "{E1C8F1AD-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Curriculum.Api", "services\curriculum\Zerquiz.Curriculum.Api\Zerquiz.Curriculum.Api.csproj", "{E1C8F1AE-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "questions", "services\questions", "{8BC9CEBE-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Questions.Domain", "services\questions\Zerquiz.Questions.Domain\Zerquiz.Questions.Domain.csproj", "{E1C8F1AF-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Questions.Application", "services\questions\Zerquiz.Questions.Application\Zerquiz.Questions.Application.csproj", "{E1C8F1B1-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Questions.Infrastructure", "services\questions\Zerquiz.Questions.Infrastructure\Zerquiz.Questions.Infrastructure.csproj", "{E1C8F1B2-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Questions.Api", "services\questions\Zerquiz.Questions.Api\Zerquiz.Questions.Api.csproj", "{E1C8F1B3-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exams", "services\exams", "{8BC9CEBF-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Exams.Domain", "services\exams\Zerquiz.Exams.Domain\Zerquiz.Exams.Domain.csproj", "{E1C8F1B4-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Exams.Application", "services\exams\Zerquiz.Exams.Application\Zerquiz.Exams.Application.csproj", "{E1C8F1B5-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Exams.Infrastructure", "services\exams\Zerquiz.Exams.Infrastructure\Zerquiz.Exams.Infrastructure.csproj", "{E1C8F1B6-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Exams.Api", "services\exams\Zerquiz.Exams.Api\Zerquiz.Exams.Api.csproj", "{E1C8F1B7-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "grading", "services\grading", "{8BC9CEC0-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Grading.Domain", "services\grading\Zerquiz.Grading.Domain\Zerquiz.Grading.Domain.csproj", "{E1C8F1B8-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Grading.Application", "services\grading\Zerquiz.Grading.Application\Zerquiz.Grading.Application.csproj", "{E1C8F1B9-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Grading.Infrastructure", "services\grading\Zerquiz.Grading.Infrastructure\Zerquiz.Grading.Infrastructure.csproj", "{E1C8F1BA-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Grading.Api", "services\grading\Zerquiz.Grading.Api\Zerquiz.Grading.Api.csproj", "{E1C8F1BB-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "royalty", "services\royalty", "{8BC9CEC1-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Royalty.Domain", "services\royalty\Zerquiz.Royalty.Domain\Zerquiz.Royalty.Domain.csproj", "{E1C8F1BC-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Royalty.Application", "services\royalty\Zerquiz.Royalty.Application\Zerquiz.Royalty.Application.csproj", "{E1C8F1BD-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Royalty.Infrastructure", "services\royalty\Zerquiz.Royalty.Infrastructure\Zerquiz.Royalty.Infrastructure.csproj", "{E1C8F1BE-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Royalty.Api", "services\royalty\Zerquiz.Royalty.Api\Zerquiz.Royalty.Api.csproj", "{E1C8F1BF-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gateway", "gateway", "{8BC9CEBB-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zerquiz.Gateway", "gateway\Zerquiz.Gateway\Zerquiz.Gateway.csproj", "{E1C8F1B0-8B4A-11D0-8D11-00A0C91BC942}"
+EndProject
+
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
+

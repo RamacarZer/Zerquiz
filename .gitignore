@@ -1,0 +1,118 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+*.cache
+*.suo
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+.cache/
+.parcel-cache/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Sensitive configuration files
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Local.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Package files
+*.nupkg
+*.snupkg
+
+# Test coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Publish profiles
+PublishProfiles/
+*.pubxml
+*.publishproj
+
+# NuGet packages
+*.nupkg
+.nuget/
+packages/
+
+# Others
+*.pidb
+*.svclog
+*.scc
+*.psess
+*.vsp
+*.vspx
+*.sap
+*.e2e
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Agent tools temporary files
+agent-tools/
+
