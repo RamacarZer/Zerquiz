@@ -12,6 +12,12 @@ public class QuestionsDbContext : DbContext
     {
     }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
+
     public DbSet<QuestionFormatType> QuestionFormatTypes => Set<QuestionFormatType>();
     public DbSet<QuestionPedagogicalType> QuestionPedagogicalTypes => Set<QuestionPedagogicalType>();
     public DbSet<Question> Questions => Set<Question>();
@@ -22,7 +28,8 @@ public class QuestionsDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("questions_schema");
+        // Use public schema for simplicity
+        // modelBuilder.HasDefaultSchema("questions_schema");
 
         // Apply configurations for BaseEntity properties globally
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -175,7 +182,216 @@ public class QuestionsDbContext : DbContext
                 .HasForeignKey(e => e.QuestionId);
         });
 
+        // Seed Data - Removed from here, will use seed controller instead
+        // SeedData(modelBuilder);
+        
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void SeedData(ModelBuilder modelBuilder)
+    {
+        var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // System tenant
+        var now = DateTime.UtcNow;
+
+        // Seed Question Format Types
+        var formatTypes = new[]
+        {
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                TenantId = tenantId,
+                Code = "multiple_choice",
+                Name = "Çoktan Seçmeli",
+                Description = "Çoktan seçmeli soru formatı (A, B, C, D, E)",
+                ConfigSchema = "{\"minOptions\": 2, \"maxOptions\": 5, \"allowMultipleAnswers\": false}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                TenantId = tenantId,
+                Code = "true_false",
+                Name = "Doğru/Yanlış",
+                Description = "İki seçenekli doğru/yanlış sorusu",
+                ConfigSchema = "{\"options\": [\"Doğru\", \"Yanlış\"]}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000003"),
+                TenantId = tenantId,
+                Code = "fill_blank",
+                Name = "Boşluk Doldurma",
+                Description = "Metin içindeki boşlukları doldurma sorusu",
+                ConfigSchema = "{\"allowMultipleBlanks\": true, \"caseSensitive\": false}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000004"),
+                TenantId = tenantId,
+                Code = "matching",
+                Name = "Eşleştirme",
+                Description = "İki liste arasında eşleştirme yapma",
+                ConfigSchema = "{\"minPairs\": 2, \"maxPairs\": 10, \"shuffleOptions\": true}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000005"),
+                TenantId = tenantId,
+                Code = "short_answer",
+                Name = "Kısa Cevap",
+                Description = "Kısa metin cevabı gerektiren soru",
+                ConfigSchema = "{\"maxLength\": 500, \"allowMultipleAnswers\": true}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000006"),
+                TenantId = tenantId,
+                Code = "essay",
+                Name = "Kompozisyon/Açık Uçlu",
+                Description = "Uzun metin cevabı gerektiren soru",
+                ConfigSchema = "{\"minLength\": 100, \"maxLength\": 5000}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionFormatType
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000007"),
+                TenantId = tenantId,
+                Code = "ordering",
+                Name = "Sıralama",
+                Description = "Öğeleri doğru sıraya dizme",
+                ConfigSchema = "{\"minItems\": 2, \"maxItems\": 10}",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            }
+        };
+
+        // Seed Pedagogical Types
+        var pedagogicalTypes = new[]
+        {
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000001"),
+                TenantId = tenantId,
+                Code = "knowledge",
+                Name = "Bilgi",
+                Description = "Temel bilgi ve hatırlama düzeyi (Bloom's Taksonomi - Seviye 1)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000002"),
+                TenantId = tenantId,
+                Code = "comprehension",
+                Name = "Kavrama",
+                Description = "Anlama ve yorumlama düzeyi (Bloom's Taksonomi - Seviye 2)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000003"),
+                TenantId = tenantId,
+                Code = "application",
+                Name = "Uygulama",
+                Description = "Bilgiyi yeni durumlarda kullanma (Bloom's Taksonomi - Seviye 3)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000004"),
+                TenantId = tenantId,
+                Code = "analysis",
+                Name = "Analiz",
+                Description = "Bilgiyi parçalara ayırma ve ilişkileri inceleme (Bloom's Taksonomi - Seviye 4)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000005"),
+                TenantId = tenantId,
+                Code = "synthesis",
+                Name = "Sentez",
+                Description = "Farklı bilgileri birleştirerek yeni bir bütün oluşturma (Bloom's Taksonomi - Seviye 5)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000006"),
+                TenantId = tenantId,
+                Code = "evaluation",
+                Name = "Değerlendirme",
+                Description = "Bilgiyi kriterlere göre yargılama (Bloom's Taksonomi - Seviye 6)",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000007"),
+                TenantId = tenantId,
+                Code = "reinforcement",
+                Name = "Pekiştirme",
+                Description = "Öğrenilen bilgiyi güçlendirme sorusu",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            },
+            new QuestionPedagogicalType
+            {
+                Id = Guid.Parse("20000000-0000-0000-0000-000000000008"),
+                TenantId = tenantId,
+                Code = "problem_solving",
+                Name = "Problem Çözme",
+                Description = "Karmaşık problemleri çözme becerisi gerektiren soru",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true,
+                Version = 1
+            }
+        };
+
+        modelBuilder.Entity<QuestionFormatType>().HasData(formatTypes);
+        modelBuilder.Entity<QuestionPedagogicalType>().HasData(pedagogicalTypes);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

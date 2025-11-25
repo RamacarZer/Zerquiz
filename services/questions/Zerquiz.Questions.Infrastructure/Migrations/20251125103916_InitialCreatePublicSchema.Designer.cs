@@ -13,15 +13,14 @@ using Zerquiz.Questions.Infrastructure.Persistence;
 namespace Zerquiz.Questions.Infrastructure.Migrations
 {
     [DbContext(typeof(QuestionsDbContext))]
-    [Migration("20251124035640_InitialProfessionalCreate")]
-    partial class InitialProfessionalCreate
+    [Migration("20251125103916_InitialCreatePublicSchema")]
+    partial class InitialCreatePublicSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("questions_schema")
                 .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -31,6 +30,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -82,6 +84,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.Property<JsonDocument>("Metadata")
                         .HasColumnType("jsonb");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("PedagogicalTypeId")
                         .HasColumnType("uuid");
@@ -161,13 +166,16 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "TopicId");
 
-                    b.ToTable("questions", "questions_schema");
+                    b.ToTable("questions", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionAsset", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("CorrelationId")
@@ -209,6 +217,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     b.Property<string>("MimeType")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Position")
                         .HasMaxLength(50)
@@ -271,13 +282,16 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "QuestionVersionId");
 
-                    b.ToTable("question_assets", "questions_schema");
+                    b.ToTable("question_assets", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionFormatType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -288,20 +302,88 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     b.Property<string>("ConfigSchema")
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
+
+                    b.Property<JsonDocument>("Metadata")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<string[]>("Tags")
+                        .HasColumnType("text[]");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("question_format_types", "questions_schema");
+                    b.ToTable("question_format_types", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionPedagogicalType", b =>
@@ -310,31 +392,105 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AppId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
+
+                    b.Property<JsonDocument>("Metadata")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<string[]>("Tags")
+                        .HasColumnType("text[]");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("question_pedagogical_types", "questions_schema");
+                    b.ToTable("question_pedagogical_types", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionReview", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Comments")
@@ -371,6 +527,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.Property<JsonDocument>("Metadata")
                         .HasColumnType("jsonb");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("QuestionId")
                         .HasColumnType("uuid");
@@ -433,13 +592,16 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "ReviewerId");
 
-                    b.ToTable("question_reviews", "questions_schema");
+                    b.ToTable("question_reviews", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionSolution", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AuthorId")
@@ -480,6 +642,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.Property<JsonDocument>("Metadata")
                         .HasColumnType("jsonb");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("QuestionId")
                         .HasColumnType("uuid");
@@ -528,7 +693,7 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "QuestionId");
 
-                    b.ToTable("question_solutions", "questions_schema");
+                    b.ToTable("question_solutions", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.QuestionVersion", b =>
@@ -565,7 +730,7 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     b.HasIndex("QuestionId", "VersionNumber")
                         .IsUnique();
 
-                    b.ToTable("question_versions", "questions_schema");
+                    b.ToTable("question_versions", (string)null);
                 });
 
             modelBuilder.Entity("Zerquiz.Questions.Domain.Entities.Question", b =>

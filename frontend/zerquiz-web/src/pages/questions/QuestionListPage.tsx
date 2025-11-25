@@ -22,8 +22,8 @@ export default function QuestionListPage() {
         pageSize,
         statusFilter || undefined
       );
-      setQuestions(response.data.items);
-      setTotalPages(response.data.totalPages);
+      setQuestions(response.items);
+      setTotalPages(Math.ceil(response.totalCount / pageSize));
     } catch (error) {
       console.error("Failed to load questions:", error);
       alert("Sorular yüklenemedi");

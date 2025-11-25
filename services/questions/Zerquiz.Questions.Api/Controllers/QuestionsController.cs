@@ -28,7 +28,7 @@ public class QuestionsController : ControllerBase
         var query = _context.Questions.AsQueryable();
 
         if (!string.IsNullOrEmpty(status))
-            query = query.Where(q => q.Status == status);
+            query = query.Where(q => q.QuestionStatus == status);
 
         if (subjectId.HasValue)
             query = query.Where(q => q.SubjectId == subjectId.Value);
@@ -45,7 +45,7 @@ public class QuestionsController : ControllerBase
                 Code = q.Code,
                 FormatType = q.FormatType.Name,
                 Difficulty = q.Difficulty,
-                Status = q.Status,
+                Status = q.QuestionStatus,
                 CreatedAt = q.CreatedAt
             })
             .ToListAsync();
@@ -84,7 +84,7 @@ public class QuestionsController : ControllerBase
             TopicId = question.TopicId,
             Difficulty = question.Difficulty,
             Weight = question.Weight,
-            Status = question.Status,
+            Status = question.QuestionStatus,
             CurrentVersion = currentVersion != null ? new QuestionVersionDto
             {
                 Id = currentVersion.Id,
@@ -116,7 +116,7 @@ public class QuestionsController : ControllerBase
             TopicId = request.TopicId,
             Difficulty = request.Difficulty,
             Weight = request.Weight,
-            Status = "draft",
+            QuestionStatus = "draft",
             TenantId = Guid.NewGuid(), // TODO: Get from context
             CreatedAt = DateTime.UtcNow,
             CreatedBy = null // TODO: Get from current user (system user)
@@ -143,7 +143,7 @@ public class QuestionsController : ControllerBase
             Id = question.Id,
             Code = question.Code,
             Difficulty = question.Difficulty,
-            Status = question.Status,
+            Status = question.QuestionStatus,
             CreatedAt = question.CreatedAt
         };
 

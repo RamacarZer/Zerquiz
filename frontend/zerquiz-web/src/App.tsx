@@ -47,6 +47,19 @@ function App() {
             }
           />
           <Route
+            path="/questions/create"
+            element={
+              <DashboardLayout>
+                <div className="p-8">
+                  <h1 className="text-3xl font-bold">Yeni Soru Oluştur</h1>
+                  <p className="text-gray-600 mt-2">
+                    Soru oluşturma sayfası geliştirilme aşamasında...
+                  </p>
+                </div>
+              </DashboardLayout>
+            }
+          />
+          <Route
             path="/exams"
             element={
               <DashboardLayout>

@@ -28,6 +28,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Auto-migrate database (commented out for now, apply manually if needed)
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<QuestionsDbContext>();
+//     db.Database.Migrate();
+// }
+
 // HTTP pipeline ayarla
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Questions API v1"); });

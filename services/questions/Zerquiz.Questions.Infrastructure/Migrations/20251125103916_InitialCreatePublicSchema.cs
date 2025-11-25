@@ -7,24 +7,41 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Zerquiz.Questions.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialProfessionalCreate : Migration
+    public partial class InitialCreatePublicSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "questions_schema");
-
             migrationBuilder.CreateTable(
                 name: "question_format_types",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    ConfigSchema = table.Column<string>(type: "jsonb", nullable: true)
+                    ConfigSchema = table.Column<string>(type: "jsonb", nullable: true),
+                    IsSystem = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    Status = table.Column<string>(type: "text", nullable: true),
+                    Version = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    Source = table.Column<string>(type: "text", nullable: true),
+                    Metadata = table.Column<JsonDocument>(type: "jsonb", nullable: true),
+                    Tags = table.Column<string[]>(type: "text[]", nullable: true),
+                    IpAddress = table.Column<string>(type: "text", nullable: true),
+                    UserAgent = table.Column<string>(type: "text", nullable: true),
+                    RequestId = table.Column<string>(type: "text", nullable: true),
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -33,13 +50,33 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "question_pedagogical_types",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true)
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    IsSystem = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    Status = table.Column<string>(type: "text", nullable: true),
+                    Version = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    Source = table.Column<string>(type: "text", nullable: true),
+                    Metadata = table.Column<JsonDocument>(type: "jsonb", nullable: true),
+                    Tags = table.Column<string[]>(type: "text[]", nullable: true),
+                    IpAddress = table.Column<string>(type: "text", nullable: true),
+                    UserAgent = table.Column<string>(type: "text", nullable: true),
+                    RequestId = table.Column<string>(type: "text", nullable: true),
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -48,7 +85,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "questions",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -81,7 +117,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     RequestId = table.Column<string>(type: "text", nullable: true),
-                    CorrelationId = table.Column<string>(type: "text", nullable: true)
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -89,14 +127,12 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_questions_question_format_types_FormatTypeId",
                         column: x => x.FormatTypeId,
-                        principalSchema: "questions_schema",
                         principalTable: "question_format_types",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_questions_question_pedagogical_types_PedagogicalTypeId",
                         column: x => x.PedagogicalTypeId,
-                        principalSchema: "questions_schema",
                         principalTable: "question_pedagogical_types",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
@@ -104,7 +140,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "question_reviews",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -131,7 +166,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     RequestId = table.Column<string>(type: "text", nullable: true),
-                    CorrelationId = table.Column<string>(type: "text", nullable: true)
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -139,7 +176,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_question_reviews_questions_QuestionId",
                         column: x => x.QuestionId,
-                        principalSchema: "questions_schema",
                         principalTable: "questions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -147,7 +183,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "question_solutions",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -172,7 +207,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     RequestId = table.Column<string>(type: "text", nullable: true),
-                    CorrelationId = table.Column<string>(type: "text", nullable: true)
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -180,7 +217,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_question_solutions_questions_QuestionId",
                         column: x => x.QuestionId,
-                        principalSchema: "questions_schema",
                         principalTable: "questions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -188,7 +224,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "question_versions",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -205,7 +240,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_question_versions_questions_QuestionId",
                         column: x => x.QuestionId,
-                        principalSchema: "questions_schema",
                         principalTable: "questions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -213,7 +247,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "question_assets",
-                schema: "questions_schema",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -241,7 +274,9 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     UserAgent = table.Column<string>(type: "text", nullable: true),
                     RequestId = table.Column<string>(type: "text", nullable: true),
-                    CorrelationId = table.Column<string>(type: "text", nullable: true)
+                    CorrelationId = table.Column<string>(type: "text", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AppId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,7 +284,6 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_question_assets_question_versions_QuestionVersionId",
                         column: x => x.QuestionVersionId,
-                        principalSchema: "questions_schema",
                         principalTable: "question_versions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -257,155 +291,130 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_assets_QuestionVersionId",
-                schema: "questions_schema",
                 table: "question_assets",
                 column: "QuestionVersionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_assets_StorageKey",
-                schema: "questions_schema",
                 table: "question_assets",
                 column: "StorageKey");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_assets_TenantId_QuestionVersionId",
-                schema: "questions_schema",
                 table: "question_assets",
                 columns: new[] { "TenantId", "QuestionVersionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_format_types_Code",
-                schema: "questions_schema",
                 table: "question_format_types",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_pedagogical_types_Code",
-                schema: "questions_schema",
                 table: "question_pedagogical_types",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_reviews_QuestionId",
-                schema: "questions_schema",
                 table: "question_reviews",
                 column: "QuestionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_reviews_ReviewedAt",
-                schema: "questions_schema",
                 table: "question_reviews",
                 column: "ReviewedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_reviews_TenantId_QuestionId",
-                schema: "questions_schema",
                 table: "question_reviews",
                 columns: new[] { "TenantId", "QuestionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_reviews_TenantId_ReviewerId",
-                schema: "questions_schema",
                 table: "question_reviews",
                 columns: new[] { "TenantId", "ReviewerId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_reviews_TenantId_ReviewStatus",
-                schema: "questions_schema",
                 table: "question_reviews",
                 columns: new[] { "TenantId", "ReviewStatus" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_solutions_QuestionId",
-                schema: "questions_schema",
                 table: "question_solutions",
                 column: "QuestionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_solutions_TenantId_AuthorId",
-                schema: "questions_schema",
                 table: "question_solutions",
                 columns: new[] { "TenantId", "AuthorId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_solutions_TenantId_QuestionId",
-                schema: "questions_schema",
                 table: "question_solutions",
                 columns: new[] { "TenantId", "QuestionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_versions_CreatedAt",
-                schema: "questions_schema",
                 table: "question_versions",
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_versions_QuestionId_VersionNumber",
-                schema: "questions_schema",
                 table: "question_versions",
                 columns: new[] { "QuestionId", "VersionNumber" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_question_versions_TenantId",
-                schema: "questions_schema",
                 table: "question_versions",
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_FormatTypeId",
-                schema: "questions_schema",
                 table: "questions",
                 column: "FormatTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_PedagogicalTypeId",
-                schema: "questions_schema",
                 table: "questions",
                 column: "PedagogicalTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_PublishedAt",
-                schema: "questions_schema",
                 table: "questions",
                 column: "PublishedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_Code",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_CurriculumId",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "CurriculumId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_Difficulty",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "Difficulty" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_QuestionStatus",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "QuestionStatus" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_SubjectId",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "SubjectId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_questions_TenantId_TopicId",
-                schema: "questions_schema",
                 table: "questions",
                 columns: new[] { "TenantId", "TopicId" });
         }
@@ -414,32 +423,25 @@ namespace Zerquiz.Questions.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "question_assets",
-                schema: "questions_schema");
+                name: "question_assets");
 
             migrationBuilder.DropTable(
-                name: "question_reviews",
-                schema: "questions_schema");
+                name: "question_reviews");
 
             migrationBuilder.DropTable(
-                name: "question_solutions",
-                schema: "questions_schema");
+                name: "question_solutions");
 
             migrationBuilder.DropTable(
-                name: "question_versions",
-                schema: "questions_schema");
+                name: "question_versions");
 
             migrationBuilder.DropTable(
-                name: "questions",
-                schema: "questions_schema");
+                name: "questions");
 
             migrationBuilder.DropTable(
-                name: "question_format_types",
-                schema: "questions_schema");
+                name: "question_format_types");
 
             migrationBuilder.DropTable(
-                name: "question_pedagogical_types",
-                schema: "questions_schema");
+                name: "question_pedagogical_types");
         }
     }
 }
