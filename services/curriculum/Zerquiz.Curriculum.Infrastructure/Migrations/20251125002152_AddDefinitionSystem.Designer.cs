@@ -3,6 +3,7 @@ using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Zerquiz.Curriculum.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Zerquiz.Curriculum.Infrastructure.Persistence;
 namespace Zerquiz.Curriculum.Infrastructure.Migrations
 {
     [DbContext(typeof(CurriculumDbContext))]
-    partial class CurriculumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251125002152_AddDefinitionSystem")]
+    partial class AddDefinitionSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,9 +161,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("EducationModelId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
 
@@ -233,8 +233,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EducationModelId");
-
                     b.HasIndex("GroupId");
 
                     b.HasIndex("ParentId");
@@ -281,9 +279,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
 
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
-
-                    b.Property<Guid?>("EducationModelId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Icon")
                         .HasColumnType("text");
@@ -336,8 +331,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EducationModelId");
 
                     b.HasIndex("TenantId", "Code")
                         .IsUnique();
@@ -948,11 +941,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
 
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.Definition", b =>
                 {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.EducationModel", "EducationModel")
-                        .WithMany()
-                        .HasForeignKey("EducationModelId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", "Group")
                         .WithMany("Definitions")
                         .HasForeignKey("GroupId")
@@ -964,21 +952,9 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("EducationModel");
-
                     b.Navigation("Group");
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", b =>
-                {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.EducationModel", "EducationModel")
-                        .WithMany()
-                        .HasForeignKey("EducationModelId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("EducationModel");
                 });
 
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroupTranslation", b =>

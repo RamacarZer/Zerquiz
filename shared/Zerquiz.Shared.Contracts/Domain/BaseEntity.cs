@@ -39,6 +39,10 @@ public abstract class BaseEntity
     public string? UserAgent { get; set; }
     public string? RequestId { get; set; }
     public string? CorrelationId { get; set; } // For distributed tracing
+    
+    // Organization & Module Context
+    public Guid? OrganizationId { get; set; }
+    public Guid? AppId { get; set; } // Application/Module ID
 
     // Soft Delete Check
     public bool IsDeleted => DeletedAt.HasValue;

@@ -92,6 +92,14 @@ export interface CreateLearningOutcomeRequest {
   details?: string;
 }
 
+// Education Models - Standalone exports
+export const getEducationModels = async (): Promise<EducationModelDto[]> => {
+  const response = await apiClient.get<ApiResponse<EducationModelDto[]>>(
+    "/curriculum/educationmodels"
+  );
+  return response.data.data || [];
+};
+
 export const curriculumService = {
   // Education Models
   getEducationModels: async () => {

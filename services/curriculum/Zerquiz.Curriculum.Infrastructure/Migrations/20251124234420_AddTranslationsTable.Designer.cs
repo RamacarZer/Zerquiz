@@ -3,6 +3,7 @@ using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Zerquiz.Curriculum.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Zerquiz.Curriculum.Infrastructure.Persistence;
 namespace Zerquiz.Curriculum.Infrastructure.Migrations
 {
     [DbContext(typeof(CurriculumDbContext))]
-    partial class CurriculumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124234420_AddTranslationsTable")]
+    partial class AddTranslationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("CorrelationId")
@@ -69,9 +69,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("RequestId")
                         .HasColumnType("text");
@@ -117,347 +114,10 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                     b.ToTable("curricula", "curriculum_schema");
                 });
 
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.Definition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.PrimitiveCollection<string[]>("AltNames")
-                        .HasColumnType("text[]");
-
-                    b.Property<Guid?>("AppId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CorrelationId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("EducationModelId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("GroupKey")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Icon")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSystem")
-                        .HasColumnType("boolean");
-
-                    b.Property<JsonDocument>("Metadata")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RequestId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Source")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.PrimitiveCollection<string[]>("Tags")
-                        .HasColumnType("text[]");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserAgent")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EducationModelId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("ParentId");
-
-                    b.HasIndex("TenantId", "GroupId");
-
-                    b.HasIndex("TenantId", "GroupKey", "Code")
-                        .IsUnique();
-
-                    b.ToTable("definitions", "curriculum_schema");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("CorrelationId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("EducationModelId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Icon")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSystem")
-                        .HasColumnType("boolean");
-
-                    b.Property<JsonDocument>("Metadata")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RequestId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Source")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.PrimitiveCollection<string[]>("Tags")
-                        .HasColumnType("text[]");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserAgent")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EducationModelId");
-
-                    b.HasIndex("TenantId", "Code")
-                        .IsUnique();
-
-                    b.ToTable("definition_groups", "curriculum_schema");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroupTranslation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("DefinitionGroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LanguageCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DefinitionGroupId");
-
-                    b.HasIndex("TenantId", "DefinitionGroupId", "LanguageCode")
-                        .IsUnique();
-
-                    b.ToTable("definition_group_translations", "curriculum_schema");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionTranslation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("DefinitionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LanguageCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DefinitionId");
-
-                    b.HasIndex("TenantId", "DefinitionId", "LanguageCode")
-                        .IsUnique();
-
-                    b.ToTable("definition_translations", "curriculum_schema");
-                });
-
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.EducationModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -502,9 +162,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("RequestId")
                         .HasColumnType("text");
 
@@ -544,9 +201,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -591,9 +245,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
 
                     b.Property<JsonDocument>("Metadata")
                         .HasColumnType("jsonb");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("RequestId")
                         .HasColumnType("text");
@@ -648,9 +299,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AppId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -694,9 +342,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("RequestId")
                         .HasColumnType("text");
 
@@ -736,9 +381,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AppId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Code")
@@ -783,9 +425,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("ParentTopicId")
                         .HasColumnType("uuid");
@@ -837,9 +476,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AppId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -887,9 +523,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
 
                     b.Property<JsonDocument>("Metadata")
                         .HasColumnType("jsonb");
-
-                    b.Property<Guid?>("OrganizationId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("RequestId")
                         .HasColumnType("text");
@@ -946,63 +579,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
                     b.Navigation("EducationModel");
                 });
 
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.Definition", b =>
-                {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.EducationModel", "EducationModel")
-                        .WithMany()
-                        .HasForeignKey("EducationModelId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", "Group")
-                        .WithMany("Definitions")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.Definition", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("EducationModel");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", b =>
-                {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.EducationModel", "EducationModel")
-                        .WithMany()
-                        .HasForeignKey("EducationModelId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("EducationModel");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroupTranslation", b =>
-                {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", "DefinitionGroup")
-                        .WithMany("Translations")
-                        .HasForeignKey("DefinitionGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DefinitionGroup");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionTranslation", b =>
-                {
-                    b.HasOne("Zerquiz.Curriculum.Domain.Entities.Definition", "Definition")
-                        .WithMany("Translations")
-                        .HasForeignKey("DefinitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Definition");
-                });
-
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.LearningOutcome", b =>
                 {
                     b.HasOne("Zerquiz.Curriculum.Domain.Entities.Curriculum", "Curriculum")
@@ -1050,20 +626,6 @@ namespace Zerquiz.Curriculum.Infrastructure.Migrations
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.Curriculum", b =>
                 {
                     b.Navigation("LearningOutcomes");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.Definition", b =>
-                {
-                    b.Navigation("Children");
-
-                    b.Navigation("Translations");
-                });
-
-            modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.DefinitionGroup", b =>
-                {
-                    b.Navigation("Definitions");
-
-                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("Zerquiz.Curriculum.Domain.Entities.EducationModel", b =>

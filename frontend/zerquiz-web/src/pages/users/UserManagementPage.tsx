@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import UserCreateModal from "../../components/modals/UserCreateModal";
 import UserEditModal from "../../components/modals/UserEditModal";
+import UserViewModal from "../../components/modals/UserViewModal";
 import {
   getUsers,
   getRoles,
@@ -27,7 +27,9 @@ const UserManagementPage: React.FC = () => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -347,12 +349,15 @@ const UserManagementPage: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right text-sm space-x-2">
-                  <Link
-                    to={`/users/${user.id}`}
+                  <button
+                    onClick={() => {
+                      setViewingUserId(user.id);
+                      setShowViewModal(true);
+                    }}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     👁️ Görüntüle
-                  </Link>
+                  </button>
                   <button
                     onClick={() => {
                       setEditingUserId(user.id);
@@ -405,6 +410,20 @@ const UserManagementPage: React.FC = () => {
           setEditingUserId(null);
         }}
         onSuccess={loadData}
+      />
+
+      {/* View Modal */}
+      <UserViewModal
+        isOpen={showViewModal}
+        userId={viewingUserId}
+        onClose={() => {
+          setShowViewModal(false);
+          setViewingUserId(null);
+        }}
+        onEdit={(userId) => {
+          setEditingUserId(userId);
+          setShowEditModal(true);
+        }}
       />
     </div>
   );

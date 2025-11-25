@@ -49,10 +49,8 @@ const MENU_ITEMS: MenuItem[] = [
     icon: '📚',
     path: '/curriculum',
     subItems: [
+      { id: 'definitions', label: 'Müfredat Yönetimi', icon: '🎯', path: '/curriculum' },
       { id: 'education-models', label: 'Eğitim Modelleri', icon: '🎓', path: '/curriculum/education-models' },
-      { id: 'subjects', label: 'Branşlar', icon: '📖', path: '/curriculum/subjects' },
-      { id: 'topics', label: 'Konular', icon: '📝', path: '/curriculum/topics' },
-      { id: 'learning-outcomes', label: 'Kazanımlar', icon: '🎯', path: '/curriculum/learning-outcomes' },
     ],
   },
   {
