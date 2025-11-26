@@ -130,6 +130,34 @@ foreach ($ep in $questionsEndpoints) {
 Write-Host ""
 
 # ============================================================================
+# PRESENTATION SERVICE
+# ============================================================================
+Write-Host ""
+Write-Host "[*] PRESENTATION SERVICE" -ForegroundColor Cyan
+Write-Host "----------------------------------------" -ForegroundColor DarkGray
+
+$presentationEndpoints = @(
+    @{ Name = "Demo Sunumlar (3 adet)"; Url = "http://localhost:5008/api/seed/demo-presentations" }
+)
+
+foreach ($ep in $presentationEndpoints) {
+    try {
+        Write-Host "  ➜ $($ep.Name)..." -NoNewline
+        $response = Invoke-RestMethod -Method POST -Uri $ep.Url -TimeoutSec 15 -ErrorAction Stop
+        Write-Host " [OK] Basarili" -ForegroundColor Green
+        if ($response.count) { Write-Host "     -> $($response.count) sunum eklendi" -ForegroundColor DarkGreen }
+    } catch {
+        if ($_.Exception.Response.StatusCode -eq 409 -or $_ -like "*already*") {
+            Write-Host " [!] Zaten mevcut" -ForegroundColor Yellow
+        } else {
+            Write-Host " [X] Hata: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+Write-Host ""
+
+# ============================================================================
 # OZET
 # ============================================================================
 Write-Host ""
@@ -142,5 +170,6 @@ Write-Host "   - Kullanicilar: /users" -ForegroundColor White
 Write-Host "   - Tenantlar: /tenants" -ForegroundColor White
 Write-Host "   - Mufredat: /curriculum" -ForegroundColor White
 Write-Host "   - Sorular: /questions" -ForegroundColor White
+Write-Host "   - Sunumlar: /presentations" -ForegroundColor White
 Write-Host ""
 

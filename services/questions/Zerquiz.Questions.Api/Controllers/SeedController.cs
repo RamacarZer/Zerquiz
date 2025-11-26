@@ -18,26 +18,31 @@ public class SeedController : ControllerBase
         _logger = logger;
     }
 
+    [HttpPost("clear-question-types")]
+    public async Task<IActionResult> ClearQuestionTypes()
+    {
+        try
+        {
+            _context.QuestionFormatTypes.RemoveRange(_context.QuestionFormatTypes);
+            _context.QuestionPedagogicalTypes.RemoveRange(_context.QuestionPedagogicalTypes);
+            _context.QuestionDifficultyLevels.RemoveRange(_context.QuestionDifficultyLevels);
+            _context.QuestionPresentationTypes.RemoveRange(_context.QuestionPresentationTypes);
+            await _context.SaveChangesAsync();
+            
+            return Ok(new { message = "Question types cleared successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing question types");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
     [HttpPost("question-types")]
     public async Task<IActionResult> SeedQuestionTypes()
     {
         try
         {
-            // Check if already seeded (only active items)
-            var hasFormats = await _context.QuestionFormatTypes.AnyAsync(f => f.IsActive);
-            var hasDifficulties = await _context.QuestionDifficultyLevels.AnyAsync(d => d.IsActive);
-            var hasPresentations = await _context.QuestionPresentationTypes.AnyAsync(p => p.IsActive);
-            
-            if (hasFormats && hasDifficulties && hasPresentations)
-            {
-                return Ok(new { 
-                    message = "Question types already seeded",
-                    formats = await _context.QuestionFormatTypes.CountAsync(f => f.IsActive),
-                    difficulties = await _context.QuestionDifficultyLevels.CountAsync(d => d.IsActive),
-                    presentations = await _context.QuestionPresentationTypes.CountAsync(p => p.IsActive)
-                });
-            }
-            
             // Clear existing data to avoid duplicates
             _context.QuestionFormatTypes.RemoveRange(_context.QuestionFormatTypes);
             _context.QuestionPedagogicalTypes.RemoveRange(_context.QuestionPedagogicalTypes);
@@ -486,188 +491,8 @@ public class SeedController : ControllerBase
                 }
             };
 
-            // Seed Presentation Types
-            var presentationTypes = new[]
-            {
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "written_text",
-                    Name = "Yazılı Sorusu",
-                    Description = "Öğrenci yazılı metin olarak cevap verir",
-                    AnswerType = "text_input",
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 1
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "multiple_choice",
-                    Name = "Şıklı",
-                    Description = "Çoktan seçmeli, şık isimleri görünür",
-                    AnswerType = "options",
-                    MinOptions = 2,
-                    MaxOptions = 8,
-                    HideOptionLabelsInPreview = false,
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 2
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "multiple_choice_hidden",
-                    Name = "Şıklı (Önizlemede Şık İsimleri Gizli)",
-                    Description = "Çoktan seçmeli, önizlemede A,B,C,D gizli",
-                    AnswerType = "options",
-                    MinOptions = 2,
-                    MaxOptions = 8,
-                    HideOptionLabelsInPreview = true,
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 3
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "no_answer",
-                    Name = "Cevapsız",
-                    Description = "Sadece bilgi amaçlı, cevap gerekmiyor",
-                    AnswerType = "none",
-                    RequiresAnswer = false,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 4
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "true_false",
-                    Name = "Doğru/Yanlış",
-                    Description = "İki seçenekli: Doğru veya Yanlış",
-                    AnswerType = "boolean",
-                    MinOptions = 2,
-                    MaxOptions = 2,
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 5
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "fill_blank",
-                    Name = "Boşluk Doldurma",
-                    Description = "Metin içindeki boşlukları doldurma",
-                    AnswerType = "text_input",
-                    RequiresAnswer = true,
-                    ConfigSchema = "{\"allowMultipleBlanks\": true}",
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 6
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "matching",
-                    Name = "Eşleştirme",
-                    Description = "İki liste arasında eşleştirme yapma",
-                    AnswerType = "matching",
-                    MinOptions = 2,
-                    MaxOptions = 10,
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 7
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "ordering",
-                    Name = "Sıralama",
-                    Description = "Öğeleri doğru sıraya dizme",
-                    AnswerType = "ordering",
-                    MinOptions = 2,
-                    MaxOptions = 10,
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 8
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "synonym",
-                    Name = "Eş Anlam",
-                    Description = "Eş anlamlı kelimeleri bulma/eşleştirme",
-                    AnswerType = "matching",
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 9
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "antonym",
-                    Name = "Zıt Anlam",
-                    Description = "Zıt anlamlı kelimeleri bulma/eşleştirme",
-                    AnswerType = "matching",
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 10
-                },
-                new QuestionPresentationType
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    Code = "homophone",
-                    Name = "Eş Ses / Zıt Ses",
-                    Description = "Sessel benzerlik/farklılık soruları",
-                    AnswerType = "matching",
-                    RequiresAnswer = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                    IsActive = true,
-                    IsSystem = true,
-                    DisplayOrder = 11
-                }
-            };
+            // Seed Presentation Types - 65+ COMPREHENSIVE QUESTION TYPES
+            var presentationTypes = PresentationTypesSeedData.GetAllPresentationTypes(tenantId, now);
 
             await _context.QuestionFormatTypes.AddRangeAsync(formatTypes);
             await _context.QuestionPedagogicalTypes.AddRangeAsync(pedagogicalTypes);

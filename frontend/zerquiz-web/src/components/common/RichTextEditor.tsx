@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import katex from "katex";
 import "katex/dist/katex.min.css";
 
 interface RichTextEditorProps {
@@ -22,53 +23,67 @@ export default function RichTextEditor({
   const previewRef = useRef<HTMLDivElement>(null);
   const [showLatexHelp, setShowLatexHelp] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  
+
   // Render LaTeX in preview
   useEffect(() => {
-    if (showPreview && previewRef.current && typeof window !== 'undefined') {
-      const katex = require('katex');
+    if (showPreview && previewRef.current) {
       const content = value || placeholder;
-      
+
       // Replace LaTeX with rendered version
-      const renderedContent = content.replace(/\\\((.*?)\\\)/g, (match: string, latex: string) => {
-        try {
-          return katex.renderToString(latex, { throwOnError: false, displayMode: false });
-        } catch {
-          return match;
-        }
-      }).replace(/\\\[(.*?)\\\]/g, (match: string, latex: string) => {
-        try {
-          return katex.renderToString(latex, { throwOnError: false, displayMode: true });
-        } catch {
-          return match;
-        }
-      });
-      
+      const renderedContent = content
+        .replace(/\\\((.*?)\\\)/g, (match: string, latex: string) => {
+          try {
+            return katex.renderToString(latex, {
+              throwOnError: false,
+              displayMode: false,
+            });
+          } catch {
+            return match;
+          }
+        })
+        .replace(/\\\[(.*?)\\\]/g, (match: string, latex: string) => {
+          try {
+            return katex.renderToString(latex, {
+              throwOnError: false,
+              displayMode: true,
+            });
+          } catch {
+            return match;
+          }
+        });
+
       previewRef.current.innerHTML = renderedContent
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/__(.*?)__/g, '<u>$1</u>')
-        .replace(/\n/g, '<br>');
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        .replace(/__(.*?)__/g, "<u>$1</u>")
+        .replace(/\n/g, "<br>");
     }
   }, [value, showPreview, placeholder]);
 
   const insertLatex = (displayMode: boolean = false) => {
-    const examples = displayMode 
+    const examples = displayMode
       ? "Örnekler:\n• x^2 + y^2 = z^2\n• \\frac{a}{b}\n• \\sum_{i=1}^{n} i\n• \\int_{0}^{\\infty} x dx"
       : "Örnekler: x^2, \\frac{a}{b}, \\sqrt{x}";
-    const latex = prompt(`${displayMode ? 'Blok' : 'Satır içi'} LaTeX formülü:\n\n${examples}`);
-    
+    const latex = prompt(
+      `${displayMode ? "Blok" : "Satır içi"} LaTeX formülü:\n\n${examples}`
+    );
+
     if (latex && textareaRef.current) {
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
       const wrapper = displayMode ? [`\\[`, `\\]`] : [`\\(`, `\\)`];
       const newValue =
-        value.substring(0, start) + wrapper[0] + latex + wrapper[1] + value.substring(end);
+        value.substring(0, start) +
+        wrapper[0] +
+        latex +
+        wrapper[1] +
+        value.substring(end);
       onChange(newValue);
 
       setTimeout(() => {
         if (textareaRef.current) {
-          const newPos = start + latex.length + wrapper[0].length + wrapper[1].length;
+          const newPos =
+            start + latex.length + wrapper[0].length + wrapper[1].length;
           textareaRef.current.selectionStart = newPos;
           textareaRef.current.selectionEnd = newPos;
           textareaRef.current.focus();
@@ -129,9 +144,9 @@ export default function RichTextEditor({
             U
           </button>
         </div>
-        
+
         <div className="w-px h-6 bg-gray-400"></div>
-        
+
         <div className="flex gap-1">
           <button
             type="button"
@@ -153,9 +168,9 @@ export default function RichTextEditor({
             type="button"
             onClick={() => setShowPreview(!showPreview)}
             className={`px-3 py-1.5 border rounded transition-colors ${
-              showPreview 
-                ? 'bg-green-600 text-white border-green-700 hover:bg-green-700' 
-                : 'bg-white border-gray-300 hover:bg-gray-100'
+              showPreview
+                ? "bg-green-600 text-white border-green-700 hover:bg-green-700"
+                : "bg-white border-gray-300 hover:bg-gray-100"
             }`}
             title="Önizleme"
           >
@@ -217,7 +232,9 @@ export default function RichTextEditor({
 
       <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
         <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
-        Metni seçip <strong>B/I/U</strong> ile biçimlendirin | <strong>ƒx</strong> satır içi LaTeX | <strong>ƒ(x)</strong> blok LaTeX | <strong>👁️</strong> önizleme
+        Metni seçip <strong>B/I/U</strong> ile biçimlendirin |{" "}
+        <strong>ƒx</strong> satır içi LaTeX | <strong>ƒ(x)</strong> blok LaTeX |{" "}
+        <strong>👁️</strong> önizleme
       </p>
     </div>
   );

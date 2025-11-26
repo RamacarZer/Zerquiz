@@ -18,13 +18,22 @@ import TenantCreatePage from "./pages/tenants/TenantCreatePage";
 import TenantDetailPage from "./pages/tenants/TenantDetailPage";
 import TenantEditPage from "./pages/tenants/TenantEditPage";
 import { LicensePackagesPage } from "./pages/licenses/LicensePackagesPage";
+import PresentationListPage from "./pages/presentation/PresentationListPage";
+import PresentationBuilderPage from "./pages/presentation/PresentationBuilderPage";
+import PresentationPlayerPage from "./pages/presentation/PresentationPlayerPage";
+import QuestionBuilderPage from "./pages/questions/QuestionBuilderPage";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -49,6 +58,10 @@ function App() {
           />
           <Route
             path="/questions/create"
+            element={<QuestionBuilderPage />}
+          />
+          <Route
+            path="/questions/create-legacy"
             element={
               <DashboardLayout>
                 <QuestionCreatePage />
@@ -158,6 +171,26 @@ function App() {
                 <EducationModelManagementPage />
               </DashboardLayout>
             }
+          />
+          <Route
+            path="/presentations"
+            element={
+              <DashboardLayout>
+                <PresentationListPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/presentations/create"
+            element={<PresentationBuilderPage />}
+          />
+          <Route
+            path="/presentations/:id/edit"
+            element={<PresentationBuilderPage />}
+          />
+          <Route
+            path="/presentations/:id/play"
+            element={<PresentationPlayerPage />}
           />
           <Route
             path="/grading"

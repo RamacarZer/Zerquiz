@@ -60,6 +60,12 @@ const MENU_ITEMS: MenuItem[] = [
     path: '/questions',
   },
   {
+    id: 'presentations',
+    label: 'Sunumlar',
+    icon: '🎤',
+    path: '/presentations',
+  },
+  {
     id: 'exams',
     label: 'Sınavlar',
     icon: '📄',

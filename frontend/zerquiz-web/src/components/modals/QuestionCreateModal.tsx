@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { questionService } from '../../services/api/questionService';
 import { curriculumService } from '../../services/api/curriculumService';
 import RichTextEditor from '../common/RichTextEditor';
+import DynamicAnswerFields from '../questions/DynamicAnswerFields';
 import type {
   QuestionFormatType,
   QuestionPedagogicalType,
@@ -9,6 +10,7 @@ import type {
   QuestionContent
 } from '../../types/question.types';
 import type { Subject, Topic, LearningOutcome } from '../../types/curriculum.types';
+import type { QuestionPresentationType } from '../../types/presentation.types';
 
 interface QuestionCreateModalProps {
   isOpen: boolean;
@@ -30,7 +32,7 @@ export const QuestionCreateModal: React.FC<QuestionCreateModalProps> = ({
   // Data sources
   const [formatTypes, setFormatTypes] = useState<QuestionFormatType[]>([]);
   const [pedagogicalTypes, setPedagogicalTypes] = useState<QuestionPedagogicalType[]>([]);
-  const [presentationTypes, setPresentationTypes] = useState<any[]>([]);
+  const [presentationTypes, setPresentationTypes] = useState<QuestionPresentationType[]>([]);
   const [difficultyLevels, setDifficultyLevels] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -51,6 +53,20 @@ export const QuestionCreateModal: React.FC<QuestionCreateModalProps> = ({
       correctAnswers: []
     }
   });
+
+  // Additional answer data
+  const [selectedPresentationTypeId, setSelectedPresentationTypeId] = useState<string>('');
+  const [options, setOptions] = useState([
+    { key: 'A', text: '', isCorrect: false },
+    { key: 'B', text: '', isCorrect: false },
+    { key: 'C', text: '', isCorrect: false },
+    { key: 'D', text: '', isCorrect: false }
+  ]);
+  const [textAnswer, setTextAnswer] = useState<string>('');
+  const [numericAnswer, setNumericAnswer] = useState<number>(0);
+
+  // Get selected presentation type
+  const selectedPresentationType = presentationTypes.find(t => t.id === selectedPresentationTypeId) || null;
 
   // Load initial data
   useEffect(() => {
@@ -395,67 +411,68 @@ export const QuestionCreateModal: React.FC<QuestionCreateModalProps> = ({
               <div className="space-y-4">
                 {/* Soru Sunum Şekli */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Soru Sunum Şekli
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Soru Sunum Şekli <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value=""
+                    value={selectedPresentationTypeId}
                     onChange={(e) => {
-                      // Handle presentation type change
+                      setSelectedPresentationTypeId(e.target.value);
+                      // Reset options based on type
+                      const type = presentationTypes.find(t => t.id === e.target.value);
+                      if (type) {
+                        const minOpts = type.minOptions || 2;
+                        const newOptions = Array.from({ length: minOpts }, (_, i) => ({
+                          key: String.fromCharCode(65 + i),
+                          text: '',
+                          isCorrect: false
+                        }));
+                        setOptions(newOptions);
+                      }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Seçiniz</option>
+                    <option value="">Seçiniz ({presentationTypes.length} tip mevcut)</option>
                     {presentationTypes.map((type) => (
                       <option key={type.id} value={type.id}>
-                        {type.name}
+                        {type.name} ({type.answerType})
                       </option>
                     ))}
                   </select>
+                  {selectedPresentationType && (
+                    <p className="mt-1 text-xs text-blue-600">
+                      ✓ {selectedPresentationType.description}
+                    </p>
+                  )}
                 </div>
 
                 <RichTextEditor
                   label="Soru Metni"
                   value={formData.content?.stem?.text || ''}
                   onChange={(content) => updateContent({ stem: { text: content } })}
-                  placeholder="Soru metnini buraya yazın..."
+                  placeholder="Soru metnini buraya yazın... (Markdown ve LaTeX desteklenir)"
                   height={200}
                   required
                 />
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seçenekler <span className="text-red-500">*</span>
-                  </label>
-                  <div className="space-y-2">
-                    {formData.content?.options?.map((option, index) => (
-                      <div key={option.key} className="flex items-start space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.content?.correctAnswers?.includes(option.key)}
-                          onChange={() => toggleCorrectAnswer(option.key)}
-                          className="mt-2 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          title="Doğru cevap olarak işaretle"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-700 w-6">{option.key})</span>
-                            <input
-                              type="text"
-                              value={option.text || ''}
-                              onChange={(e) => updateOption(index, e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder={`${option.key} şıkkı...`}
-                              required
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500">
-                    💡 Doğru cevap(lar)ı işaretlemek için sol taraftaki kutucukları işaretleyin
-                  </p>
+                {/* Dynamic Answer Fields */}
+                <div className="border-t pt-4">
+                  <DynamicAnswerFields
+                    presentationType={selectedPresentationType}
+                    options={options}
+                    onOptionsChange={(newOptions) => {
+                      setOptions(newOptions);
+                      // Sync with formData
+                      updateContent({
+                        options: newOptions.map(o => ({ key: o.key, text: o.text })),
+                        correctAnswers: newOptions.filter(o => o.isCorrect).map(o => o.key)
+                      });
+                    }}
+                    textAnswer={textAnswer}
+                    onTextAnswerChange={setTextAnswer}
+                    numericAnswer={numericAnswer}
+                    onNumericAnswerChange={setNumericAnswer}
+                  />
                 </div>
               </div>
             )}

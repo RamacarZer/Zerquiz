@@ -1,0 +1,6 @@
+@Zerquiz.Presentation.Api_HostAddress = http://localhost:5177
+
+GET {{Zerquiz.Presentation.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

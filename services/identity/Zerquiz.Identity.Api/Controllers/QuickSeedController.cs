@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Zerquiz.Identity.Domain.Entities;
 using Zerquiz.Identity.Infrastructure.Persistence;
 
 namespace Zerquiz.Identity.Api.Controllers;
@@ -24,49 +25,87 @@ public class QuickSeedController : ControllerBase
             var now = DateTime.UtcNow;
 
             // Roles
-            if (!_context.Roles.Any())
+            if (!await _context.Roles.AnyAsync())
             {
                 var roles = new[]
                 {
-                    new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "SuperAdmin", NormalizedName = "SUPERADMIN" },
-                    new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN" },
-                    new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Teacher", NormalizedName = "TEACHER" },
-                    new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Student", NormalizedName = "STUDENT" }
+                    new Role { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
+                        Name = "SuperAdmin", 
+                        Description = "Super Administrator",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    },
+                    new Role { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
+                        Name = "Admin", 
+                        Description = "Administrator",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    },
+                    new Role { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
+                        Name = "Teacher", 
+                        Description = "Teacher/Instructor",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    },
+                    new Role { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
+                        Name = "Student", 
+                        Description = "Student",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    }
                 };
-                _context.Roles.AddRange(roles);
+                await _context.Roles.AddRangeAsync(roles);
             }
 
             // Users (simplified - without password hashing for demo)
-            if (!_context.Users.Any())
+            if (!await _context.Users.AnyAsync())
             {
                 var users = new[]
                 {
-                    new IdentityUser { 
-                        Id = Guid.NewGuid().ToString(), 
-                        UserName = "admin@zerquiz.com", 
-                        NormalizedUserName = "ADMIN@ZERQUIZ.COM",
+                    new User { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
                         Email = "admin@zerquiz.com",
-                        NormalizedEmail = "ADMIN@ZERQUIZ.COM",
-                        EmailConfirmed = true
+                        FirstName = "Admin",
+                        LastName = "User",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
                     },
-                    new IdentityUser { 
-                        Id = Guid.NewGuid().ToString(), 
-                        UserName = "teacher@zerquiz.com", 
-                        NormalizedUserName = "TEACHER@ZERQUIZ.COM",
+                    new User { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
                         Email = "teacher@zerquiz.com",
-                        NormalizedEmail = "TEACHER@ZERQUIZ.COM",
-                        EmailConfirmed = true
+                        FirstName = "Teacher",
+                        LastName = "User",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
                     },
-                    new IdentityUser { 
-                        Id = Guid.NewGuid().ToString(), 
-                        UserName = "student@zerquiz.com", 
-                        NormalizedUserName = "STUDENT@ZERQUIZ.COM",
+                    new User { 
+                        Id = Guid.NewGuid(), 
+                        TenantId = tenantId,
                         Email = "student@zerquiz.com",
-                        NormalizedEmail = "STUDENT@ZERQUIZ.COM",
-                        EmailConfirmed = true
+                        FirstName = "Student",
+                        LastName = "User",
+                        IsActive = true,
+                        CreatedAt = now,
+                        UpdatedAt = now
                     }
                 };
-                _context.Users.AddRange(users);
+                await _context.Users.AddRangeAsync(users);
             }
 
             await _context.SaveChangesAsync();
@@ -74,13 +113,13 @@ public class QuickSeedController : ControllerBase
             return Ok(new 
             { 
                 message = "Quick seed completed!",
-                roles = _context.Roles.Count(),
-                users = _context.Users.Count()
+                roles = await _context.Roles.CountAsync(),
+                users = await _context.Users.CountAsync()
             });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
+            return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message, stack = ex.StackTrace });
         }
     }
 }

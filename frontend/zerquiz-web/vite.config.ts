@@ -40,6 +40,18 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/royalty/, "/api"),
       },
+      "/api/presentations": {
+        target: "http://localhost:5008",
+        changeOrigin: true,
+      },
+      "/api/slides": {
+        target: "http://localhost:5008",
+        changeOrigin: true,
+      },
+      "/api/sessions": {
+        target: "http://localhost:5008",
+        changeOrigin: true,
+      },
     },
   },
 });
