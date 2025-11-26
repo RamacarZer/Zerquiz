@@ -15,14 +15,14 @@ if ($KillExisting) {
 }
 
 $services = @(
-    @{ Name = "Core";       Emoji = "📦"; Port = 5001; Path = "services\core\Zerquiz.Core.Api";       Url = "http://localhost:5001/swagger"; },
-    @{ Name = "Identity";   Emoji = "🔐"; Port = 5002; Path = "services\identity\Zerquiz.Identity.Api"; Url = "http://localhost:5002/swagger"; },
-    @{ Name = "Curriculum"; Emoji = "📚"; Port = 5003; Path = "services\curriculum\Zerquiz.Curriculum.Api"; Url = "http://localhost:5003/swagger"; },
-    @{ Name = "Questions";  Emoji = "❓"; Port = 5004; Path = "services\questions\Zerquiz.Questions.Api"; Url = "http://localhost:5004/swagger"; },
-    @{ Name = "Exams";      Emoji = "📝"; Port = 5005; Path = "services\exams\Zerquiz.Exams.Api";      Url = "http://localhost:5005/swagger"; },
-    @{ Name = "Grading";    Emoji = "📊"; Port = 5006; Path = "services\grading\Zerquiz.Grading.Api";  Url = "http://localhost:5006/swagger"; },
-    @{ Name = "Royalty";    Emoji = "💰"; Port = 5007; Path = "services\royalty\Zerquiz.Royalty.Api";  Url = "http://localhost:5007/swagger"; },
-    @{ Name = "Gateway";    Emoji = "🌐"; Port = 5000; Path = "gateway\Zerquiz.Gateway";              Url = "http://localhost:5000"; }
+    @{ Name = "Core";       Icon = "[CORE]"; Port = 5001; Path = "services\core\Zerquiz.Core.Api";       Url = "http://localhost:5001/swagger"; },
+    @{ Name = "Identity";   Icon = "[AUTH]"; Port = 5002; Path = "services\identity\Zerquiz.Identity.Api"; Url = "http://localhost:5002/swagger"; },
+    @{ Name = "Curriculum"; Icon = "[CURR]"; Port = 5003; Path = "services\curriculum\Zerquiz.Curriculum.Api"; Url = "http://localhost:5003/swagger"; },
+    @{ Name = "Questions";  Icon = "[QUES]"; Port = 5004; Path = "services\questions\Zerquiz.Questions.Api"; Url = "http://localhost:5004/swagger"; },
+    @{ Name = "Exams";      Icon = "[EXAM]"; Port = 5005; Path = "services\exams\Zerquiz.Exams.Api";      Url = "http://localhost:5005/swagger"; },
+    @{ Name = "Grading";    Icon = "[GRAD]"; Port = 5006; Path = "services\grading\Zerquiz.Grading.Api";  Url = "http://localhost:5006/swagger"; },
+    @{ Name = "Royalty";    Icon = "[ROYA]"; Port = 5007; Path = "services\royalty\Zerquiz.Royalty.Api";  Url = "http://localhost:5007/swagger"; },
+    @{ Name = "Gateway";    Icon = "[GATE]"; Port = 5000; Path = "gateway\Zerquiz.Gateway";              Url = "http://localhost:5000"; }
 )
 
 $started = @()
@@ -34,7 +34,7 @@ foreach ($svc in $services) {
         continue
     }
 
-    Write-Host "$($svc.Emoji) $($svc.Name) Service başlatılıyor (Port $($svc.Port))..." -ForegroundColor Cyan
+    Write-Host "$($svc.Icon) $($svc.Name) Service baslatiliyor (Port $($svc.Port))..." -ForegroundColor Cyan
     $command = "Set-Location '$fullPath'; dotnet run"
     Start-Process $shell -ArgumentList "-NoExit", "-Command", $command -WindowStyle Normal | Out-Null
     $started += $svc
