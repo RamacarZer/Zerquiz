@@ -21,6 +21,12 @@ const MENU_ITEMS: MenuItem[] = [
     path: '/dashboard',
   },
   {
+    id: 'admin-dashboard',
+    label: 'Admin Dashboard',
+    icon: '📈',
+    path: '/dashboard/admin',
+  },
+  {
     id: 'tenants',
     label: 'Tenant Yönetimi',
     icon: '🏢',
@@ -72,6 +78,36 @@ const MENU_ITEMS: MenuItem[] = [
     path: '/exams',
   },
   {
+    id: 'grading',
+    label: 'Değerlendirme',
+    icon: '🏆',
+    path: '/grading',
+  },
+  {
+    id: 'certificates',
+    label: 'Sertifikalar',
+    icon: '🎖️',
+    path: '/certificates',
+  },
+  {
+    id: 'royalty',
+    label: 'Telif Yönetimi',
+    icon: '💰',
+    path: '/royalty/author-dashboard',
+  },
+  {
+    id: 'finance',
+    label: 'Finans',
+    icon: '💳',
+    path: '/finance/subscriptions',
+  },
+  {
+    id: 'notifications',
+    label: 'Bildirimler',
+    icon: '🔔',
+    path: '/notifications',
+  },
+  {
     id: 'reports',
     label: 'Raporlar',
     icon: '📈',
@@ -81,7 +117,7 @@ const MENU_ITEMS: MenuItem[] = [
     id: 'settings',
     label: 'Ayarlar',
     icon: '⚙️',
-    path: '/settings',
+    path: '/settings/tenant',
   },
 ];
 

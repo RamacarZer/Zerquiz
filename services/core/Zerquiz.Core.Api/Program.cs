@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Application.Interfaces;
 using Zerquiz.Core.Infrastructure.Persistence;
 using Zerquiz.Core.Infrastructure.Services;
+using Zerquiz.Shared.Storage;
+using Zerquiz.Shared.Notifications;
+using Zerquiz.Shared.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,20 @@ builder.Services.AddDbContext<CoreDbContext>(options =>
 // Services
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+
+// Shared Services
+builder.Services.AddSingleton<IStorageService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<LocalStorageService>>();
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new LocalStorageService(config);
+});
+builder.Services.AddSingleton<INotificationService, LocalNotificationService>();
+builder.Services.AddSingleton<IReportingService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<LocalReportingService>>();
+    return new LocalReportingService(logger);
+});
 
 // CORS
 builder.Services.AddCors(options =>

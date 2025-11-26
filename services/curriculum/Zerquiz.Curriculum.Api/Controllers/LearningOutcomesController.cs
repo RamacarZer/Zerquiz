@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Curriculum.Domain.Entities;
 using Zerquiz.Curriculum.Infrastructure.Persistence;
-using Zerquiz.Shared.Contracts.DTOs;
 
 namespace Zerquiz.Curriculum.Api.Controllers;
 
@@ -11,279 +10,284 @@ namespace Zerquiz.Curriculum.Api.Controllers;
 public class LearningOutcomesController : ControllerBase
 {
     private readonly CurriculumDbContext _context;
-    private readonly ILogger<LearningOutcomesController> _logger;
 
-    public LearningOutcomesController(CurriculumDbContext context, ILogger<LearningOutcomesController> logger)
+    public LearningOutcomesController(CurriculumDbContext context)
     {
         _context = context;
-        _logger = logger;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<LearningOutcomeDto>>>> GetAll(
-        [FromQuery] Guid? curriculumId,
-        [FromQuery] Guid? subjectId,
-        [FromQuery] Guid? topicId)
-    {
-        var query = _context.LearningOutcomes
-            .Include(lo => lo.Curriculum)
-            .Include(lo => lo.Subject)
-            .Include(lo => lo.Topic)
-            .Where(lo => lo.DeletedAt == null);
-
-        if (curriculumId.HasValue)
-            query = query.Where(lo => lo.CurriculumId == curriculumId);
-
-        if (subjectId.HasValue)
-            query = query.Where(lo => lo.SubjectId == subjectId);
-
-        if (topicId.HasValue)
-            query = query.Where(lo => lo.TopicId == topicId);
-
-        var outcomes = await query
-            .OrderBy(lo => lo.Code)
-            .ToListAsync();
-
-        var dtos = outcomes.Select(lo => new LearningOutcomeDto
-        {
-            Id = lo.Id,
-            CurriculumId = lo.CurriculumId,
-            CurriculumName = lo.Curriculum.Name,
-            SubjectId = lo.SubjectId,
-            SubjectName = lo.Subject.Name,
-            TopicId = lo.TopicId,
-            TopicName = lo.Topic?.Name,
-            Code = lo.Code,
-            Description = lo.Description,
-            Details = lo.Details
-        }).ToList();
-
-        return Ok(ApiResponse<List<LearningOutcomeDto>>.SuccessResult(dtos));
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<LearningOutcomeDto>>> GetById(Guid id)
-    {
-        var outcome = await _context.LearningOutcomes
-            .Include(lo => lo.Curriculum)
-            .Include(lo => lo.Subject)
-            .Include(lo => lo.Topic)
-            .FirstOrDefaultAsync(lo => lo.Id == id && lo.DeletedAt == null);
-
-        if (outcome == null)
-            return NotFound(ApiResponse<LearningOutcomeDto>.ErrorResult("Learning outcome not found"));
-
-        var dto = new LearningOutcomeDto
-        {
-            Id = outcome.Id,
-            CurriculumId = outcome.CurriculumId,
-            CurriculumName = outcome.Curriculum.Name,
-            SubjectId = outcome.SubjectId,
-            SubjectName = outcome.Subject.Name,
-            TopicId = outcome.TopicId,
-            TopicName = outcome.Topic?.Name,
-            Code = outcome.Code,
-            Description = outcome.Description,
-            Details = outcome.Details
-        };
-
-        return Ok(ApiResponse<LearningOutcomeDto>.SuccessResult(dto));
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<ApiResponse<LearningOutcomeDto>>> Create([FromBody] CreateLearningOutcomeRequest request)
-    {
-        // Validate curriculum
-        var curriculum = await _context.Curricula.FindAsync(request.CurriculumId);
-        if (curriculum == null)
-            return BadRequest(ApiResponse<LearningOutcomeDto>.ErrorResult("Curriculum not found"));
-
-        // Validate subject
-        var subject = await _context.Subjects.FindAsync(request.SubjectId);
-        if (subject == null)
-            return BadRequest(ApiResponse<LearningOutcomeDto>.ErrorResult("Subject not found"));
-
-        // Validate topic if provided
-        if (request.TopicId.HasValue)
-        {
-            var topic = await _context.Topics.FindAsync(request.TopicId);
-            if (topic == null)
-                return BadRequest(ApiResponse<LearningOutcomeDto>.ErrorResult("Topic not found"));
-        }
-
-        // Check for duplicate code
-        var exists = await _context.LearningOutcomes
-            .AnyAsync(lo => lo.Code == request.Code && lo.DeletedAt == null);
-
-        if (exists)
-            return BadRequest(ApiResponse<LearningOutcomeDto>.ErrorResult("Learning outcome with this code already exists"));
-
-        var outcome = new LearningOutcome
-        {
-            Id = Guid.NewGuid(),
-            TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111"), // System level
-            CurriculumId = request.CurriculumId,
-            SubjectId = request.SubjectId,
-            TopicId = request.TopicId,
-            Code = request.Code,
-            Description = request.Description,
-            Details = request.Details,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Version = 1,
-            IsActive = true
-        };
-
-        _context.LearningOutcomes.Add(outcome);
-        await _context.SaveChangesAsync();
-
-        // Reload with includes
-        outcome = await _context.LearningOutcomes
-            .Include(lo => lo.Curriculum)
-            .Include(lo => lo.Subject)
-            .Include(lo => lo.Topic)
-            .FirstAsync(lo => lo.Id == outcome.Id);
-
-        var dto = new LearningOutcomeDto
-        {
-            Id = outcome.Id,
-            CurriculumId = outcome.CurriculumId,
-            CurriculumName = outcome.Curriculum.Name,
-            SubjectId = outcome.SubjectId,
-            SubjectName = outcome.Subject.Name,
-            TopicId = outcome.TopicId,
-            TopicName = outcome.Topic?.Name,
-            Code = outcome.Code,
-            Description = outcome.Description,
-            Details = outcome.Details
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = outcome.Id }, ApiResponse<LearningOutcomeDto>.SuccessResult(dto));
-    }
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<LearningOutcomeDto>>> Update(Guid id, [FromBody] UpdateLearningOutcomeRequest request)
-    {
-        var outcome = await _context.LearningOutcomes
-            .Include(lo => lo.Curriculum)
-            .Include(lo => lo.Subject)
-            .Include(lo => lo.Topic)
-            .FirstOrDefaultAsync(lo => lo.Id == id && lo.DeletedAt == null);
-
-        if (outcome == null)
-            return NotFound(ApiResponse<LearningOutcomeDto>.ErrorResult("Learning outcome not found"));
-
-        outcome.Description = request.Description;
-        outcome.Details = request.Details;
-        outcome.UpdatedAt = DateTime.UtcNow;
-        outcome.Version++;
-
-        await _context.SaveChangesAsync();
-
-        var dto = new LearningOutcomeDto
-        {
-            Id = outcome.Id,
-            CurriculumId = outcome.CurriculumId,
-            CurriculumName = outcome.Curriculum.Name,
-            SubjectId = outcome.SubjectId,
-            SubjectName = outcome.Subject.Name,
-            TopicId = outcome.TopicId,
-            TopicName = outcome.Topic?.Name,
-            Code = outcome.Code,
-            Description = outcome.Description,
-            Details = outcome.Details
-        };
-
-        return Ok(ApiResponse<LearningOutcomeDto>.SuccessResult(dto));
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
-    {
-        var outcome = await _context.LearningOutcomes
-            .FirstOrDefaultAsync(lo => lo.Id == id && lo.DeletedAt == null);
-
-        if (outcome == null)
-            return NotFound(ApiResponse<bool>.ErrorResult("Learning outcome not found"));
-
-        // Soft delete
-        outcome.DeletedAt = DateTime.UtcNow;
-        outcome.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return Ok(ApiResponse<bool>.SuccessResult(true));
     }
 
     /// <summary>
-    /// Get learning outcomes grouped by topic
+    /// Get all learning outcomes with filters
     /// </summary>
-    [HttpGet("by-topic")]
-    public async Task<ActionResult<ApiResponse<List<TopicWithOutcomesDto>>>> GetGroupedByTopic(
-        [FromQuery] Guid? subjectId)
+    [HttpGet]
+    public async Task<ActionResult> GetAll(
+        [FromQuery] Guid? subjectId = null,
+        [FromQuery] Guid? topicId = null,
+        [FromQuery] string? gradeLevel = null)
     {
-        var query = _context.Topics
-            .Include(t => t.LearningOutcomes.Where(lo => lo.DeletedAt == null))
-            .Where(t => t.DeletedAt == null);
+        var query = _context.Definitions
+            .Where(d => d.DefinitionGroupKey == "LEARNING_OUTCOME" && d.IsActive);
 
-        if (subjectId.HasValue)
-            query = query.Where(t => t.SubjectId == subjectId);
-
-        var topics = await query.ToListAsync();
-
-        var dtos = topics.Select(t => new TopicWithOutcomesDto
-        {
-            TopicId = t.Id,
-            TopicName = t.Name,
-            TopicCode = t.Code,
-            LearningOutcomes = t.LearningOutcomes.Select(lo => new LearningOutcomeDto
+        // Apply filters via metadata (stored in JSONB)
+        var outcomes = await query
+            .OrderBy(d => d.DisplayOrder)
+            .Select(d => new
             {
-                Id = lo.Id,
-                Code = lo.Code,
-                Description = lo.Description,
-                Details = lo.Details
-            }).ToList()
+                d.Id,
+                d.Code,
+                d.Name,
+                d.Description,
+                d.Metadata,
+                d.DisplayOrder
+            })
+            .ToListAsync();
+
+        // Filter in memory (since JSONB querying is complex)
+        if (subjectId.HasValue || topicId.HasValue || !string.IsNullOrEmpty(gradeLevel))
+        {
+            outcomes = outcomes.Where(o =>
+            {
+                if (o.Metadata == null) return false;
+
+                var metadata = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(o.Metadata);
+
+                if (subjectId.HasValue && metadata.TryGetProperty("subjectId", out var subjId))
+                {
+                    if (subjId.GetString() != subjectId.ToString()) return false;
+                }
+
+                if (topicId.HasValue && metadata.TryGetProperty("topicId", out var topId))
+                {
+                    if (topId.GetString() != topicId.ToString()) return false;
+                }
+
+                if (!string.IsNullOrEmpty(gradeLevel) && metadata.TryGetProperty("gradeLevel", out var grade))
+                {
+                    if (grade.GetString() != gradeLevel) return false;
+                }
+
+                return true;
+            }).ToList();
+        }
+
+        return Ok(outcomes);
+    }
+
+    /// <summary>
+    /// Get learning outcome by ID
+    /// </summary>
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetById(Guid id)
+    {
+        var outcome = await _context.Definitions
+            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+
+        if (outcome == null)
+            return NotFound();
+
+        return Ok(outcome);
+    }
+
+    /// <summary>
+    /// Create learning outcome
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult> Create([FromBody] CreateLearningOutcomeRequest request)
+    {
+        var outcome = new Definition
+        {
+            DefinitionGroupKey = "LEARNING_OUTCOME",
+            Code = request.Code,
+            Name = request.Name,
+            Description = request.Description,
+            DisplayOrder = request.DisplayOrder ?? 0,
+            IsActive = true,
+            Metadata = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                subjectId = request.SubjectId,
+                topicId = request.TopicId,
+                subtopicId = request.SubtopicId,
+                gradeLevel = request.GradeLevel,
+                bloomLevel = request.BloomLevel,
+                estimatedDuration = request.EstimatedDuration,
+                keywords = request.Keywords
+            })
+        };
+
+        _context.Definitions.Add(outcome);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetById), new { id = outcome.Id }, outcome);
+    }
+
+    /// <summary>
+    /// Update learning outcome
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update(Guid id, [FromBody] UpdateLearningOutcomeRequest request)
+    {
+        var outcome = await _context.Definitions
+            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+
+        if (outcome == null)
+            return NotFound();
+
+        if (!string.IsNullOrEmpty(request.Name))
+            outcome.Name = request.Name;
+
+        if (!string.IsNullOrEmpty(request.Description))
+            outcome.Description = request.Description;
+
+        if (request.DisplayOrder.HasValue)
+            outcome.DisplayOrder = request.DisplayOrder.Value;
+
+        // Update metadata
+        if (request.SubjectId.HasValue || request.TopicId.HasValue || !string.IsNullOrEmpty(request.GradeLevel))
+        {
+            var existingMetadata = string.IsNullOrEmpty(outcome.Metadata)
+                ? new { }
+                : System.Text.Json.JsonSerializer.Deserialize<dynamic>(outcome.Metadata);
+
+            outcome.Metadata = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                subjectId = request.SubjectId ?? existingMetadata?.subjectId,
+                topicId = request.TopicId ?? existingMetadata?.topicId,
+                subtopicId = request.SubtopicId ?? existingMetadata?.subtopicId,
+                gradeLevel = request.GradeLevel ?? existingMetadata?.gradeLevel,
+                bloomLevel = request.BloomLevel ?? existingMetadata?.bloomLevel,
+                estimatedDuration = request.EstimatedDuration ?? existingMetadata?.estimatedDuration,
+                keywords = request.Keywords ?? existingMetadata?.keywords
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Delete learning outcome
+    /// </summary>
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(Guid id)
+    {
+        var outcome = await _context.Definitions
+            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+
+        if (outcome == null)
+            return NotFound();
+
+        outcome.IsActive = false; // Soft delete
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get learning outcomes by subject
+    /// </summary>
+    [HttpGet("subject/{subjectId}")]
+    public async Task<ActionResult> GetBySubject(Guid subjectId)
+    {
+        var outcomes = await _context.Definitions
+            .Where(d => d.DefinitionGroupKey == "LEARNING_OUTCOME" && d.IsActive)
+            .ToListAsync();
+
+        var filtered = outcomes.Where(o =>
+        {
+            if (string.IsNullOrEmpty(o.Metadata)) return false;
+
+            var metadata = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(o.Metadata);
+            if (metadata.TryGetProperty("subjectId", out var subjId))
+            {
+                return subjId.GetString() == subjectId.ToString();
+            }
+            return false;
+        }).Select(o => new
+        {
+            o.Id,
+            o.Code,
+            o.Name,
+            o.Description,
+            o.DisplayOrder
         }).ToList();
 
-        return Ok(ApiResponse<List<TopicWithOutcomesDto>>.SuccessResult(dtos));
+        return Ok(filtered);
+    }
+
+    /// <summary>
+    /// Link learning outcome to question
+    /// </summary>
+    [HttpPost("{id}/link-question")]
+    public async Task<ActionResult> LinkToQuestion(Guid id, [FromBody] LinkQuestionRequest request)
+    {
+        // In real implementation, this would call Questions service or use event bus
+        // For now, just confirm the learning outcome exists
+
+        var outcome = await _context.Definitions
+            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+
+        if (outcome == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            message = "Learning outcome linked to question",
+            learningOutcomeId = id,
+            questionId = request.QuestionId
+        });
+    }
+
+    /// <summary>
+    /// Get statistics for learning outcome
+    /// </summary>
+    [HttpGet("{id}/statistics")]
+    public async Task<ActionResult> GetStatistics(Guid id)
+    {
+        var outcome = await _context.Definitions
+            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+
+        if (outcome == null)
+            return NotFound();
+
+        // In real implementation, aggregate from Questions/Exams/Grading services
+        var stats = new
+        {
+            learningOutcomeId = id,
+            totalQuestions = 0, // Would query Questions service
+            totalExams = 0,     // Would query Exams service
+            averageScore = 0.0, // Would query Grading service
+            masteryRate = 0.0   // Calculated from student performance
+        };
+
+        return Ok(stats);
     }
 }
 
-// DTOs
-public class LearningOutcomeDto
-{
-    public Guid Id { get; set; }
-    public Guid? CurriculumId { get; set; }
-    public string? CurriculumName { get; set; }
-    public Guid? SubjectId { get; set; }
-    public string? SubjectName { get; set; }
-    public Guid? TopicId { get; set; }
-    public string? TopicName { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string? Details { get; set; }
-}
+public record CreateLearningOutcomeRequest(
+    string Code,
+    string Name,
+    string? Description,
+    Guid SubjectId,
+    Guid? TopicId,
+    Guid? SubtopicId,
+    string? GradeLevel,
+    string? BloomLevel,
+    int? EstimatedDuration,
+    string[]? Keywords,
+    int? DisplayOrder
+);
 
-public class CreateLearningOutcomeRequest
-{
-    public Guid CurriculumId { get; set; }
-    public Guid SubjectId { get; set; }
-    public Guid? TopicId { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string? Details { get; set; }
-}
+public record UpdateLearningOutcomeRequest(
+    string? Name,
+    string? Description,
+    Guid? SubjectId,
+    Guid? TopicId,
+    Guid? SubtopicId,
+    string? GradeLevel,
+    string? BloomLevel,
+    int? EstimatedDuration,
+    string[]? Keywords,
+    int? DisplayOrder
+);
 
-public class UpdateLearningOutcomeRequest
-{
-    public string Description { get; set; } = string.Empty;
-    public string? Details { get; set; }
-}
-
-public class TopicWithOutcomesDto
-{
-    public Guid TopicId { get; set; }
-    public string TopicName { get; set; } = string.Empty;
-    public string TopicCode { get; set; } = string.Empty;
-    public List<LearningOutcomeDto> LearningOutcomes { get; set; } = new();
-}
-
+public record LinkQuestionRequest(Guid QuestionId);

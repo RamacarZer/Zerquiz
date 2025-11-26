@@ -43,6 +43,7 @@ public abstract class BaseEntity
     // Organization & Module Context
     public Guid? OrganizationId { get; set; }
     public Guid? AppId { get; set; } // Application/Module ID
+    public Guid? ModuleId { get; set; } // Module/Service ID for tracking
 
     // Soft Delete Check
     public bool IsDeleted => DeletedAt.HasValue;

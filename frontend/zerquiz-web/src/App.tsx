@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import LoginPage from "./pages/auth/LoginPage";
+
+// Existing Pages
 import SimpleDashboard from "./pages/dashboard/SimpleDashboard";
 import ExamsPage from "./pages/exams/ExamsPage";
 import UserManagementPage from "./pages/users/UserManagementPage";
@@ -13,6 +15,7 @@ import EducationModelManagementPage from "./pages/curriculum/EducationModelManag
 import CurriculumManagementPageV2 from "./pages/curriculum/CurriculumManagementPageV2";
 import QuestionListPage from "./pages/questions/QuestionListPage";
 import QuestionCreatePage from "./pages/questions/QuestionCreatePage";
+import QuestionBuilderPage from "./pages/questions/QuestionBuilderPage";
 import TenantManagementPage from "./pages/tenants/TenantManagementPage";
 import TenantCreatePage from "./pages/tenants/TenantCreatePage";
 import TenantDetailPage from "./pages/tenants/TenantDetailPage";
@@ -21,7 +24,14 @@ import { LicensePackagesPage } from "./pages/licenses/LicensePackagesPage";
 import PresentationListPage from "./pages/presentation/PresentationListPage";
 import PresentationBuilderPage from "./pages/presentation/PresentationBuilderPage";
 import PresentationPlayerPage from "./pages/presentation/PresentationPlayerPage";
-import QuestionBuilderPage from "./pages/questions/QuestionBuilderPage";
+
+// New Pages
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import SubscriptionsPage from "./pages/finance/SubscriptionsPage";
+import AuthorDashboard from "./pages/royalty/AuthorDashboard";
+import CertificatesPage from "./pages/certificates/CertificatesPage";
+import NotificationCenter from "./pages/notifications/NotificationCenter";
+import TenantSettings from "./pages/settings/TenantSettings";
 
 const queryClient = new QueryClient();
 
@@ -205,29 +215,28 @@ function App() {
               </DashboardLayout>
             }
           />
+          {/* New Enhanced Pages */}
           <Route
-            path="/royalty"
+            path="/dashboard/admin"
             element={
               <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Telif Yönetimi</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
+                <AdminDashboard />
               </DashboardLayout>
             }
           />
           <Route
-            path="/reports"
+            path="/finance/subscriptions"
             element={
               <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Raporlar</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
+                <SubscriptionsPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/royalty/author-dashboard"
+            element={
+              <DashboardLayout>
+                <AuthorDashboard />
               </DashboardLayout>
             }
           />
@@ -235,12 +244,40 @@ function App() {
             path="/certificates"
             element={
               <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Sertifikalar</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
+                <CertificatesPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <DashboardLayout>
+                <NotificationCenter />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/settings/tenant"
+            element={
+              <DashboardLayout>
+                <TenantSettings />
+              </DashboardLayout>
+            }
+          />
+          {/* Legacy Routes */}
+          <Route
+            path="/royalty"
+            element={
+              <DashboardLayout>
+                <AuthorDashboard />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <DashboardLayout>
+                <AdminDashboard />
               </DashboardLayout>
             }
           />
@@ -248,12 +285,7 @@ function App() {
             path="/settings"
             element={
               <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Sistem Ayarları</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
+                <TenantSettings />
               </DashboardLayout>
             }
           />
@@ -263,19 +295,6 @@ function App() {
               <DashboardLayout>
                 <div className="p-8">
                   <h1 className="text-3xl font-bold">Audit Logları</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Bildirimler</h1>
                   <p className="text-gray-600 mt-2">
                     Bu modül geliştirilme aşamasında...
                   </p>

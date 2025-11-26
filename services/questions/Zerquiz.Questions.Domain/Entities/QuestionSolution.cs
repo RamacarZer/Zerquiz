@@ -3,28 +3,38 @@ using Zerquiz.Shared.Contracts.Domain;
 namespace Zerquiz.Questions.Domain.Entities;
 
 /// <summary>
-/// Soru çözümü (metin, ses, video)
+/// Soru çözümleri (text, audio, video)
 /// </summary>
 public class QuestionSolution : BaseEntity
 {
     public Guid QuestionId { get; set; }
     public Question Question { get; set; } = null!;
     
-    public string Type { get; set; } = "text"; // text, audio, video
-    public string Content { get; set; } = string.Empty; // JSONB - Çözüm içeriği
-    public string? Language { get; set; } = "tr"; // tr, en
-    public Guid AuthorId { get; set; } // Çözümü yapan kişi
+    public string SolutionType { get; set; } = "text"; // text, audio, video, image
+    public int DisplayOrder { get; set; } = 1;
+    
+    // Text solution
+    public string? TextContent { get; set; }
+    
+    // Media solution (audio/video/image)
+    public string? MediaUrl { get; set; }
+    public string? MediaStorageKey { get; set; } // S3/Blob key
+    public string? MediaMimeType { get; set; }
+    public long? MediaFileSize { get; set; }
+    public int? MediaDurationSeconds { get; set; } // For audio/video
+    
+    // Metadata
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public string? AuthorName { get; set; }
+    public bool IsOfficial { get; set; } = true; // Official vs community solution
+    public bool IsVisible { get; set; } = true;
+    
+    // Engagement
+    public int ViewCount { get; set; } = 0;
+    public int LikeCount { get; set; } = 0;
+    public int DislikeCount { get; set; } = 0;
+    
+    // Transcript for audio/video
+    public string? Transcript { get; set; }
 }
-
-/// <summary>
-/// Çözüm içerik yapısı
-/// </summary>
-public class SolutionContent
-{
-    public string? Text { get; set; }
-    public string? Latex { get; set; }
-    public string? Html { get; set; }
-    public string? AudioUrl { get; set; }
-    public string? VideoUrl { get; set; }
-}
-

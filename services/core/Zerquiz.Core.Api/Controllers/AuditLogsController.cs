@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Zerquiz.Core.Domain.Entities;
 using Zerquiz.Core.Infrastructure.Persistence;
-using Zerquiz.Shared.Contracts.DTOs;
 
 namespace Zerquiz.Core.Api.Controllers;
 
@@ -11,168 +9,288 @@ namespace Zerquiz.Core.Api.Controllers;
 public class AuditLogsController : ControllerBase
 {
     private readonly CoreDbContext _context;
-    private readonly ILogger<AuditLogsController> _logger;
 
-    public AuditLogsController(CoreDbContext context, ILogger<AuditLogsController> logger)
+    public AuditLogsController(CoreDbContext context)
     {
         _context = context;
-        _logger = logger;
     }
 
     /// <summary>
-    /// Get audit logs with filtering
+    /// Get audit logs with filters
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResult<AuditLogDto>>>> GetAll(
-        [FromQuery] Guid? tenantId,
-        [FromQuery] Guid? userId,
-        [FromQuery] string? action,
-        [FromQuery] string? entityName,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20)
+    public async Task<ActionResult> GetAll(
+        [FromQuery] Guid? userId = null,
+        [FromQuery] string? entityType = null,
+        [FromQuery] string? action = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         var query = _context.AuditLogs.AsQueryable();
-
-        // Filters
-        if (tenantId.HasValue)
-            query = query.Where(a => a.TenantId == tenantId.Value);
 
         if (userId.HasValue)
             query = query.Where(a => a.UserId == userId.Value);
 
-        if (!string.IsNullOrWhiteSpace(action))
+        if (!string.IsNullOrEmpty(entityType))
+            query = query.Where(a => a.EntityType == entityType);
+
+        if (!string.IsNullOrEmpty(action))
             query = query.Where(a => a.Action == action);
 
-        if (!string.IsNullOrWhiteSpace(entityName))
-            query = query.Where(a => a.EntityName == entityName);
+        if (from.HasValue)
+            query = query.Where(a => a.CreatedAt >= from.Value);
 
-        if (startDate.HasValue)
-            query = query.Where(a => a.Timestamp >= startDate.Value);
+        if (to.HasValue)
+            query = query.Where(a => a.CreatedAt <= to.Value);
 
-        if (endDate.HasValue)
-            query = query.Where(a => a.Timestamp <= endDate.Value);
-
-        var totalCount = await query.CountAsync();
+        var total = await query.CountAsync();
 
         var logs = await query
-            .OrderByDescending(a => a.Timestamp)
-            .Skip((pageNumber - 1) * pageSize)
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(a => new
+            {
+                a.Id,
+                a.UserId,
+                a.EntityType,
+                a.EntityId,
+                a.Action,
+                a.IpAddress,
+                a.UserAgent,
+                a.CreatedAt
+            })
             .ToListAsync();
 
-        var dtos = logs.Select(a => new AuditLogDto
+        return Ok(new
         {
-            Id = a.Id,
-            TenantId = a.TenantId,
-            UserId = a.UserId,
-            Action = a.Action,
-            EntityName = a.EntityName,
-            EntityId = a.EntityId,
-            IpAddress = a.IpAddress,
-            Timestamp = a.Timestamp
-        }).ToList();
-
-        var result = new PagedResult<AuditLogDto>(dtos, totalCount, pageNumber, pageSize);
-
-        return Ok(ApiResponse<PagedResult<AuditLogDto>>.SuccessResult(result));
+            logs,
+            pagination = new
+            {
+                page,
+                pageSize,
+                total,
+                totalPages = (int)Math.Ceiling(total / (double)pageSize)
+            }
+        });
     }
 
     /// <summary>
-    /// Get audit log by ID
+    /// Get audit log by ID (with full details)
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<AuditLogDto>>> GetById(Guid id)
+    public async Task<ActionResult> GetById(Guid id)
     {
         var log = await _context.AuditLogs.FindAsync(id);
-
         if (log == null)
-            return NotFound(ApiResponse<AuditLogDto>.ErrorResult("Audit log not found"));
+            return NotFound();
 
-        var dto = new AuditLogDto
-        {
-            Id = log.Id,
-            TenantId = log.TenantId,
-            UserId = log.UserId,
-            Action = log.Action,
-            EntityName = log.EntityName,
-            EntityId = log.EntityId,
-            IpAddress = log.IpAddress,
-            Timestamp = log.Timestamp
-        };
-
-        return Ok(ApiResponse<AuditLogDto>.SuccessResult(dto));
+        return Ok(log);
     }
 
     /// <summary>
-    /// Get audit logs for specific entity
+    /// Get audit trail for specific entity
     /// </summary>
-    [HttpGet("entity/{entityName}/{entityId}")]
-    public async Task<ActionResult<ApiResponse<List<AuditLogDto>>>> GetByEntity(string entityName, Guid entityId)
+    [HttpGet("entity/{entityType}/{entityId}")]
+    public async Task<ActionResult> GetEntityTrail(string entityType, Guid entityId)
     {
         var logs = await _context.AuditLogs
-            .Where(a => a.EntityName == entityName && a.EntityId == entityId)
-            .OrderByDescending(a => a.Timestamp)
-            .Take(100) // Limit to last 100 changes
+            .Where(a => a.EntityType == entityType && a.EntityId == entityId)
+            .OrderBy(a => a.CreatedAt)
+            .Select(a => new
+            {
+                a.Id,
+                a.Action,
+                a.UserId,
+                a.CreatedAt,
+                a.Changes,
+                a.IpAddress
+            })
             .ToListAsync();
 
-        var dtos = logs.Select(a => new AuditLogDto
+        return Ok(new
         {
-            Id = a.Id,
-            TenantId = a.TenantId,
-            UserId = a.UserId,
-            Action = a.Action,
-            EntityName = a.EntityName,
-            EntityId = a.EntityId,
-            IpAddress = a.IpAddress,
-            Timestamp = a.Timestamp
-        }).ToList();
-
-        return Ok(ApiResponse<List<AuditLogDto>>.SuccessResult(dtos));
+            entityType,
+            entityId,
+            totalChanges = logs.Count,
+            history = logs
+        });
     }
 
     /// <summary>
-    /// Get distinct actions
+    /// Get user activity report
     /// </summary>
-    [HttpGet("actions")]
-    public async Task<ActionResult<ApiResponse<List<string>>>> GetActions()
+    [HttpGet("user/{userId}/activity")]
+    public async Task<ActionResult> GetUserActivity(
+        Guid userId,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
     {
-        var actions = await _context.AuditLogs
-            .Select(a => a.Action)
-            .Distinct()
-            .OrderBy(a => a)
-            .ToListAsync();
+        var query = _context.AuditLogs.Where(a => a.UserId == userId);
 
-        return Ok(ApiResponse<List<string>>.SuccessResult(actions));
+        if (from.HasValue)
+            query = query.Where(a => a.CreatedAt >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(a => a.CreatedAt <= to.Value);
+
+        var logs = await query.ToListAsync();
+
+        var activity = new
+        {
+            userId,
+            totalActions = logs.Count,
+            byAction = logs.GroupBy(a => a.Action)
+                .Select(g => new { action = g.Key, count = g.Count() })
+                .OrderByDescending(x => x.count)
+                .ToList(),
+            byEntityType = logs.GroupBy(a => a.EntityType)
+                .Select(g => new { entityType = g.Key, count = g.Count() })
+                .OrderByDescending(x => x.count)
+                .ToList(),
+            recentActivity = logs.OrderByDescending(a => a.CreatedAt)
+                .Take(10)
+                .Select(a => new
+                {
+                    a.Action,
+                    a.EntityType,
+                    a.CreatedAt
+                })
+                .ToList()
+        };
+
+        return Ok(activity);
     }
 
     /// <summary>
-    /// Get distinct entity names
+    /// Get system activity statistics
     /// </summary>
-    [HttpGet("entities")]
-    public async Task<ActionResult<ApiResponse<List<string>>>> GetEntityNames()
+    [HttpGet("statistics")]
+    public async Task<ActionResult> GetStatistics([FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null)
     {
-        var entityNames = await _context.AuditLogs
-            .Select(a => a.EntityName)
-            .Distinct()
-            .OrderBy(e => e)
+        var query = _context.AuditLogs.AsQueryable();
+
+        if (from.HasValue)
+            query = query.Where(a => a.CreatedAt >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(a => a.CreatedAt <= to.Value);
+
+        var logs = await query.ToListAsync();
+
+        var stats = new
+        {
+            totalActions = logs.Count,
+            uniqueUsers = logs.Select(a => a.UserId).Distinct().Count(),
+            byAction = logs.GroupBy(a => a.Action)
+                .Select(g => new { action = g.Key, count = g.Count() })
+                .OrderByDescending(x => x.count)
+                .ToList(),
+            byEntityType = logs.GroupBy(a => a.EntityType)
+                .Select(g => new { entityType = g.Key, count = g.Count() })
+                .OrderByDescending(x => x.count)
+                .ToList(),
+            byHour = logs.GroupBy(a => a.CreatedAt.Hour)
+                .Select(g => new { hour = g.Key, count = g.Count() })
+                .OrderBy(x => x.hour)
+                .ToList(),
+            topUsers = logs.GroupBy(a => a.UserId)
+                .Select(g => new { userId = g.Key, actionCount = g.Count() })
+                .OrderByDescending(x => x.actionCount)
+                .Take(10)
+                .ToList()
+        };
+
+        return Ok(stats);
+    }
+
+    /// <summary>
+    /// Search audit logs with advanced filters
+    /// </summary>
+    [HttpPost("search")]
+    public async Task<ActionResult> Search([FromBody] SearchAuditLogsRequest request)
+    {
+        var query = _context.AuditLogs.AsQueryable();
+
+        if (request.UserIds != null && request.UserIds.Any())
+            query = query.Where(a => request.UserIds.Contains(a.UserId));
+
+        if (request.EntityTypes != null && request.EntityTypes.Any())
+            query = query.Where(a => request.EntityTypes.Contains(a.EntityType));
+
+        if (request.Actions != null && request.Actions.Any())
+            query = query.Where(a => request.Actions.Contains(a.Action));
+
+        if (request.FromDate.HasValue)
+            query = query.Where(a => a.CreatedAt >= request.FromDate.Value);
+
+        if (request.ToDate.HasValue)
+            query = query.Where(a => a.CreatedAt <= request.ToDate.Value);
+
+        if (!string.IsNullOrEmpty(request.IpAddress))
+            query = query.Where(a => a.IpAddress == request.IpAddress);
+
+        var total = await query.CountAsync();
+
+        var logs = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync();
 
-        return Ok(ApiResponse<List<string>>.SuccessResult(entityNames));
+        return Ok(new
+        {
+            logs,
+            pagination = new
+            {
+                page = request.Page,
+                pageSize = request.PageSize,
+                total,
+                totalPages = (int)Math.Ceiling(total / (double)request.PageSize)
+            }
+        });
+    }
+
+    /// <summary>
+    /// Export audit logs (would generate CSV/Excel)
+    /// </summary>
+    [HttpPost("export")]
+    public async Task<ActionResult> Export([FromBody] ExportAuditLogsRequest request)
+    {
+        var query = _context.AuditLogs.AsQueryable();
+
+        if (request.FromDate.HasValue)
+            query = query.Where(a => a.CreatedAt >= request.FromDate.Value);
+
+        if (request.ToDate.HasValue)
+            query = query.Where(a => a.CreatedAt <= request.ToDate.Value);
+
+        var logs = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(10000) // Limit export size
+            .ToListAsync();
+
+        // In real implementation, generate CSV/Excel file
+        return Ok(new
+        {
+            message = "Export prepared",
+            recordCount = logs.Count,
+            format = request.Format
+        });
     }
 }
 
-// DTOs
-public class AuditLogDto
-{
-    public Guid Id { get; set; }
-    public Guid? TenantId { get; set; }
-    public Guid? UserId { get; set; }
-    public string Action { get; set; } = string.Empty;
-    public string EntityName { get; set; } = string.Empty;
-    public Guid? EntityId { get; set; }
-    public string IpAddress { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; }
-}
+public record SearchAuditLogsRequest(
+    List<Guid>? UserIds,
+    List<string>? EntityTypes,
+    List<string>? Actions,
+    DateTime? FromDate,
+    DateTime? ToDate,
+    string? IpAddress,
+    int Page = 1,
+    int PageSize = 50
+);
 
+public record ExportAuditLogsRequest(DateTime? FromDate, DateTime? ToDate, string Format = "csv");

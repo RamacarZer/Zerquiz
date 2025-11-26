@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\shared\Zerquiz.Shared.Contracts\Zerquiz.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\shared\Zerquiz.Shared.Storage\Zerquiz.Shared.Storage.csproj" />
+    <ProjectReference Include="..\..\shared\Zerquiz.Shared.Notifications\Zerquiz.Shared.Notifications.csproj" />
+    <ProjectReference Include="..\..\shared\Zerquiz.Shared.Reporting\Zerquiz.Shared.Reporting.csproj" />
     <ProjectReference Include="..\Zerquiz.Core.Application\Zerquiz.Core.Application.csproj" />
     <ProjectReference Include="..\Zerquiz.Core.Infrastructure\Zerquiz.Core.Infrastructure.csproj" />
   </ItemGroup>

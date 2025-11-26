@@ -95,9 +95,11 @@ public class QuestionsController : ControllerBase
             Solutions = question.Solutions.Select(s => new QuestionSolutionDto
             {
                 Id = s.Id,
-                Type = s.Type,
-                Content = s.Content,
-                Language = s.Language
+                SolutionType = s.SolutionType,
+                Title = s.Title,
+                TextContent = s.TextContent,
+                MediaUrl = s.MediaUrl,
+                DisplayOrder = s.DisplayOrder
             }).ToList()
         };
 

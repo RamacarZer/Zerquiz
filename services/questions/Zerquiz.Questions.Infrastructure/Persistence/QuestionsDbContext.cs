@@ -151,13 +151,17 @@ public class QuestionsDbContext : DbContext
             entity.ToTable("question_solutions");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => new { e.TenantId, e.QuestionId });
-            entity.HasIndex(e => new { e.TenantId, e.AuthorId });
+            entity.HasIndex(e => new { e.TenantId, e.SolutionType });
             
-            entity.Property(e => e.Type).IsRequired().HasMaxLength(20);
-            entity.Property(e => e.Content).HasColumnType("jsonb").IsRequired();
-            entity.Property(e => e.Language).HasMaxLength(10);
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
-            entity.Property(e => e.Tags).HasColumnType("text[]");
+            entity.Property(e => e.SolutionType).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.TextContent).HasColumnType("text");
+            entity.Property(e => e.MediaUrl).HasMaxLength(500);
+            entity.Property(e => e.MediaStorageKey).HasMaxLength(500);
+            entity.Property(e => e.MediaMimeType).HasMaxLength(100);
+            entity.Property(e => e.Title).HasMaxLength(500);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.AuthorName).HasMaxLength(200);
+            entity.Property(e => e.Transcript).HasColumnType("text");
             
             entity.HasOne(e => e.Question)
                 .WithMany(q => q.Solutions)

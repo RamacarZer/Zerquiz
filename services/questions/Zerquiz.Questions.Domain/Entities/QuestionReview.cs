@@ -15,8 +15,19 @@ public class QuestionReview : BaseEntity
     public string? Comments { get; set; }
     public DateTime? ReviewedAt { get; set; }
     
+    // Review workflow stages
+    public string Stage { get; set; } = "internal"; // internal, committee_lead, final_approval
+    public int ReviewRound { get; set; } = 1; // For tracking revision rounds
+    
     // Review fee tracking için
     public decimal? ReviewFee { get; set; }
     public bool IsFeePaid { get; set; } = false;
+    public Guid? RoyaltyReviewFeeId { get; set; } // FK to Royalty.ReviewFee
+    public DateTime? FeeApprovedAt { get; set; }
+    public DateTime? FeePaidAt { get; set; }
+    
+    // Quality metrics
+    public int? QualityScore { get; set; } // 1-10
+    public string? QualityNotes { get; set; }
 }
 

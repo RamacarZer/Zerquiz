@@ -39,9 +39,11 @@ public class QuestionVersionDto
 public class QuestionSolutionDto
 {
     public Guid Id { get; set; }
-    public string Type { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public string? Language { get; set; }
+    public string SolutionType { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? TextContent { get; set; }
+    public string? MediaUrl { get; set; }
+    public int DisplayOrder { get; set; }
 }
 
 public class CreateQuestionRequest

@@ -16,6 +16,8 @@ public class GradingDbContext : DbContext
     public DbSet<ExamResult> ExamResults => Set<ExamResult>();
     public DbSet<QuestionStatistics> QuestionStatistics => Set<QuestionStatistics>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
+    public DbSet<Ranking> Rankings => Set<Ranking>();
+    public DbSet<SubjectPerformance> SubjectPerformances => Set<SubjectPerformance>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
