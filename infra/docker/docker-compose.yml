@@ -1,36 +1,23 @@
-version: '3.8'
-
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: zerquiz_rabbitmq
+  postgres:
+    image: postgres:17
+    container_name: zerquiz_postgres
+    restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: zerquiz
-      RABBITMQ_DEFAULT_PASS: zerquiz_pass
+      POSTGRES_DB: zerquiz_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Sanez.579112
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5432:5432"
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - zerquiz_network
-
-  redis:
-    image: redis:7-alpine
-    container_name: zerquiz_redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    networks:
-      - zerquiz_network
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
-  rabbitmq_data:
-  redis_data:
-
-networks:
-  zerquiz_network:
-    driver: bridge
+  postgres_data:
 

@@ -3,7 +3,7 @@
 ## ✅ TAMAMLANAN SERVİSLER (5/11)
 
 ### 1. ✅ Altyapı Kurulumu
-- Docker Compose (RabbitMQ + Redis)
+- Docker Compose (PostgreSQL container)
 - PostgreSQL database setup script
 - 7 ayrı schema oluşturma
 - Servis kullanıcıları ve izinler

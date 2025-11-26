@@ -28,6 +28,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Ensure database and schema exist
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CurriculumDbContext>();
+    try
+    {
+        await context.Database.EnsureCreatedAsync();
+        await context.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS curriculum_schema");
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
 // HTTP pipeline ayarla
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Curriculum API v1"); });

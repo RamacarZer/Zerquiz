@@ -3,6 +3,7 @@ using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Zerquiz.Questions.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Zerquiz.Questions.Infrastructure.Persistence;
 namespace Zerquiz.Questions.Infrastructure.Migrations
 {
     [DbContext(typeof(QuestionsDbContext))]
-    partial class QuestionsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251125171648_AddPresentationTypes")]
+    partial class AddPresentationTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

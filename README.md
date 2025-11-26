@@ -20,6 +20,7 @@ Tüm 11 adım başarıyla tamamlandı!
 ## 🏗️ Mimari Yapı
 
 ### Mikroservisler:
+
 1. **Core Service** (Port 5001) - Multi-tenant, Audit
 2. **Identity Service** (Port 5002) - Auth, JWT, Users, Roles
 3. **Curriculum Service** (Port 5003) - Eğitim modelleri, Branşlar, Konular
@@ -30,12 +31,18 @@ Tüm 11 adım başarıyla tamamlandı!
 8. **API Gateway** (Port 5000) - Ocelot routing
 
 ### Frontend:
+
 - **React 18 + TypeScript** (Port 3000)
 - TailwindCSS, React Query, Zustand
 
 ## 🚀 Hızlı Başlangıç
 
-### 1. Veritabanı (Zaten Hazır ✅)
+### 1. Veritabanı (PostgreSQL)
+
+- Localhost:5432 üzerinde PostgreSQL çalışıyor.
+- `infra/docker/docker-compose.yml` artık yalnızca Postgres konteynerini başlatır (isteğe bağlı).
+- RabbitMQ & Redis devre dışı; tüm state Postgres'te tutuluyor.
+
 ```powershell
 # Veritabanı ve migration'lar uygulandı
 # Seed data yüklendi
@@ -44,6 +51,7 @@ Tüm 11 adım başarıyla tamamlandı!
 ### 2. Backend Servisleri Başlat
 
 **Manuel (Her servis için ayrı terminal):**
+
 ```powershell
 # Core Service (Port 5001)
 cd services/core/Zerquiz.Core.Api
@@ -79,11 +87,14 @@ dotnet run
 ```
 
 **Otomatik (PowerShell script):**
+
 ```powershell
-.\start-services.ps1
+# Gerekirse eski dotnet süreçlerini kapatarak yeniden başlatır
+.\start-services.ps1 -KillExisting
 ```
 
 ### 3. Frontend Başlat
+
 ```powershell
 cd frontend/zerquiz-web
 npm install
@@ -93,6 +104,7 @@ npm run dev
 ## 📍 Erişim Adresleri
 
 ### API Swagger Dokümantasyonu:
+
 - Core: http://localhost:5001/swagger
 - Identity: http://localhost:5002/swagger
 - Curriculum: http://localhost:5003/swagger
@@ -102,6 +114,7 @@ npm run dev
 - Royalty: http://localhost:5007/swagger
 
 ### Gateway & Frontend:
+
 - **API Gateway:** http://localhost:5000
 - **Frontend:** http://localhost:3000
 
@@ -110,12 +123,13 @@ npm run dev
 **Şifre (Hepsi için):** `Demo123!`
 
 - **admin@demo.com** - Yönetici
-- **teacher@demo.com** - Öğretmen  
+- **teacher@demo.com** - Öğretmen
 - **student@demo.com** - Öğrenci
 
 ## 🗄️ Veritabanı Bilgileri
 
 **PostgreSQL Connection:**
+
 - Host: `localhost`
 - Port: `5432`
 - Database: `zerquiz_db`
@@ -123,6 +137,7 @@ npm run dev
 - Master Password: `Sanez.579112`
 
 **Service Users:**
+
 - `zerquiz_core` / `core_pass_2024`
 - `zerquiz_identity` / `identity_pass_2024`
 - `zerquiz_curriculum` / `curriculum_pass_2024`
@@ -134,6 +149,7 @@ npm run dev
 ## 📦 Teknolojiler
 
 ### Backend:
+
 - .NET 9
 - Entity Framework Core 9
 - PostgreSQL 17
@@ -141,6 +157,7 @@ npm run dev
 - JWT Authentication
 
 ### Frontend:
+
 - React 18
 - TypeScript
 - Vite
@@ -149,8 +166,9 @@ npm run dev
 - Axios
 
 ### Infrastructure:
-- Docker (RabbitMQ, Redis - opsiyonel)
-- PostgreSQL (local)
+
+- PostgreSQL (local veya docker-compose üzerinden)
+- Docker (opsiyonel PostgreSQL container)
 
 ## 🏛️ Klasör Yapısı
 
@@ -180,6 +198,7 @@ Zerquiz/
 ## 🎯 Özellikler
 
 ### ✅ Tamamlanan:
+
 - [x] Multi-tenant yapı
 - [x] JWT Authentication
 - [x] Role-based authorization
@@ -191,11 +210,12 @@ Zerquiz/
 - [x] API Gateway routing
 
 ### 🔄 Geliştirilebilir:
+
 - [ ] Unit/Integration tests
-- [ ] Event-driven communication (RabbitMQ/MassTransit)
+- [ ] Event-driven communication (RabbitMQ/MassTransit) — şu anda kapalı
 - [ ] File storage (S3-compatible)
 - [ ] Email/SMS notifications
-- [ ] Advanced caching (Redis)
+- [ ] Advanced caching (Redis) — ihtiyaç halinde tekrar eklenecek
 - [ ] Background jobs (Hangfire)
 - [ ] Docker images
 - [ ] Kubernetes deployment
@@ -209,7 +229,12 @@ Zerquiz/
 
 ## 🐛 Sorun Giderme
 
+### RabbitMQ & Redis
+
+Geliştirme ortamında mesaj kuyruğu ve Redis cache servisleri devre dışı. Herhangi bir docker-compose hatası alırsanız RabbitMQ/Redis'i yok sayabilirsiniz; yalnızca PostgreSQL konteyneri (veya lokal Postgres) yeterlidir.
+
 ### Port zaten kullanımda hatası:
+
 ```powershell
 # Kullanılan portu bulma
 netstat -ano | findstr :5001
@@ -219,6 +244,7 @@ taskkill /PID <PID> /F
 ```
 
 ### Migration hatası:
+
 ```powershell
 cd services/<service>/Zerquiz.<Service>.Api
 dotnet ef database update --project ../Zerquiz.<Service>.Infrastructure

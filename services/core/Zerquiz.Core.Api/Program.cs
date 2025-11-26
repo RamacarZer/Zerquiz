@@ -39,6 +39,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Ensure database and schema exist
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
+    try
+    {
+        await context.Database.EnsureCreatedAsync();
+        // Create schema if not exists
+        await context.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS core_schema");
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
 // Configure the HTTP request pipeline
 // Swagger her ortamda çalışsın
 app.UseSwagger();

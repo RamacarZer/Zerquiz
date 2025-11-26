@@ -1,35 +1,56 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { questionService, QuestionDto } from "../../services/api/questionService";
+import { questionService } from "../../services/api/questionService";
+import type { Question } from "../../types/question.types";
+import { QuestionCreateModal } from "../../components/modals/QuestionCreateModal";
+import { QuestionDetailModal } from "../../components/modals/QuestionDetailModal";
 
 export default function QuestionListPage() {
-  const [questions, setQuestions] = useState<QuestionDto[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const pageSize = 20;
 
   useEffect(() => {
     loadQuestions();
-  }, [page, statusFilter]);
+  }, [page, statusFilter, difficultyFilter]);
 
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      const response = await questionService.getQuestions(
+      const response = await questionService.getQuestions({
         page,
         pageSize,
-        statusFilter || undefined
-      );
-      setQuestions(response.items);
-      setTotalPages(Math.ceil(response.totalCount / pageSize));
+        status: statusFilter || undefined,
+        difficulty: difficultyFilter || undefined,
+        search: searchQuery || undefined
+      });
+      setQuestions(response.items || []);
+      setTotalPages(Math.ceil((response.total || response.totalCount || 0) / pageSize));
     } catch (error) {
       console.error("Failed to load questions:", error);
-      alert("Sorular yüklenemedi");
+      setQuestions([]);
+      // alert("Sorular yüklenemedi");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    setPage(1);
+    loadQuestions();
+  };
+
+  const handleViewDetail = (questionId: string) => {
+    setSelectedQuestionId(questionId);
+    setShowDetailModal(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -72,37 +93,78 @@ export default function QuestionListPage() {
             <h1 className="text-3xl font-bold text-gray-900">Soru Bankası</h1>
             <p className="text-gray-600 mt-1">Soru havuzunuzu yönetin</p>
           </div>
-          <Link
-            to="/questions/create"
+          <button
+            onClick={() => setShowCreateModal(true)}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Yeni Soru
-          </Link>
+          </button>
         </div>
 
         {/* Filters */}
         <div className="mb-6 bg-white rounded-lg shadow p-4">
-          <div className="flex gap-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Tüm Durumlar</option>
-              <option value="draft">Taslak</option>
-              <option value="review">İnceleme</option>
-              <option value="published">Yayınlanmış</option>
-              <option value="archived">Arşivlenmiş</option>
-            </select>
-            <button
-              onClick={loadQuestions}
-              className="bg-gray-100 px-6 py-2 rounded-lg hover:bg-gray-200 transition"
-            >
-              Filtrele
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Soru kodu veya metin ara..."
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tüm Durumlar</option>
+                <option value="draft">Taslak</option>
+                <option value="review">İnceleme</option>
+                <option value="published">Yayınlanmış</option>
+                <option value="archived">Arşivlenmiş</option>
+              </select>
+            </div>
+
+            <div>
+              <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tüm Zorluklar</option>
+                <option value="easy">Kolay</option>
+                <option value="medium">Orta</option>
+                <option value="hard">Zor</option>
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSearch}
+                className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                Ara
+              </button>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("");
+                  setDifficultyFilter("");
+                  setPage(1);
+                }}
+                className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                title="Filtreleri Temizle"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         </div>
 
@@ -144,7 +206,7 @@ export default function QuestionListPage() {
                       <div className="text-sm font-medium text-gray-900">{question.code}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{question.formatType}</div>
+                      <div className="text-sm text-gray-900">{question.formatType || "Çoktan Seçmeli"}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getDifficultyBadge(question.difficulty)}`}>
@@ -152,8 +214,8 @@ export default function QuestionListPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(question.status)}`}>
-                        {question.status === "draft" ? "Taslak" : question.status === "review" ? "İnceleme" : question.status === "published" ? "Yayınlanmış" : "Arşivlenmiş"}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(question.status || question.questionStatus || "draft")}`}>
+                        {(question.status || question.questionStatus) === "draft" ? "Taslak" : (question.status || question.questionStatus) === "review" ? "İnceleme" : (question.status || question.questionStatus) === "published" ? "Yayınlanmış" : "Arşivlenmiş"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -229,6 +291,13 @@ export default function QuestionListPage() {
           </div>
         )}
       </div>
+
+      {/* Create Modal */}
+      <QuestionCreateModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={loadQuestions}
+      />
     </div>
   );
 }

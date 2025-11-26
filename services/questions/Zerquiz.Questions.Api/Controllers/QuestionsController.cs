@@ -150,5 +150,49 @@ public class QuestionsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = question.Id }, 
             ApiResponse<QuestionDto>.SuccessResult(dto, "Soru başarıyla oluşturuldu"));
     }
+
+    [HttpGet("formats")]
+    public async Task<ActionResult<List<QuestionFormatType>>> GetFormatTypes()
+    {
+        var formatTypes = await _context.QuestionFormatTypes
+            .Where(f => f.IsActive)
+            .OrderBy(f => f.DisplayOrder)
+            .ToListAsync();
+        
+        return Ok(formatTypes);
+    }
+
+    [HttpGet("pedagogical-types")]
+    public async Task<ActionResult<List<QuestionPedagogicalType>>> GetPedagogicalTypes()
+    {
+        var pedagogicalTypes = await _context.QuestionPedagogicalTypes
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.DisplayOrder)
+            .ToListAsync();
+        
+        return Ok(pedagogicalTypes);
+    }
+
+    [HttpGet("difficulty-levels")]
+    public async Task<ActionResult<List<QuestionDifficultyLevel>>> GetDifficultyLevels()
+    {
+        var difficultyLevels = await _context.QuestionDifficultyLevels
+            .Where(d => d.IsActive)
+            .OrderBy(d => d.Level)
+            .ToListAsync();
+        
+        return Ok(difficultyLevels);
+    }
+
+    [HttpGet("presentation-types")]
+    public async Task<ActionResult<List<QuestionPresentationType>>> GetPresentationTypes()
+    {
+        var presentationTypes = await _context.QuestionPresentationTypes
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.DisplayOrder)
+            .ToListAsync();
+        
+        return Ok(presentationTypes);
+    }
 }
 

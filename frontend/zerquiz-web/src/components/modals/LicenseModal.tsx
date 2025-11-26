@@ -41,7 +41,7 @@ export const LicenseModal: React.FC<LicenseModalProps> = ({ tenantId, onClose, o
       setCurrentLicense(licenseData);
       
       if (licenseData) {
-        setSelectedPackageId(licenseData.licensePackageId);
+        setSelectedPackageId(licenseData.package?.id || licenseData.licensePackageId || '');
         setBillingPeriod(licenseData.billingPeriod || 'monthly');
       }
     } catch (error) {
@@ -59,17 +59,26 @@ export const LicenseModal: React.FC<LicenseModalProps> = ({ tenantId, onClose, o
 
     setSaving(true);
     try {
-      const expiryDate = new Date(startDate);
+      const startDateObj = new Date(startDate);
+      const expiryDate = new Date(startDateObj);
       expiryDate.setMonth(expiryDate.getMonth() + (billingPeriod === 'yearly' ? 12 : 1));
+
+      // Filter out empty custom limits
+      const filteredLimits: any = {};
+      Object.entries(customLimits).forEach(([key, value]) => {
+        if (value && value.toString().trim() !== '') {
+          filteredLimits[key] = parseInt(value as string, 10);
+        }
+      });
 
       await assignTenantLicense(tenantId, {
         packageId: selectedPackageId,
-        startDate,
-        endDate: expiryDate.toISOString().split('T')[0],
-        autoRenew: false,
+        startDate: startDateObj.toISOString(),
+        endDate: expiryDate.toISOString(),
+        autoRenew: true,
         billingPeriod,
-        customLimitsJson: Object.keys(customLimits).some(k => customLimits[k as keyof typeof customLimits])
-          ? JSON.stringify(customLimits)
+        customLimitsJson: Object.keys(filteredLimits).length > 0
+          ? JSON.stringify(filteredLimits)
           : undefined,
       });
 
@@ -130,13 +139,13 @@ export const LicenseModal: React.FC<LicenseModalProps> = ({ tenantId, onClose, o
               <h3 className="font-bold text-blue-800 mb-2">📋 Mevcut Lisans</h3>
               <div className="text-sm text-blue-700 grid grid-cols-3 gap-4">
                 <div>
-                  <span className="font-semibold">Paket:</span> {currentLicense.packageName}
+                  <span className="font-semibold">Paket:</span> {currentLicense.package?.name || 'N/A'}
                 </div>
                 <div>
                   <span className="font-semibold">Durum:</span> {currentLicense.status}
                 </div>
                 <div>
-                  <span className="font-semibold">Bitiş:</span> {new Date(currentLicense.expiryDate).toLocaleDateString('tr-TR')}
+                  <span className="font-semibold">Bitiş:</span> {new Date(currentLicense.endDate).toLocaleDateString('tr-TR')}
                 </div>
               </div>
             </div>

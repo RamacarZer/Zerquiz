@@ -3,7 +3,7 @@
 ## ✅ TAMAMLANAN TÜM ADIMLAR (11/11 - %100)
 
 ### 1. ✅ Altyapı Kurulumu
-- Docker Compose (RabbitMQ + Redis)
+- Docker Compose (PostgreSQL container)
 - PostgreSQL setup scripts
 - 7 ayrı schema oluşturma
 
@@ -77,10 +77,12 @@
 
 ### 1. Altyapıyı Başlat
 
+> 🔕 RabbitMQ ve Redis servisleri geçici olarak devre dışı. Tüm servisler yalnızca PostgreSQL'e ihtiyaç duyuyor.
+
 ```bash
-# RabbitMQ ve Redis'i başlat
+# (Opsiyonel) PostgreSQL konteynerini başlat
 cd infra/docker
-docker-compose up -d
+docker compose up -d
 
 # PostgreSQL'i kur (zaten çalışıyor)
 $env:PGPASSWORD="Sanez.579112"
@@ -145,13 +147,11 @@ npm run dev
   - Exams: http://localhost:5005/swagger
   - Grading: http://localhost:5006/swagger
   - Royalty: http://localhost:5007/swagger
-- **RabbitMQ Management:** http://localhost:15672 (user: zerquiz, pass: zerquiz_pass)
-
 ## 🏗️ MİMARİ YAPISI
 
 ```
 Zerquiz/
-├── infra/docker/              ✅ Docker Compose, DB scripts
+├── infra/docker/              ✅ PostgreSQL docker-compose + DB scripts
 ├── shared/                    ✅ 2 shared library
 ├── services/
 │   ├── core/                 ✅ 4 proje (Domain, Application, Infrastructure, API)
@@ -219,9 +219,9 @@ dotnet ef database update --project ../Zerquiz.Core.Infrastructure
 - Ocelot API Gateway
 
 **Infrastructure:**
-- Docker & Docker Compose
-- RabbitMQ
-- Redis
+- Docker & Docker Compose (PostgreSQL container)
+- RabbitMQ (planlandı, şu an devre dışı)
+- Redis (planlandı, şu an devre dışı)
 
 **Frontend:**
 - React 18

@@ -112,8 +112,8 @@ const SimpleDashboard: React.FC = () => {
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <div className="text-2xl mb-2">✅</div>
-            <div className="font-semibold text-gray-900">Redis</div>
-            <div className="text-xs text-green-600">Çalışıyor</div>
+            <div className="font-semibold text-gray-900">Cache (PostgreSQL)</div>
+            <div className="text-xs text-green-600">Veri tabanı üzerinden</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <div className="text-2xl mb-2">✅</div>

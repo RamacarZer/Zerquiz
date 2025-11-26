@@ -2,24 +2,21 @@
 
 ## Prerequisites
 
-- Docker & Docker Compose installed
-- PostgreSQL running on localhost:5432 (already available via Docker)
+- Docker Desktop + Docker Compose
+- Ya da yerel PostgreSQL 17 (Docker gerekli değil)
+
+> 🛈 RabbitMQ ve Redis servisleri devre dışı bırakıldı. Bu klasör artık yalnızca PostgreSQL kurulumunu otomatikleştirmek için kullanılıyor.
 
 ## Setup Instructions
 
-### 1. Start Supporting Services (RabbitMQ & Redis)
+### 1. PostgreSQL Konteynerini Başlat (Opsiyonel)
 
 ```bash
 cd infra/docker
-docker-compose up -d
+docker compose up -d
 ```
 
-This will start:
-- **RabbitMQ**: Message broker for inter-service communication
-  - AMQP Port: 5672
-  - Management UI: http://localhost:15672 (user: zerquiz, pass: zerquiz_pass)
-- **Redis**: Caching and session storage
-  - Port: 6379
+Bu komut `zerquiz_postgres` konteynerini 5432 portuna map eder ve veriyi `postgres_data` volumüne kaydeder. Eğer zaten lokal PostgreSQL kullanıyorsanız bu adımı atlayabilirsiniz.
 
 ### 2. Setup PostgreSQL Database
 
@@ -42,25 +39,10 @@ This script will:
 
 ### 3. Verify Setup
 
-**Check Docker Services:**
-```bash
-docker-compose ps
-```
-
 **Check PostgreSQL Schemas:**
 ```bash
 $env:PGPASSWORD="Sanez.579112"
 psql -h localhost -U postgres -d zerquiz_db -c "\dn"
-```
-
-**Test RabbitMQ:**
-- Open http://localhost:15672 in browser
-- Login with: zerquiz / zerquiz_pass
-
-**Test Redis:**
-```bash
-docker exec -it zerquiz_redis redis-cli ping
-# Should return: PONG
 ```
 
 ## Connection Strings
@@ -79,29 +61,15 @@ Royalty Service:    Host=localhost;Port=5432;Database=zerquiz_db;Username=zerqui
 
 ## Troubleshooting
 
-### RabbitMQ not starting
-```bash
-docker-compose down
-docker volume prune
-docker-compose up -d
-```
-
-### Redis connection issues
-```bash
-docker exec -it zerquiz_redis redis-cli
-> AUTH default ""
-> PING
-```
-
 ### PostgreSQL permission issues
 Re-run the setup script or manually grant permissions using psql.
 
 ## Cleanup
 
-To remove all Docker services and volumes:
+To remove the PostgreSQL container and volume:
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
-Note: This does NOT affect your PostgreSQL database on localhost.
+Note: This does NOT affect your external/local PostgreSQL installation.
 

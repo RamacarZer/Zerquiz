@@ -181,7 +181,7 @@ Shadow: Medium
 ```
 ✅ API        - Çalışıyor
 ✅ Database   - Çalışıyor
-✅ Redis      - Çalışıyor
+✅ Cache (PostgreSQL) - Çalışıyor
 ✅ Storage    - Çalışıyor
 ```
 

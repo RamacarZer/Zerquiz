@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
 import { ApiResponse } from "../../types/api";
+import type { Subject, Topic, LearningOutcome, EducationModel } from "../../types/curriculum.types";
 
 export interface EducationModelDto {
   id: string;
@@ -290,5 +291,57 @@ export const curriculumService = {
       `/curriculum/learningoutcomes/${id}`
     );
     return response.data.data;
+  },
+
+  // Simplified methods for Question Create Modal
+  async getSubjects(): Promise<Subject[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<SubjectDto[]>>('/curriculum/subjects');
+      return response.data.data.map(s => ({
+        id: s.id,
+        code: s.code,
+        name: s.name,
+        displayOrder: s.displayOrder,
+        createdAt: new Date().toISOString()
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async getTopics(params?: { subjectId?: string }): Promise<Topic[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<TopicDto[]>>('/curriculum/topics', { params });
+      return response.data.data.map(t => ({
+        id: t.id,
+        subjectId: t.subjectId,
+        parentTopicId: t.parentTopicId,
+        code: t.code,
+        name: t.name,
+        level: t.level,
+        displayOrder: t.displayOrder,
+        createdAt: new Date().toISOString()
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async getLearningOutcomes(params?: { topicId?: string }): Promise<LearningOutcome[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<LearningOutcomeDto[]>>('/curriculum/learningoutcomes', { params });
+      return response.data.data.map(o => ({
+        id: o.id,
+        curriculumId: o.curriculumId || '',
+        subjectId: o.subjectId || '',
+        topicId: o.topicId,
+        code: o.code,
+        description: o.description,
+        details: o.details,
+        createdAt: new Date().toISOString()
+      }));
+    } catch {
+      return [];
+    }
   },
 };

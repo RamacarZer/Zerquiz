@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = '/api/core';
 
 // ==================== TYPES ====================
 
@@ -42,9 +42,15 @@ export interface LicensePackageDto {
 export interface TenantLicenseDto {
   id: string;
   tenantId: string;
-  licensePackageId: string;
-  packageCode?: string;
-  packageName?: string;
+  licensePackageId?: string; // For backwards compatibility
+  package?: {
+    id: string;
+    code: string;
+    name: string;
+    monthlyPrice: number;
+    yearlyPrice: number;
+    currency: string;
+  };
   
   startDate: string;
   endDate: string;
@@ -142,11 +148,11 @@ export const createLicensePackage = async (request: CreateLicensePackageRequest)
 };
 
 export const updateLicensePackage = async (id: string, request: UpdateLicensePackageRequest): Promise<void> => {
-  await axios.put(`${API_BASE_URL}/licensepackages/${id}`, request);
+  await axios.put(`${API_BASE_URL}/core/licensepackages/${id}`, request);
 };
 
 export const deleteLicensePackage = async (id: string): Promise<void> => {
-  await axios.delete(`${API_BASE_URL}/licensepackages/${id}`);
+  await axios.delete(`${API_BASE_URL}/core/licensepackages/${id}`);
 };
 
 // Tenant Licenses

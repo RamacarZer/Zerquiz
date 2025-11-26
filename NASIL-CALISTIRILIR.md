@@ -35,6 +35,8 @@ Tüm adımlar başarıyla tamamlandı!
 
 ## 🚀 SERVİSLERİ ÇALIŞTIRMA
 
+> ⚠️ RabbitMQ ve Redis gereksinimleri devre dışı bırakıldı. Servisleri ayağa kaldırmak için yalnızca PostgreSQL (localhost:5432) yeterlidir. `infra/docker/docker-compose.yml` isterseniz Postgres konteynerini başlatır.
+
 ### Manuel Çalıştırma (Önerilen - Her servis için ayrı terminal):
 
 ```powershell
@@ -69,6 +71,13 @@ dotnet run
 # Terminal 8 - API Gateway (En son başlatılmalı)
 cd gateway/Zerquiz.Gateway
 dotnet run
+```
+
+### Otomatik Çalıştırma Scripti:
+
+```powershell
+# Mevcut dotnet süreçlerini kapatıp tüm servisleri ayrı pencerelerde açar
+.\start-services.ps1 -KillExisting
 ```
 
 ### Frontend Çalıştırma:
@@ -168,7 +177,7 @@ Zerquiz/
 - [ ] Event-driven communication (RabbitMQ)
 - [ ] File storage (S3)
 - [ ] Email/SMS notifications
-- [ [ Caching (Redis)
+- [ ] Advanced caching (Redis) - gelecekte tekrar değerlendirilecek
 - [ ] Background jobs (Hangfire)
 - [ ] Docker containerization
 - [ ] Kubernetes deployment

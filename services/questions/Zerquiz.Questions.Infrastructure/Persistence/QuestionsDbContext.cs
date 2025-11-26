@@ -20,6 +20,8 @@ public class QuestionsDbContext : DbContext
 
     public DbSet<QuestionFormatType> QuestionFormatTypes => Set<QuestionFormatType>();
     public DbSet<QuestionPedagogicalType> QuestionPedagogicalTypes => Set<QuestionPedagogicalType>();
+    public DbSet<QuestionDifficultyLevel> QuestionDifficultyLevels => Set<QuestionDifficultyLevel>();
+    public DbSet<QuestionPresentationType> QuestionPresentationTypes => Set<QuestionPresentationType>();
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<QuestionVersion> QuestionVersions => Set<QuestionVersion>();
     public DbSet<QuestionSolution> QuestionSolutions => Set<QuestionSolution>();
@@ -29,7 +31,7 @@ public class QuestionsDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Use public schema for simplicity
-        // modelBuilder.HasDefaultSchema("questions_schema");
+        modelBuilder.HasDefaultSchema("questions_schema");
 
         // Apply configurations for BaseEntity properties globally
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -71,6 +73,29 @@ public class QuestionsDbContext : DbContext
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+        });
+
+        // QuestionDifficultyLevel configuration
+        modelBuilder.Entity<QuestionDifficultyLevel>(entity =>
+        {
+            entity.ToTable("question_difficulty_levels");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Color).HasMaxLength(20);
+        });
+
+        // QuestionPresentationType configuration
+        modelBuilder.Entity<QuestionPresentationType>(entity =>
+        {
+            entity.ToTable("question_presentation_types");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.AnswerType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ConfigSchema).HasColumnType("jsonb");
         });
 
         // Question configuration

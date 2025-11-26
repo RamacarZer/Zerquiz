@@ -12,6 +12,7 @@ import PositionsManagementPage from "./pages/users/PositionsManagementPage";
 import EducationModelManagementPage from "./pages/curriculum/EducationModelManagementPage";
 import CurriculumManagementPageV2 from "./pages/curriculum/CurriculumManagementPageV2";
 import QuestionListPage from "./pages/questions/QuestionListPage";
+import QuestionCreatePage from "./pages/questions/QuestionCreatePage";
 import TenantManagementPage from "./pages/tenants/TenantManagementPage";
 import TenantCreatePage from "./pages/tenants/TenantCreatePage";
 import TenantDetailPage from "./pages/tenants/TenantDetailPage";
@@ -50,12 +51,7 @@ function App() {
             path="/questions/create"
             element={
               <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Yeni Soru Oluştur</h1>
-                  <p className="text-gray-600 mt-2">
-                    Soru oluşturma sayfası geliştirilme aşamasında...
-                  </p>
-                </div>
+                <QuestionCreatePage />
               </DashboardLayout>
             }
           />
