@@ -21,7 +21,9 @@ import {
   CreateSlideRequest,
   UpdateSlideRequest,
 } from "../../services/api/presentationService";
-import SlideTypeSelector, { SlideType } from "../../components/presentation/SlideTypeSelector";
+import SlideTypeSelector, {
+  SlideType,
+} from "../../components/presentation/SlideTypeSelector";
 import SlideThumbnail from "../../components/presentation/SlideThumbnail";
 import SlideEditor from "../../components/presentation/SlideEditor";
 import Button from "../../components/common/Button";
@@ -86,7 +88,7 @@ export default function PresentationBuilderPage() {
   const handleSaveMetadata = async () => {
     try {
       setSaving(true);
-      
+
       if (isEditMode && id) {
         await presentationService.update(id, { title, description, theme });
       } else {
@@ -96,7 +98,9 @@ export default function PresentationBuilderPage() {
           theme,
         });
         setPresentation(newPresentation);
-        navigate(`/presentations/${newPresentation.id}/edit`, { replace: true });
+        navigate(`/presentations/${newPresentation.id}/edit`, {
+          replace: true,
+        });
       }
     } catch (error) {
       console.error("Failed to save presentation:", error);
@@ -108,7 +112,42 @@ export default function PresentationBuilderPage() {
 
   const handleAddSlide = async (type: SlideType) => {
     if (!presentation?.id) {
-      await handleSaveMetadata();
+      // First save the presentation, then add slide
+      try {
+        setSaving(true);
+        const newPresentation = await presentationService.create({
+          title,
+          description,
+          theme,
+        });
+        setPresentation(newPresentation);
+
+        // Now add the slide
+        const newSlide: CreateSlideRequest = {
+          presentationId: newPresentation.id,
+          order: 0,
+          type,
+          title: `Yeni ${type} Slayt`,
+          content: "",
+          transition: "fade",
+          duration: 0,
+        };
+
+        const createdSlide = await presentationService.createSlide(
+          newPresentation.id,
+          newSlide
+        );
+        setSlides([createdSlide]);
+        setActiveSlideIndex(0);
+        navigate(`/presentations/${newPresentation.id}/edit`, {
+          replace: true,
+        });
+      } catch (error) {
+        console.error("Failed to create presentation and slide:", error);
+        alert("Sunum oluşturulamadı!");
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -123,7 +162,10 @@ export default function PresentationBuilderPage() {
         duration: 0,
       };
 
-      const createdSlide = await presentationService.createSlide(presentation.id, newSlide);
+      const createdSlide = await presentationService.createSlide(
+        presentation.id,
+        newSlide
+      );
       setSlides([...slides, createdSlide]);
       setActiveSlideIndex(slides.length);
     } catch (error) {
@@ -132,7 +174,10 @@ export default function PresentationBuilderPage() {
     }
   };
 
-  const handleUpdateSlide = async (slideId: string, data: UpdateSlideRequest) => {
+  const handleUpdateSlide = async (
+    slideId: string,
+    data: UpdateSlideRequest
+  ) => {
     if (!presentation?.id) return;
 
     try {
@@ -304,7 +349,9 @@ export default function PresentationBuilderPage() {
             <div className="h-full flex items-center justify-center text-gray-500">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎤</div>
-                <h2 className="text-2xl font-bold mb-2">Sunumunuzu Oluşturun</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  Sunumunuzu Oluşturun
+                </h2>
                 <p className="mb-4">Başlamak için slayt ekleyin</p>
                 <Button onClick={() => setShowTypeSelector(true)}>
                   ➕ İlk Slaytı Ekle
@@ -329,25 +376,26 @@ export default function PresentationBuilderPage() {
             <div className="bg-white rounded-lg shadow-lg aspect-video p-6 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-4xl mb-2">
-                  {slides[activeSlideIndex].type === 'Title' && '📋'}
-                  {slides[activeSlideIndex].type === 'Content' && '📝'}
-                  {slides[activeSlideIndex].type === 'Image' && '🖼️'}
-                  {slides[activeSlideIndex].type === 'TwoColumn' && '⚖️'}
-                  {slides[activeSlideIndex].type === 'Quiz' && '❓'}
-                  {slides[activeSlideIndex].type === 'Poll' && '📊'}
+                  {slides[activeSlideIndex].type === "Title" && "📋"}
+                  {slides[activeSlideIndex].type === "Content" && "📝"}
+                  {slides[activeSlideIndex].type === "Image" && "🖼️"}
+                  {slides[activeSlideIndex].type === "TwoColumn" && "⚖️"}
+                  {slides[activeSlideIndex].type === "Quiz" && "❓"}
+                  {slides[activeSlideIndex].type === "Poll" && "📊"}
                 </div>
                 <h3 className="font-bold text-lg mb-2">
-                  {slides[activeSlideIndex].title || 'Başlıksız'}
+                  {slides[activeSlideIndex].title || "Başlıksız"}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {slides[activeSlideIndex].content?.substring(0, 100) || 'İçerik yok'}
+                  {slides[activeSlideIndex].content?.substring(0, 100) ||
+                    "İçerik yok"}
                 </p>
               </div>
             </div>
           ) : (
             <div className="text-center text-gray-500 py-8">Önizleme yok</div>
           )}
-          
+
           <div className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Toplam slayt:</span>
@@ -375,4 +423,3 @@ export default function PresentationBuilderPage() {
     </div>
   );
 }
-
