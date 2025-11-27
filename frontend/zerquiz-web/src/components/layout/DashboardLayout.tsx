@@ -22,7 +22,7 @@ const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: "tenants",
-    label: "Tenant Yönetimi",
+    label: "Müşteri Yönetimi",
     icon: "🏢",
     path: "/tenants",
   },
@@ -131,7 +131,21 @@ const MENU_ITEMS: MenuItem[] = [
     id: "settings",
     label: "Ayarlar",
     icon: "⚙️",
-    path: "/settings/tenant",
+    path: "/settings",
+    subItems: [
+      {
+        id: "portal-settings",
+        label: "Portal Ayarları",
+        icon: "🌐",
+        path: "/settings/portal",
+      },
+      {
+        id: "organization-settings",
+        label: "Kurumsal Ayarlar",
+        icon: "🏢",
+        path: "/settings/organization",
+      },
+    ],
   },
 ];
 

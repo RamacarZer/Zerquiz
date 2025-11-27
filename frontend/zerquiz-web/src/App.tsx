@@ -32,6 +32,8 @@ import AuthorDashboard from "./pages/royalty/AuthorDashboard";
 import CertificatesPage from "./pages/certificates/CertificatesPage";
 import NotificationCenter from "./pages/notifications/NotificationCenter";
 import TenantSettings from "./pages/settings/TenantSettings";
+import PortalSettings from "./pages/settings/PortalSettings";
+import OrganizationSettings from "./pages/settings/OrganizationSettings";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +43,7 @@ function App() {
       <BrowserRouter
         future={{
           v7_startTransition: true,
-          v7_relativeSplatPath: true
+          v7_relativeSplatPath: true,
         }}
       >
         <Routes>
@@ -66,10 +68,7 @@ function App() {
               </DashboardLayout>
             }
           />
-          <Route
-            path="/questions/create"
-            element={<QuestionBuilderPage />}
-          />
+          <Route path="/questions/create" element={<QuestionBuilderPage />} />
           <Route
             path="/questions/create-legacy"
             element={
@@ -257,27 +256,27 @@ function App() {
             }
           />
           <Route
+            path="/settings/portal"
+            element={
+              <DashboardLayout>
+                <PortalSettings />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/settings/organization"
+            element={
+              <DashboardLayout>
+                <OrganizationSettings />
+              </DashboardLayout>
+            }
+          />
+          {/* Legacy route - redirect to organization */}
+          <Route
             path="/settings/tenant"
             element={
               <DashboardLayout>
-                <TenantSettings />
-              </DashboardLayout>
-            }
-          />
-          {/* Legacy Routes */}
-          <Route
-            path="/royalty"
-            element={
-              <DashboardLayout>
-                <AuthorDashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <DashboardLayout>
-                <AdminDashboard />
+                <OrganizationSettings />
               </DashboardLayout>
             }
           />
@@ -285,7 +284,7 @@ function App() {
             path="/settings"
             element={
               <DashboardLayout>
-                <TenantSettings />
+                <OrganizationSettings />
               </DashboardLayout>
             }
           />
