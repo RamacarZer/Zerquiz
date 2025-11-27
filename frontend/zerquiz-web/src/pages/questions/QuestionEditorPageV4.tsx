@@ -19,7 +19,7 @@ import {
 // Import step components
 import BasicInfoStep from '../../components/questions/BasicInfoStep';
 import CurriculumStep from '../../components/questions/CurriculumStep';
-import ContentEntryStep from '../../components/questions/ContentEntryStep';
+import ContentEntryStepV2 from '../../components/questions/ContentEntryStepV2';
 import OutputSettingsStep from '../../components/questions/OutputSettingsStep';
 import PreviewStep from '../../components/questions/PreviewStep';
 
@@ -114,13 +114,16 @@ export default function QuestionEditorPageV4() {
 
   // Step 3: Content Entry
   const [presentationTypeId, setPresentationTypeId] = useState('');
-  const [presentationStyleId, setPresentationStyleId] = useState('');
+  const [questionTypeId, setQuestionTypeId] = useState(''); // Soru Tipi (65 tip - cevap türü)
+  const [questionPresentationStyleId, setQuestionPresentationStyleId] = useState(''); // Soru Sunum Şekli (görsel stil)
   const [headerText, setHeaderText] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState([
     { key: 'A', text: '', isCorrect: false, feedback: '' },
     { key: 'B', text: '', isCorrect: false, feedback: '' },
   ]);
+  const [textAnswer, setTextAnswer] = useState('');
+  const [numericAnswer, setNumericAnswer] = useState(0);
   const [explanation, setExplanation] = useState('');
 
   // Step 4: Output Settings
@@ -178,7 +181,7 @@ export default function QuestionEditorPageV4() {
 
 
   const handleSave = async () => {
-    if (!presentationStyleId || !difficultyLevelId || !questionText.trim()) {
+    if (!questionTypeId || !difficultyLevelId || !questionText.trim()) {
       alert('Soru tipi, zorluk seviyesi ve soru metni zorunludur.');
       return;
     }
@@ -188,10 +191,10 @@ export default function QuestionEditorPageV4() {
 
       const payload: CreateQuestionDto = {
         tenantId: DEFAULT_TENANT_ID,
-        formatTypeId: presentationStyleId, // Soru tipi artık presentation style
+        formatTypeId: questionTypeId, // Soru Tipi (65 tip)
         difficultyLevelId,
         presentationTypeId: presentationTypeId || undefined,
-        presentationStyleId: presentationStyleId || undefined,
+        presentationStyleId: questionPresentationStyleId || undefined, // Soru Sunum Şekli (görsel stil)
         pedagogicalTypeId,
         subjectId: subjectId || undefined,
         topicId: topicId || undefined,
@@ -214,6 +217,8 @@ export default function QuestionEditorPageV4() {
           deliveryModes: selectedDeliveryModes,
           hasWhiteboardRecording: Boolean(tldrawSnapshot),
           videoUrl: videoUrl || undefined,
+          textAnswer: textAnswer || undefined,
+          numericAnswer: numericAnswer || undefined,
         },
       };
 
@@ -241,7 +246,7 @@ export default function QuestionEditorPageV4() {
         return true; // Curriculum is optional
       case 2:
         return (
-          !!presentationStyleId &&
+          !!questionTypeId &&
           questionText.trim().length > 0
         );
       case 3:
@@ -331,15 +336,21 @@ export default function QuestionEditorPageV4() {
 
           {/* STEP 3: İçerik Girişi */}
           {currentStep === 2 && (
-            <ContentEntryStep
-              presentationStyleId={presentationStyleId}
-              setPresentationStyleId={setPresentationStyleId}
+            <ContentEntryStepV2
+              questionTypeId={questionTypeId}
+              setQuestionTypeId={setQuestionTypeId}
+              questionPresentationStyleId={questionPresentationStyleId}
+              setQuestionPresentationStyleId={setQuestionPresentationStyleId}
               headerText={headerText}
               setHeaderText={setHeaderText}
               questionText={questionText}
               setQuestionText={setQuestionText}
               options={options}
               setOptions={setOptions}
+              textAnswer={textAnswer}
+              setTextAnswer={setTextAnswer}
+              numericAnswer={numericAnswer}
+              setNumericAnswer={setNumericAnswer}
               explanation={explanation}
               setExplanation={setExplanation}
             />
