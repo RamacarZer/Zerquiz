@@ -35,6 +35,13 @@ import TenantSettings from "./pages/settings/TenantSettings";
 import PortalSettings from "./pages/settings/PortalSettings";
 import OrganizationSettings from "./pages/settings/OrganizationSettings";
 
+// Enhanced Pages (Mock Development)
+import QuestionEditorPage from "./pages/questions/QuestionEditorPage";
+import QuestionEditorPageV3 from "./pages/questions/QuestionEditorPageV3";
+import QuestionEditorPageV4 from "./pages/questions/QuestionEditorPageV4";
+import PresentationEditorPageAdvanced from "./pages/presentation/PresentationEditorPageAdvanced";
+import ExamWizardPage from "./pages/exams/ExamWizardPage";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -68,6 +75,10 @@ function App() {
               </DashboardLayout>
             }
           />
+          <Route path="/questions/editor" element={<QuestionEditorPageV4 />} />
+          <Route path="/questions/editor/:id" element={<QuestionEditorPageV4 />} />
+          <Route path="/questions/editor-v3" element={<QuestionEditorPageV3 />} />
+          <Route path="/questions/editor-old" element={<QuestionEditorPage />} />
           <Route path="/questions/create" element={<QuestionBuilderPage />} />
           <Route
             path="/questions/create-legacy"
@@ -85,6 +96,8 @@ function App() {
               </DashboardLayout>
             }
           />
+          <Route path="/exams/wizard" element={<ExamWizardPage />} />
+          <Route path="/exams/wizard/:id" element={<ExamWizardPage />} />
           <Route
             path="/users"
             element={
@@ -188,6 +201,14 @@ function App() {
                 <PresentationListPage />
               </DashboardLayout>
             }
+          />
+          <Route
+            path="/presentations/editor"
+            element={<PresentationEditorPageAdvanced />}
+          />
+          <Route
+            path="/presentations/editor/:id"
+            element={<PresentationEditorPageAdvanced />}
           />
           <Route
             path="/presentations/create"
