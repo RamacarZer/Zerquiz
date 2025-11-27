@@ -104,16 +104,48 @@ const MENU_ITEMS: MenuItem[] = [
     path: "/certificates",
   },
   {
+    id: "review",
+    label: "Soru İnceleme",
+    icon: "✅",
+    path: "/review/queue",
+  },
+  {
     id: "royalty",
     label: "Telif Yönetimi",
-    icon: "💰",
+    icon: "💼",
     path: "/royalty/author-dashboard",
   },
   {
     id: "finance",
     label: "Finans",
-    icon: "💳",
+    icon: "💰",
     path: "/finance/subscriptions",
+    subItems: [
+      {
+        id: "finance-subscriptions",
+        label: "Abonelikler",
+        icon: "📋",
+        path: "/finance/subscriptions",
+      },
+      {
+        id: "finance-advanced",
+        label: "Gelişmiş Finans",
+        icon: "💵",
+        path: "/finance/advanced",
+      },
+    ],
+  },
+  {
+    id: "contracts",
+    label: "Sözleşmeler",
+    icon: "📄",
+    path: "/contracts",
+  },
+  {
+    id: "communication",
+    label: "İletişim",
+    icon: "💬",
+    path: "/communication",
   },
   {
     id: "notifications",

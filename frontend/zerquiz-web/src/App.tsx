@@ -14,6 +14,7 @@ import PositionsManagementPage from "./pages/users/PositionsManagementPage";
 import EducationModelManagementPage from "./pages/curriculum/EducationModelManagementPage";
 import CurriculumManagementPageV2 from "./pages/curriculum/CurriculumManagementPageV2";
 import QuestionListPage from "./pages/questions/QuestionListPage";
+import QuestionListPageEnhanced from "./pages/questions/QuestionListPageEnhanced";
 import QuestionCreatePage from "./pages/questions/QuestionCreatePage";
 import QuestionBuilderPage from "./pages/questions/QuestionBuilderPage";
 import TenantManagementPage from "./pages/tenants/TenantManagementPage";
@@ -41,6 +42,16 @@ import QuestionEditorPageV3 from "./pages/questions/QuestionEditorPageV3";
 import QuestionEditorPageV4 from "./pages/questions/QuestionEditorPageV4";
 import PresentationEditorPageAdvanced from "./pages/presentation/PresentationEditorPageAdvanced";
 import ExamWizardPage from "./pages/exams/ExamWizardPage";
+import ExamSessionPageEnhanced from "./pages/exams/ExamSessionPageEnhanced";
+import ExamGradingPage from "./pages/grading/ExamGradingPage";
+import AdminDashboardPage from "./pages/dashboard/AdminDashboardPage";
+import QuestionReviewQueuePage from "./pages/review/QuestionReviewQueuePage";
+import CertificatesPageEnhanced from "./pages/certificates/CertificatesPageEnhanced";
+import SubscriptionsPageEnhanced from "./pages/subscriptions/SubscriptionsPageEnhanced";
+import PresentationBuilderPageEnhanced from "./pages/presentations/PresentationBuilderPageEnhanced";
+import AdvancedFinancePage from "./pages/finance/AdvancedFinancePage";
+import ContractManagementPage from "./pages/contracts/ContractManagementPage";
+import CommunicationCenterPage from "./pages/communication/CommunicationCenterPage";
 
 const queryClient = new QueryClient();
 
@@ -63,12 +74,28 @@ function App() {
             path="/dashboard"
             element={
               <DashboardLayout>
+                <AdminDashboardPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/dashboard/simple"
+            element={
+              <DashboardLayout>
                 <SimpleDashboard />
               </DashboardLayout>
             }
           />
           <Route
             path="/questions"
+            element={
+              <DashboardLayout>
+                <QuestionListPageEnhanced />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/questions-old"
             element={
               <DashboardLayout>
                 <QuestionListPage />
@@ -98,6 +125,16 @@ function App() {
           />
           <Route path="/exams/wizard" element={<ExamWizardPage />} />
           <Route path="/exams/wizard/:id" element={<ExamWizardPage />} />
+          <Route path="/exams/:id/session" element={<ExamSessionPageEnhanced />} />
+          <Route path="/exams/:id/grading" element={<ExamGradingPage />} />
+          <Route
+            path="/review/queue"
+            element={
+              <DashboardLayout>
+                <QuestionReviewQueuePage />
+              </DashboardLayout>
+            }
+          />
           <Route
             path="/users"
             element={
@@ -198,6 +235,14 @@ function App() {
             path="/presentations"
             element={
               <DashboardLayout>
+                <PresentationBuilderPageEnhanced />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/presentations-old"
+            element={
+              <DashboardLayout>
                 <PresentationListPage />
               </DashboardLayout>
             }
@@ -248,7 +293,39 @@ function App() {
             path="/finance/subscriptions"
             element={
               <DashboardLayout>
+                <SubscriptionsPageEnhanced />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/subscriptions-old"
+            element={
+              <DashboardLayout>
                 <SubscriptionsPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/advanced"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/contracts"
+            element={
+              <DashboardLayout>
+                <ContractManagementPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/communication"
+            element={
+              <DashboardLayout>
+                <CommunicationCenterPage />
               </DashboardLayout>
             }
           />
@@ -262,6 +339,14 @@ function App() {
           />
           <Route
             path="/certificates"
+            element={
+              <DashboardLayout>
+                <CertificatesPageEnhanced />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/certificates-old"
             element={
               <DashboardLayout>
                 <CertificatesPage />
