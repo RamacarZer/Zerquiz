@@ -24,7 +24,8 @@ Write-Host "Starting all services in new terminal windows..." -ForegroundColor C
 Write-Host ""
 
 foreach ($service in $services) {
-    $projectPath = Join-Path $PSScriptRoot ".." $service.Path
+    $scriptDir = Split-Path -Parent $PSScriptRoot
+    $projectPath = Join-Path -Path $scriptDir -ChildPath $service.Path
     
     if (Test-Path $projectPath) {
         Write-Host "Starting: $($service.Name) Service (Port $($service.Port))..." -ForegroundColor $service.Color
@@ -34,7 +35,7 @@ foreach ($service in $services) {
         
         Start-Sleep -Milliseconds 500
     } else {
-        Write-Host "[SKIP] $($service.Name) - Project not found" -ForegroundColor Gray
+        Write-Host "[SKIP] $($service.Name) - Project not found at $projectPath" -ForegroundColor Gray
     }
 }
 

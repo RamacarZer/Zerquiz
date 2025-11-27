@@ -15,113 +15,129 @@ interface MenuItem {
 
 const MENU_ITEMS: MenuItem[] = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: '📊',
-    path: '/dashboard',
+    id: "dashboard",
+    label: "Dashboard",
+    icon: "📊",
+    path: "/dashboard",
   },
   {
-    id: 'admin-dashboard',
-    label: 'Admin Dashboard',
-    icon: '📈',
-    path: '/dashboard/admin',
+    id: "tenants",
+    label: "Tenant Yönetimi",
+    icon: "🏢",
+    path: "/tenants",
   },
   {
-    id: 'tenants',
-    label: 'Tenant Yönetimi',
-    icon: '🏢',
-    path: '/tenants',
+    id: "licenses",
+    label: "Lisans Paketleri",
+    icon: "🎫",
+    path: "/licenses",
   },
   {
-    id: 'licenses',
-    label: 'Lisans Paketleri',
-    icon: '🎫',
-    path: '/licenses',
-  },
-  {
-    id: 'users',
-    label: 'Kullanıcılar',
-    icon: '👥',
-    path: '/users',
+    id: "users",
+    label: "Kullanıcılar",
+    icon: "👥",
+    path: "/users",
     subItems: [
-      { id: 'users-list', label: 'Kullanıcı Listesi', icon: '📋', path: '/users' },
-      { id: 'users-roles', label: 'Roller', icon: '🎭', path: '/users/roles' },
-      { id: 'users-permissions', label: 'Yetkiler', icon: '🔐', path: '/users/permissions' },
+      {
+        id: "users-list",
+        label: "Kullanıcı Listesi",
+        icon: "📋",
+        path: "/users",
+      },
+      { id: "users-roles", label: "Roller", icon: "🎭", path: "/users/roles" },
+      {
+        id: "users-permissions",
+        label: "Yetkiler",
+        icon: "🔐",
+        path: "/users/permissions",
+      },
     ],
   },
   {
-    id: 'curriculum',
-    label: 'Müfredat',
-    icon: '📚',
-    path: '/curriculum',
+    id: "curriculum",
+    label: "Müfredat",
+    icon: "📚",
+    path: "/curriculum",
     subItems: [
-      { id: 'definitions', label: 'Müfredat Yönetimi', icon: '🎯', path: '/curriculum' },
-      { id: 'education-models', label: 'Eğitim Modelleri', icon: '🎓', path: '/curriculum/education-models' },
+      {
+        id: "definitions",
+        label: "Müfredat Yönetimi",
+        icon: "🎯",
+        path: "/curriculum",
+      },
+      {
+        id: "education-models",
+        label: "Eğitim Modelleri",
+        icon: "🎓",
+        path: "/curriculum/education-models",
+      },
     ],
   },
   {
-    id: 'questions',
-    label: 'Soru Bankası',
-    icon: '❓',
-    path: '/questions',
+    id: "questions",
+    label: "Soru Bankası",
+    icon: "❓",
+    path: "/questions",
   },
   {
-    id: 'presentations',
-    label: 'Sunumlar',
-    icon: '🎤',
-    path: '/presentations',
+    id: "presentations",
+    label: "Sunumlar",
+    icon: "🎤",
+    path: "/presentations",
   },
   {
-    id: 'exams',
-    label: 'Sınavlar',
-    icon: '📄',
-    path: '/exams',
+    id: "exams",
+    label: "Sınavlar",
+    icon: "📄",
+    path: "/exams",
   },
   {
-    id: 'grading',
-    label: 'Değerlendirme',
-    icon: '🏆',
-    path: '/grading',
+    id: "grading",
+    label: "Değerlendirme",
+    icon: "🏆",
+    path: "/grading",
   },
   {
-    id: 'certificates',
-    label: 'Sertifikalar',
-    icon: '🎖️',
-    path: '/certificates',
+    id: "certificates",
+    label: "Sertifikalar",
+    icon: "🎖️",
+    path: "/certificates",
   },
   {
-    id: 'royalty',
-    label: 'Telif Yönetimi',
-    icon: '💰',
-    path: '/royalty/author-dashboard',
+    id: "royalty",
+    label: "Telif Yönetimi",
+    icon: "💰",
+    path: "/royalty/author-dashboard",
   },
   {
-    id: 'finance',
-    label: 'Finans',
-    icon: '💳',
-    path: '/finance/subscriptions',
+    id: "finance",
+    label: "Finans",
+    icon: "💳",
+    path: "/finance/subscriptions",
   },
   {
-    id: 'notifications',
-    label: 'Bildirimler',
-    icon: '🔔',
-    path: '/notifications',
+    id: "notifications",
+    label: "Bildirimler",
+    icon: "🔔",
+    path: "/notifications",
   },
   {
-    id: 'reports',
-    label: 'Raporlar',
-    icon: '📈',
-    path: '/reports',
+    id: "reports",
+    label: "Raporlar",
+    icon: "📈",
+    path: "/reports",
   },
   {
-    id: 'settings',
-    label: 'Ayarlar',
-    icon: '⚙️',
-    path: '/settings/tenant',
+    id: "settings",
+    label: "Ayarlar",
+    icon: "⚙️",
+    path: "/settings/tenant",
   },
 ];
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -131,9 +147,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const toggleSubmenu = (menuId: string) => {
-    setExpandedMenus(prev => 
-      prev.includes(menuId) 
-        ? prev.filter(id => id !== menuId)
+    setExpandedMenus((prev) =>
+      prev.includes(menuId)
+        ? prev.filter((id) => id !== menuId)
         : [...prev, menuId]
     );
   };
@@ -141,23 +157,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const isActive = (path: string) => location.pathname === path;
   const isParentActive = (item: MenuItem) => {
     if (item.subItems) {
-      return item.subItems.some(sub => location.pathname === sub.path);
+      return item.subItems.some((sub) => location.pathname === sub.path);
     }
     return false;
   };
 
   const handleLogout = () => {
     // Clear auth token
-    localStorage.removeItem('token');
-    navigate('/login');
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 flex flex-col ${
-          sidebarOpen ? 'w-64' : 'w-20'
+          sidebarOpen ? "w-64" : "w-20"
         }`}
       >
         {/* Logo */}
@@ -190,15 +206,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     onClick={() => toggleSubmenu(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
                       isParentActive(item)
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-gray-700 text-gray-300'
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-gray-700 text-gray-300"
                     }`}
                   >
                     <span className="text-xl">{item.icon}</span>
                     {sidebarOpen && (
                       <>
-                        <span className="flex-1 text-left text-sm font-medium">{item.label}</span>
-                        <span className={`transition-transform ${expandedMenus.includes(item.id) ? 'rotate-90' : ''}`}>
+                        <span className="flex-1 text-left text-sm font-medium">
+                          {item.label}
+                        </span>
+                        <span
+                          className={`transition-transform ${
+                            expandedMenus.includes(item.id) ? "rotate-90" : ""
+                          }`}
+                        >
                           ▶
                         </span>
                       </>
@@ -209,35 +231,39 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     to={item.path}
                     className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                       isActive(item.path)
-                        ? 'bg-blue-600 text-white border-l-4 border-blue-400'
-                        : 'hover:bg-gray-700 text-gray-300'
+                        ? "bg-blue-600 text-white border-l-4 border-blue-400"
+                        : "hover:bg-gray-700 text-gray-300"
                     }`}
                   >
                     <span className="text-xl">{item.icon}</span>
-                    {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                    {sidebarOpen && (
+                      <span className="text-sm font-medium">{item.label}</span>
+                    )}
                   </Link>
                 )}
               </div>
 
               {/* Submenu Items */}
-              {item.subItems && sidebarOpen && expandedMenus.includes(item.id) && (
-                <div className="bg-gray-800">
-                  {item.subItems.map((subItem) => (
-                    <Link
-                      key={subItem.id}
-                      to={subItem.path}
-                      className={`flex items-center gap-3 px-4 py-2 pl-12 text-sm transition-colors ${
-                        isActive(subItem.path)
-                          ? 'bg-blue-700 text-white'
-                          : 'hover:bg-gray-700 text-gray-400'
-                      }`}
-                    >
-                      <span>{subItem.icon}</span>
-                      <span>{subItem.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {item.subItems &&
+                sidebarOpen &&
+                expandedMenus.includes(item.id) && (
+                  <div className="bg-gray-800">
+                    {item.subItems.map((subItem) => (
+                      <Link
+                        key={subItem.id}
+                        to={subItem.path}
+                        className={`flex items-center gap-3 px-4 py-2 pl-12 text-sm transition-colors ${
+                          isActive(subItem.path)
+                            ? "bg-blue-700 text-white"
+                            : "hover:bg-gray-700 text-gray-400"
+                        }`}
+                      >
+                        <span>{subItem.icon}</span>
+                        <span>{subItem.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
             </div>
           ))}
         </nav>
@@ -248,7 +274,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             onClick={toggleSidebar}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
           >
-            <span className="text-xl">{sidebarOpen ? '◀' : '▶'}</span>
+            <span className="text-xl">{sidebarOpen ? "◀" : "▶"}</span>
             {sidebarOpen && <span className="text-sm">Menüyü Gizle</span>}
           </button>
         </div>
@@ -266,10 +292,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               </Link>
               <span className="text-gray-400">/</span>
               <span className="text-gray-900 font-medium">
-                {MENU_ITEMS.find(item => 
-                  item.path === location.pathname || 
-                  item.subItems?.some(sub => sub.path === location.pathname)
-                )?.label || 'Dashboard'}
+                {MENU_ITEMS.find(
+                  (item) =>
+                    item.path === location.pathname ||
+                    item.subItems?.some((sub) => sub.path === location.pathname)
+                )?.label || "Dashboard"}
               </span>
             </div>
 
@@ -303,8 +330,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     SA
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900">Super Admin</div>
-                    <div className="text-xs text-gray-500">admin@zerquiz.com</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      Super Admin
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      admin@zerquiz.com
+                    </div>
                   </div>
                   <span className="text-gray-400">▼</span>
                 </button>
@@ -343,21 +374,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
 
         {/* Footer */}
         <footer className="bg-white border-t border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <div>
-              © 2025 Zerquiz. Tüm hakları saklıdır.
-            </div>
+            <div>© 2025 Zerquiz. Tüm hakları saklıdır.</div>
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-gray-900">Yardım</a>
-              <a href="#" className="hover:text-gray-900">Destek</a>
-              <a href="#" className="hover:text-gray-900">v1.0.0</a>
+              <a href="#" className="hover:text-gray-900">
+                Yardım
+              </a>
+              <a href="#" className="hover:text-gray-900">
+                Destek
+              </a>
+              <a href="#" className="hover:text-gray-900">
+                v1.0.0
+              </a>
             </div>
           </div>
         </footer>
@@ -365,4 +398,3 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     </div>
   );
 };
-
