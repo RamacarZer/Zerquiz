@@ -21,6 +21,8 @@ export default function QuestionPoolManagementPage() {
   const [showPoolModal, setShowPoolModal] = useState(false);
   const [showRandomizeModal, setShowRandomizeModal] = useState(false);
   const [generatedVariants, setGeneratedVariants] = useState<ExamVariant[]>([]);
+  const [showCreatePoolModal, setShowCreatePoolModal] = useState(false);
+  const [newPoolData, setNewPoolData] = useState({ name: '', description: '', difficulty: 'medium', tags: '' });
 
   // Randomization settings
   const [randomSettings, setRandomSettings] = useState<RandomizationSettings>({
@@ -82,7 +84,7 @@ export default function QuestionPoolManagementPage() {
               <p className="text-sm text-gray-600 mt-1">Soru havuzlarından rastgele sınav oluştur, varyant üret</p>
             </div>
             <button
-              onClick={() => alert('Yeni havuz oluştur (Demo)')}
+              onClick={() => setShowCreatePoolModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               <Plus className="h-4 w-4" /> Yeni Havuz
@@ -408,6 +410,93 @@ export default function QuestionPoolManagementPage() {
           </div>
         )}
       </div>
+
+      {/* Create Pool Modal */}
+      {showCreatePoolModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">Yeni Soru Havuzu Oluştur</h2>
+              <p className="text-sm text-gray-600 mt-1">Soru havuzu için temel bilgileri girin</p>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Havuz Adı *</label>
+                <input
+                  type="text"
+                  value={newPoolData.name}
+                  onChange={(e) => setNewPoolData({...newPoolData, name: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="örn: Matematik 10. Sınıf Genel Havuz"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                <textarea
+                  value={newPoolData.description}
+                  onChange={(e) => setNewPoolData({...newPoolData, description: e.target.value})}
+                  rows={3}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Havuz hakkında detaylı açıklama..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Zorluk Seviyesi</label>
+                <select
+                  value={newPoolData.difficulty}
+                  onChange={(e) => setNewPoolData({...newPoolData, difficulty: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="easy">Kolay</option>
+                  <option value="medium">Orta</option>
+                  <option value="hard">Zor</option>
+                  <option value="mixed">Karışık</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Etiketler (virgülle ayırın)</label>
+                <input
+                  type="text"
+                  value={newPoolData.tags}
+                  onChange={(e) => setNewPoolData({...newPoolData, tags: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="örn: TYT, AYT, Matematik, Geometri"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowCreatePoolModal(false);
+                  setNewPoolData({ name: '', description: '', difficulty: 'medium', tags: '' });
+                }}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              >
+                İptal
+              </button>
+              <button
+                onClick={() => {
+                  if (!newPoolData.name) {
+                    alert('Lütfen havuz adı girin!');
+                    return;
+                  }
+                  alert(`Yeni havuz oluşturuldu:\n${newPoolData.name}\n(Demo - Backend entegrasyonu gerekiyor)`);
+                  setShowCreatePoolModal(false);
+                  setNewPoolData({ name: '', description: '', difficulty: 'medium', tags: '' });
+                }}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Oluştur
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

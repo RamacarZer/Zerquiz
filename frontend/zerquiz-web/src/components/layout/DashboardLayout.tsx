@@ -341,6 +341,18 @@ const MENU_ITEMS: MenuItem[] = [
         icon: "📧",
         path: "/settings/mail-providers",
       },
+      {
+        id: "offline-settings",
+        label: "Çevrimdışı Mod",
+        icon: "📴",
+        path: "/settings/offline",
+      },
+      {
+        id: "language-settings",
+        label: "Dil Ayarları",
+        icon: "🌍",
+        path: "/settings/language",
+      },
     ],
   },
   {
@@ -361,7 +373,37 @@ const MENU_ITEMS: MenuItem[] = [
         icon: "💻",
         path: "/editors/code",
       },
+      {
+        id: "whiteboard",
+        label: "Beyaz Tahta",
+        icon: "✏️",
+        path: "/whiteboard",
+      },
+      {
+        id: "recording",
+        label: "Ses/Video Kayıt",
+        icon: "🎤",
+        path: "/recording/demo",
+      },
     ],
+  },
+  {
+    id: "analytics",
+    label: "AI Analytics",
+    icon: "🤖",
+    path: "/analytics/ai",
+  },
+  {
+    id: "integrations",
+    label: "Entegrasyonlar",
+    icon: "🔗",
+    path: "/integrations/lti",
+  },
+  {
+    id: "parent-portal",
+    label: "Veli Portalı",
+    icon: "👨‍👩‍👧",
+    path: "/parent/portal",
   },
 ];
 

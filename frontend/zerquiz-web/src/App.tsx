@@ -8,6 +8,7 @@ import SimpleDashboard from "./pages/dashboard/SimpleDashboard";
 import ExamsPage from "./pages/exams/ExamsPage";
 import UserManagementPage from "./pages/users/UserManagementPage";
 import UserProfilePage from "./pages/users/UserProfilePage";
+import { UserProfilePage as ProfilePage } from "./pages/profile/UserProfilePage";
 import RolesManagementPage from "./pages/users/RolesManagementPage";
 import DepartmentsManagementPage from "./pages/users/DepartmentsManagementPage";
 import PositionsManagementPage from "./pages/users/PositionsManagementPage";
@@ -44,6 +45,14 @@ import MathEditorDemoPage from "./pages/editors/MathEditorDemoPage";
 import CodeEditorDemoPage from "./pages/editors/CodeEditorDemoPage";
 import GamificationPage from "./pages/gamification/GamificationPage";
 import QuestionPoolManagementPage from "./pages/questions/QuestionPoolManagementPage";
+import { OfflineSettingsPage } from "./pages/settings/OfflineSettingsPage";
+import { AIAnalyticsDashboardPage } from "./pages/analytics/AIAnalyticsDashboardPage";
+import { LTIIntegrationPage } from "./pages/integrations/LTIIntegrationPage";
+import { AudioVideoRecorderDemoPage } from "./components/recording/AudioVideoRecorder";
+import { Whiteboard } from "./components/whiteboard/Whiteboard";
+import { MultiLanguageDemoPage } from "./contexts/LanguageContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
+import { ParentPortalPage } from "./pages/parent/ParentPortalPage";
 
 // Enhanced Pages (Mock Development)
 import QuestionEditorPage from "./pages/questions/QuestionEditorPage";
@@ -75,13 +84,14 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <Routes>
+      <LanguageProvider>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -92,6 +102,14 @@ function App() {
             element={
               <DashboardLayout>
                 <AdminDashboardPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <DashboardLayout>
+                <ProfilePage />
               </DashboardLayout>
             }
           />
@@ -585,6 +603,60 @@ function App() {
               </DashboardLayout>
             }
           />
+          <Route
+            path="/settings/offline"
+            element={
+              <DashboardLayout>
+                <OfflineSettingsPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/settings/language"
+            element={
+              <DashboardLayout>
+                <MultiLanguageDemoPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/analytics/ai"
+            element={
+              <DashboardLayout>
+                <AIAnalyticsDashboardPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/integrations/lti"
+            element={
+              <DashboardLayout>
+                <LTIIntegrationPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/recording/demo"
+            element={
+              <DashboardLayout>
+                <AudioVideoRecorderDemoPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/whiteboard"
+            element={
+              <Whiteboard />
+            }
+          />
+          <Route
+            path="/parent/portal"
+            element={
+              <DashboardLayout>
+                <ParentPortalPage />
+              </DashboardLayout>
+            }
+          />
           {/* Location Management - Lokasyon Yönetimi */}
           <Route
             path="/locations/management"
@@ -618,6 +690,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
