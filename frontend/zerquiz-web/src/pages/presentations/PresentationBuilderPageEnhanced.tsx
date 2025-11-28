@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Presentation, Plus, Play, Edit, Trash2, Copy, Eye } from 'lucide-react';
+import { Presentation, Plus, Play, Edit, Trash2, Copy, Eye, Download, Share2 } from 'lucide-react';
 import {
   demoPresentations,
   presentationTemplates,
@@ -8,45 +8,73 @@ import {
   createPresentationFromTemplate,
   type Presentation as PresentationType,
 } from '../../mocks/presentationData';
+import PresentationPlayer from '../../components/presentations/PresentationPlayer';
+import PresentationEditor from '../../components/presentations/PresentationEditor';
 
 export default function PresentationBuilderPageEnhanced() {
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<'all' | PresentationType['status']>('all');
   const [showTemplates, setShowTemplates] = useState(false);
   const [selectedPresentation, setSelectedPresentation] = useState<PresentationType | null>(null);
+  const [playingPresentation, setPlayingPresentation] = useState<PresentationType | null>(null);
+  const [editingPresentation, setEditingPresentation] = useState<PresentationType | null>(null);
+  const [presentations, setPresentations] = useState<PresentationType[]>(demoPresentations);
 
   const stats = getPresentationStats();
 
   const filteredPresentations = filterStatus === 'all'
-    ? demoPresentations
-    : demoPresentations.filter(p => p.status === filterStatus);
+    ? presentations
+    : presentations.filter(p => p.status === filterStatus);
 
   const handleCreateFromTemplate = (templateId: string) => {
     const title = prompt('Sunum başlığı:');
     if (title) {
       const newPresentation = createPresentationFromTemplate(templateId, title);
-      alert(`"${title}" sunumu oluşturuldu! (ID: ${newPresentation.id})`);
+      setPresentations(prev => [newPresentation, ...prev]);
+      alert(`"${title}" sunumu oluşturuldu!`);
       setShowTemplates(false);
+      setEditingPresentation(newPresentation);
     }
   };
 
-  const handleAction = (presentation: PresentationType, action: string) => {
-    switch (action) {
-      case 'play':
-        alert(`"${presentation.title}" sunumu oynatılıyor...`);
-        break;
-      case 'edit':
-        alert(`"${presentation.title}" düzenleniyor...`);
-        break;
-      case 'duplicate':
-        alert(`"${presentation.title}" kopyalanıyor...`);
-        break;
-      case 'delete':
-        if (confirm(`"${presentation.title}" sunumunu silmek istediğinizden emin misiniz?`)) {
-          alert('Sunum silindi!');
-        }
-        break;
+  const handleSavePresentation = (presentation: PresentationType) => {
+    setPresentations(prev => 
+      prev.map(p => p.id === presentation.id ? presentation : p)
+    );
+    setEditingPresentation(null);
+    alert('Sunum kaydedildi!');
+  };
+
+  const handleDuplicate = (presentation: PresentationType) => {
+    const newPresentation: PresentationType = {
+      ...presentation,
+      id: `pres-${Date.now()}`,
+      title: `${presentation.title} (Kopya)`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'draft',
+    };
+    setPresentations(prev => [newPresentation, ...prev]);
+    alert(`"${presentation.title}" kopyalandı!`);
+  };
+
+  const handleDelete = (presentation: PresentationType) => {
+    if (confirm(`"${presentation.title}" sunumunu silmek istediğinizden emin misiniz?`)) {
+      setPresentations(prev => prev.filter(p => p.id !== presentation.id));
+      alert('Sunum silindi!');
     }
+  };
+
+  const handleExport = (presentation: PresentationType) => {
+    // Simulate export
+    const dataStr = JSON.stringify(presentation, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${presentation.title}.json`;
+    link.click();
+    alert('Sunum dışa aktarıldı!');
   };
 
   return (
@@ -174,14 +202,14 @@ export default function PresentationBuilderPageEnhanced() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleAction(pres, 'play')}
+                    onClick={() => setPlayingPresentation(pres)}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
                   >
                     <Play className="h-4 w-4" />
                     Oynat
                   </button>
                   <button
-                    onClick={() => handleAction(pres, 'edit')}
+                    onClick={() => setEditingPresentation(pres)}
                     className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
                     title="Düzenle"
                   >
@@ -193,6 +221,13 @@ export default function PresentationBuilderPageEnhanced() {
                     title="Detaylar"
                   >
                     <Eye className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDuplicate(pres)}
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                    title="Kopyala"
+                  >
+                    <Copy className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -277,21 +312,62 @@ export default function PresentationBuilderPageEnhanced() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleAction(selectedPresentation, 'play')}
+                  onClick={() => setPlayingPresentation(selectedPresentation)}
                   className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
                 >
+                  <Play className="h-4 w-4 inline mr-2" />
                   Oynat
                 </button>
                 <button
-                  onClick={() => handleAction(selectedPresentation, 'edit')}
+                  onClick={() => {
+                    setEditingPresentation(selectedPresentation);
+                    setSelectedPresentation(null);
+                  }}
                   className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
                 >
+                  <Edit className="h-4 w-4 inline mr-2" />
                   Düzenle
+                </button>
+                <button
+                  onClick={() => {
+                    handleExport(selectedPresentation);
+                  }}
+                  className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                  title="Dışa Aktar"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    handleDelete(selectedPresentation);
+                    setSelectedPresentation(null);
+                  }}
+                  className="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+                  title="Sil"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Presentation Player */}
+      {playingPresentation && (
+        <PresentationPlayer
+          presentation={playingPresentation}
+          onClose={() => setPlayingPresentation(null)}
+        />
+      )}
+
+      {/* Presentation Editor */}
+      {editingPresentation && (
+        <PresentationEditor
+          presentation={editingPresentation}
+          onSave={handleSavePresentation}
+          onClose={() => setEditingPresentation(null)}
+        />
       )}
     </div>
   );

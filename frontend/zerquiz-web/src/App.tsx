@@ -35,6 +35,15 @@ import NotificationCenter from "./pages/notifications/NotificationCenter";
 import TenantSettings from "./pages/settings/TenantSettings";
 import PortalSettings from "./pages/settings/PortalSettings";
 import OrganizationSettings from "./pages/settings/OrganizationSettings";
+import MailProviderSettingsPage from "./pages/settings/MailProviderSettingsPage";
+import LocationManagementPage from "./pages/locations/LocationManagementPage";
+import DynamicFieldsManagementPage from "./pages/settings/DynamicFieldsManagementPage";
+import RealTimeMonitoringPage from "./pages/monitoring/RealTimeMonitoringPage";
+import RubricEvaluationPage from "./pages/evaluation/RubricEvaluationPage";
+import MathEditorDemoPage from "./pages/editors/MathEditorDemoPage";
+import CodeEditorDemoPage from "./pages/editors/CodeEditorDemoPage";
+import GamificationPage from "./pages/gamification/GamificationPage";
+import QuestionPoolManagementPage from "./pages/questions/QuestionPoolManagementPage";
 
 // Enhanced Pages (Mock Development)
 import QuestionEditorPage from "./pages/questions/QuestionEditorPage";
@@ -43,7 +52,12 @@ import QuestionEditorPageV4 from "./pages/questions/QuestionEditorPageV4";
 import PresentationEditorPageAdvanced from "./pages/presentation/PresentationEditorPageAdvanced";
 import ExamWizardPage from "./pages/exams/ExamWizardPage";
 import ExamSessionPageEnhanced from "./pages/exams/ExamSessionPageEnhanced";
+import AdvancedExamSessionPage from "./pages/exams/AdvancedExamSessionPage";
 import ExamGradingPage from "./pages/grading/ExamGradingPage";
+import ExamManagementPage from "./pages/exams/ExamManagementPage";
+import StudentExamPortalPage from "./pages/student/StudentExamPortalPage";
+import ExamReviewPage from "./pages/exam-review/ExamReviewPage";
+import ExamPresentationPage from "./pages/exam-presentation/ExamPresentationPage";
 import AdminDashboardPage from "./pages/dashboard/AdminDashboardPage";
 import QuestionReviewQueuePage from "./pages/review/QuestionReviewQueuePage";
 import CertificatesPageEnhanced from "./pages/certificates/CertificatesPageEnhanced";
@@ -52,6 +66,9 @@ import PresentationBuilderPageEnhanced from "./pages/presentations/PresentationB
 import AdvancedFinancePage from "./pages/finance/AdvancedFinancePage";
 import ContractManagementPage from "./pages/contracts/ContractManagementPage";
 import CommunicationCenterPage from "./pages/communication/CommunicationCenterPage";
+import CommunicationCenterPageAdvanced from "./pages/communication/CommunicationCenterPageAdvanced";
+import RoyaltyManagementPage from "./pages/royalty/RoyaltyManagementPage";
+import CoursesPage from "./pages/courses/CoursesPage";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +112,14 @@ function App() {
             }
           />
           <Route
+            path="/questions/pool"
+            element={
+              <DashboardLayout>
+                <QuestionPoolManagementPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
             path="/questions-old"
             element={
               <DashboardLayout>
@@ -119,14 +144,75 @@ function App() {
             path="/exams"
             element={
               <DashboardLayout>
+                <ExamManagementPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/exams/old"
+            element={
+              <DashboardLayout>
                 <ExamsPage />
               </DashboardLayout>
             }
           />
           <Route path="/exams/wizard" element={<ExamWizardPage />} />
           <Route path="/exams/wizard/:id" element={<ExamWizardPage />} />
-          <Route path="/exams/:id/session" element={<ExamSessionPageEnhanced />} />
+          <Route path="/exams/:id/session" element={<AdvancedExamSessionPage />} />
+          <Route path="/exams/:id/session-old" element={<ExamSessionPageEnhanced />} />
           <Route path="/exams/:id/grading" element={<ExamGradingPage />} />
+          <Route path="/exams/:id/present" element={<ExamPresentationPage />} />
+          <Route
+            path="/exams/:id/monitor"
+            element={
+              <DashboardLayout>
+                <RealTimeMonitoringPage />
+              </DashboardLayout>
+            }
+          />
+          {/* Student Exam Routes */}
+          <Route
+            path="/student/exams"
+            element={
+              <DashboardLayout>
+                <StudentExamPortalPage />
+              </DashboardLayout>
+            }
+          />
+          <Route path="/student/exam/:id/review" element={<ExamReviewPage />} />
+          <Route path="/teacher/exam/:id/review" element={<ExamReviewPage />} />
+          <Route
+            path="/evaluation/rubric"
+            element={
+              <DashboardLayout>
+                <RubricEvaluationPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/editors/math"
+            element={
+              <DashboardLayout>
+                <MathEditorDemoPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/editors/code"
+            element={
+              <DashboardLayout>
+                <CodeEditorDemoPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/gamification"
+            element={
+              <DashboardLayout>
+                <GamificationPage />
+              </DashboardLayout>
+            }
+          />
           <Route
             path="/review/queue"
             element={
@@ -232,6 +318,14 @@ function App() {
             }
           />
           <Route
+            path="/courses"
+            element={
+              <DashboardLayout>
+                <CoursesPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
             path="/presentations"
             element={
               <DashboardLayout>
@@ -289,6 +383,71 @@ function App() {
               </DashboardLayout>
             }
           />
+          {/* Finance Routes - Mali Yönetim */}
+          <Route
+            path="/finance/overview"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/cash"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/income-expense"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/budget"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/perdiem"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/invoices"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/proforma"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/finance/payments"
+            element={
+              <DashboardLayout>
+                <AdvancedFinancePage />
+              </DashboardLayout>
+            }
+          />
           <Route
             path="/finance/subscriptions"
             element={
@@ -325,6 +484,14 @@ function App() {
             path="/communication"
             element={
               <DashboardLayout>
+                <CommunicationCenterPageAdvanced />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/communication-old"
+            element={
+              <DashboardLayout>
                 <CommunicationCenterPage />
               </DashboardLayout>
             }
@@ -334,6 +501,22 @@ function App() {
             element={
               <DashboardLayout>
                 <AuthorDashboard />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/royalty"
+            element={
+              <DashboardLayout>
+                <RoyaltyManagementPage />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/royalty/:section"
+            element={
+              <DashboardLayout>
+                <RoyaltyManagementPage />
               </DashboardLayout>
             }
           />
@@ -391,6 +574,32 @@ function App() {
             element={
               <DashboardLayout>
                 <OrganizationSettings />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/settings/mail-providers"
+            element={
+              <DashboardLayout>
+                <MailProviderSettingsPage />
+              </DashboardLayout>
+            }
+          />
+          {/* Location Management - Lokasyon Yönetimi */}
+          <Route
+            path="/locations/management"
+            element={
+              <DashboardLayout>
+                <LocationManagementPage />
+              </DashboardLayout>
+            }
+          />
+          {/* Dynamic Fields Management - Dinamik Alan Yönetimi */}
+          <Route
+            path="/settings/dynamic-fields"
+            element={
+              <DashboardLayout>
+                <DynamicFieldsManagementPage />
               </DashboardLayout>
             }
           />

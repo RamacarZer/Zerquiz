@@ -37,6 +37,61 @@ export interface FinancialSummary {
   avgRevenuePerUser: number;
 }
 
+export interface CashAccount {
+  id: string;
+  name: string;
+  type: 'main' | 'petty' | 'bank';
+  currency: string;
+  balance: number;
+  lastUpdate: string;
+}
+
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  type: 'income' | 'expense';
+  amount: number;
+  budget: number;
+  trend: number;
+}
+
+export interface BudgetItem {
+  id: string;
+  department: string;
+  allocated: number;
+  used: number;
+  variance: number;
+}
+
+export interface PerDiemRequest {
+  id: string;
+  employee: string;
+  destination: string;
+  amount: number;
+  status: 'approved' | 'pending' | 'rejected';
+  submittedAt: string;
+  purpose: string;
+}
+
+export interface FinanceInvoiceRecord {
+  id: string;
+  type: 'invoice' | 'proforma';
+  customer: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  status: 'paid' | 'pending' | 'overdue';
+}
+
+export interface PaymentGatewayStatus {
+  id: string;
+  name: string;
+  uptime: string;
+  successRate: string;
+  status: 'operational' | 'degraded' | 'down';
+  issues: string[];
+}
+
 // ==================== DEMO ÖDEMELER ====================
 
 function generateDemoPayments(): Payment[] {
@@ -96,6 +151,135 @@ function generateRevenueData(): Revenue[] {
 }
 
 export const revenueData = generateRevenueData();
+
+export const cashAccounts: CashAccount[] = [
+  {
+    id: 'cash-1',
+    name: 'Ana Kasa',
+    type: 'main',
+    currency: 'TRY',
+    balance: 186500,
+    lastUpdate: new Date().toISOString(),
+  },
+  {
+    id: 'cash-2',
+    name: 'USD Banka Hesabı',
+    type: 'bank',
+    currency: 'USD',
+    balance: 42500,
+    lastUpdate: new Date().toISOString(),
+  },
+  {
+    id: 'cash-3',
+    name: 'Şube Kasa',
+    type: 'petty',
+    currency: 'TRY',
+    balance: 18500,
+    lastUpdate: new Date().toISOString(),
+  },
+];
+
+export const expenseCategories: ExpenseCategory[] = [
+  { id: 'exp-1', name: 'Eğitim Hizmet Geliri', type: 'income', amount: 425000, budget: 400000, trend: 8 },
+  { id: 'exp-2', name: 'Lisans Geliri', type: 'income', amount: 155000, budget: 150000, trend: 5 },
+  { id: 'exp-3', name: 'Personel Gideri', type: 'expense', amount: 180000, budget: 175000, trend: -3 },
+  { id: 'exp-4', name: 'Altyapı & Depolama', type: 'expense', amount: 95000, budget: 100000, trend: 2 },
+  { id: 'exp-5', name: 'Pazarlama', type: 'expense', amount: 65000, budget: 80000, trend: 4 },
+];
+
+export const budgetItems: BudgetItem[] = [
+  { id: 'bud-1', department: 'Akademik', allocated: 150000, used: 120000, variance: 30000 },
+  { id: 'bud-2', department: 'Teknoloji', allocated: 200000, used: 185000, variance: 15000 },
+  { id: 'bud-3', department: 'Satış & Pazarlama', allocated: 100000, used: 92000, variance: 8000 },
+  { id: 'bud-4', department: 'Operasyon', allocated: 85000, used: 77000, variance: 8000 },
+];
+
+export const perDiemRequests: PerDiemRequest[] = [
+  {
+    id: 'prd-1',
+    employee: 'Zeynep Kaya',
+    destination: 'Ankara',
+    amount: 4200,
+    status: 'approved',
+    submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    purpose: 'MEB protokol toplantısı',
+  },
+  {
+    id: 'prd-2',
+    employee: 'Ahmet Demir',
+    destination: 'İzmir',
+    amount: 3100,
+    status: 'pending',
+    submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    purpose: 'Eğitimci eğitimi',
+  },
+  {
+    id: 'prd-3',
+    employee: 'Ayşe Karaca',
+    destination: 'Bursa',
+    amount: 1850,
+    status: 'rejected',
+    submittedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    purpose: 'Seminer katılımı',
+  },
+];
+
+export const financeInvoices: FinanceInvoiceRecord[] = [
+  {
+    id: 'finv-1',
+    type: 'invoice',
+    customer: 'ABC Koleji',
+    amount: 24500,
+    currency: 'TRY',
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+  },
+  {
+    id: 'finv-2',
+    type: 'proforma',
+    customer: 'Demo Okul',
+    amount: 7990,
+    currency: 'TRY',
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+  },
+  {
+    id: 'finv-3',
+    type: 'invoice',
+    customer: 'Üniversite X',
+    amount: 125000,
+    currency: 'TRY',
+    dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'overdue',
+  },
+];
+
+export const paymentGateways: PaymentGatewayStatus[] = [
+  {
+    id: 'pgw-1',
+    name: 'iyzico',
+    uptime: '99.98%',
+    successRate: '97.5%',
+    status: 'operational',
+    issues: [],
+  },
+  {
+    id: 'pgw-2',
+    name: 'Stripe Global',
+    uptime: '99.90%',
+    successRate: '98.8%',
+    status: 'operational',
+    issues: ['USD ödemelerde gecikme'],
+  },
+  {
+    id: 'pgw-3',
+    name: 'PayPal',
+    uptime: '99.10%',
+    successRate: '95.2%',
+    status: 'degraded',
+    issues: ['Bazı kullanıcılar doğrulama problemi yaşıyor'],
+  },
+];
 
 // ==================== FİNANSAL ÖZET ====================
 
