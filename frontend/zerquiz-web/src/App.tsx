@@ -78,6 +78,7 @@ import CommunicationCenterPage from "./pages/communication/CommunicationCenterPa
 import CommunicationCenterPageAdvanced from "./pages/communication/CommunicationCenterPageAdvanced";
 import RoyaltyManagementPage from "./pages/royalty/RoyaltyManagementPage";
 import CoursesPage from "./pages/courses/CoursesPage";
+import { WhiteboardPage } from "./pages/whiteboard/WhiteboardPage";
 
 const queryClient = new QueryClient();
 
@@ -645,9 +646,15 @@ function App() {
           />
           <Route
             path="/whiteboard"
-            element={
-              <Whiteboard />
-            }
+            element={<Whiteboard />}
+          />
+          <Route
+            path="/whiteboard-suite"
+            element={<WhiteboardPage />}
+          />
+          <Route
+            path="/whiteboard-suite/:id"
+            element={<WhiteboardPage />}
           />
           <Route
             path="/parent/portal"

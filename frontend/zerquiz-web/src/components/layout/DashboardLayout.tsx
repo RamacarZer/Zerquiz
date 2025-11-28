@@ -375,9 +375,15 @@ const MENU_ITEMS: MenuItem[] = [
       },
       {
         id: "whiteboard",
-        label: "Beyaz Tahta",
+        label: "Beyaz Tahta (Basic)",
         icon: "✏️",
         path: "/whiteboard",
+      },
+      {
+        id: "whiteboard-suite",
+        label: "Zercode Whiteboard Suite",
+        icon: "🎨",
+        path: "/whiteboard-suite",
       },
       {
         id: "recording",

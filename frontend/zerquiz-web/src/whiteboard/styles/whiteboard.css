@@ -1,0 +1,134 @@
+/**
+ * Zercode Whiteboard Suite - Global Styles
+ */
+
+/* Import Polotno styles */
+@import 'polotno/polotno.css';
+
+/* Excalidraw overrides */
+.excalidraw {
+  --color-primary: #3b82f6;
+  --color-primary-darker: #2563eb;
+  --color-primary-darkest: #1d4ed8;
+}
+
+.excalidraw .App-menu_top {
+  display: none !important;
+}
+
+.excalidraw .layer-ui__wrapper__footer {
+  display: none !important;
+}
+
+/* Polotno overrides */
+.polotno-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* PDF Viewer overrides */
+.react-pdf__Page {
+  position: relative;
+}
+
+.react-pdf__Page__canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* Canvas overlay for annotations */
+.pdf-annotation-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
+  cursor: crosshair;
+}
+
+/* Toolbar animations */
+.toolbar-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-button:active {
+  transform: scale(0.95);
+}
+
+/* Mode switch animation */
+.mode-switch-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-switch-button.active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading states */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-pulse {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Saving indicator */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.saving-spinner {
+  animation: spin-slow 2s linear infinite;
+}
+
+/* Color picker */
+.color-swatch {
+  transition: transform 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.active {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #3b82f6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .zercode-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .toolbar-section {
+    flex-wrap: wrap;
+  }
+}
+
+/* Print styles */
+@media print {
+  .zercode-header,
+  .zercode-toolbar,
+  .mode-switch {
+    display: none !important;
+  }
+
+  .whiteboard-canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
