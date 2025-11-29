@@ -1,235 +1,256 @@
 /**
  * PDF Annotator Component
+ * React-PDF ile PDF görüntüleme + Canvas overlay ile annotation
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { PdfEngine } from './pdfEngine';
 import { useModeStore } from '../../core/modeStore';
+import { Stroke, Point } from '../../core/engineTypes';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 
-// PDF.js worker setup
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Import React-PDF CSS
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PdfAnnotatorProps {
-  documentId?: string;
-  pdfUrl?: string;
-  onReady?: (engine: PdfEngine) => void;
+  documentId: string;
+  onReady?: () => void;
 }
 
-export function PdfAnnotator({ documentId, pdfUrl, onReady }: PdfAnnotatorProps) {
+export function PdfAnnotator({ documentId, onReady }: PdfAnnotatorProps) {
   const engineRef = useRef<PdfEngine | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const { setEngine, activeTool, color, lineWidth } = useModeStore();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { setEngine, activeTool, color, lineWidth, setLoading } = useModeStore();
   
   const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [scale, setScale] = useState(1.0);
+  const [pdfFile, setPdfFile] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [pdfFile, setPdfFile] = useState<string>('/sample.pdf'); // Default demo PDF
+  const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
 
   // Initialize engine
   useEffect(() => {
-    if (!engineRef.current) {
-      engineRef.current = new PdfEngine();
-      setEngine(engineRef.current);
-      
-      if (onReady) {
-        onReady(engineRef.current);
-      }
-    }
+    engineRef.current = new PdfEngine();
+    setEngine(engineRef.current);
 
-    return () => {
-      if (engineRef.current) {
-        engineRef.current.destroy();
-        engineRef.current = null;
-      }
-    };
-  }, [setEngine, onReady]);
+    setLoading(true);
+    engineRef.current
+      .loadDocument(documentId)
+      .then(() => {
+        const url = engineRef.current!.getPdfUrl();
+        setPdfFile(url);
+        onReady?.();
+      })
+      .catch((error) => {
+        console.error('Failed to initialize PDF:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [documentId, setEngine, setLoading, onReady]);
 
-  // Set canvas when ready
-  useEffect(() => {
-    if (canvasRef.current && engineRef.current) {
-      engineRef.current.setCanvas(canvasRef.current);
-    }
-  }, [canvasRef.current]);
-
-  // Load document
-  useEffect(() => {
-    if (documentId && engineRef.current) {
-      engineRef.current.loadDocument(documentId);
-    }
-  }, [documentId]);
-
-  // Set PDF URL
-  useEffect(() => {
-    if (pdfUrl) {
-      setPdfFile(pdfUrl);
-    }
-  }, [pdfUrl]);
-
-  // Update engine tool settings
+  // Update engine's current page
   useEffect(() => {
     if (engineRef.current) {
-      engineRef.current.setTool(activeTool);
-      engineRef.current.setColor(color);
-      engineRef.current.setLineWidth(lineWidth);
+      engineRef.current.setCurrentPage(pageNumber);
     }
-  }, [activeTool, color, lineWidth]);
+  }, [pageNumber]);
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    if (engineRef.current) {
-      // Update engine with total pages
-      (engineRef.current as any).totalPages = numPages;
-    }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= numPages) {
-      setPageNumber(newPage);
-      if (engineRef.current) {
-        engineRef.current.goToPage(newPage);
-      }
-    }
-  };
-
-  const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Drawing functions
+  const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-    
+
     const rect = canvas.getBoundingClientRect();
     return {
-      x: (e.clientX - rect.left) * (canvas.width / rect.width),
-      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     };
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool === 'select') return;
+    
     setIsDrawing(true);
-    const pos = getMousePos(e);
-    if (engineRef.current) {
-      engineRef.current.startStroke(pos);
+    const point = getMousePos(e);
+    setCurrentStroke([point]);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || activeTool === 'select') return;
+
+    const point = getMousePos(e);
+    setCurrentStroke((prev) => [...prev, point]);
+
+    // Draw on canvas
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) return;
+
+    ctx.strokeStyle = activeTool === 'eraser' ? '#ffffff' : color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (currentStroke.length > 0) {
+      const lastPoint = currentStroke[currentStroke.length - 1];
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const stopDrawing = () => {
     if (!isDrawing) return;
-    const pos = getMousePos(e);
-    if (engineRef.current) {
-      engineRef.current.addPoint(pos);
-    }
-  };
 
-  const handleMouseUp = () => {
-    if (!isDrawing) return;
     setIsDrawing(false);
-    if (engineRef.current) {
-      engineRef.current.endStroke();
+
+    if (currentStroke.length > 1 && engineRef.current) {
+      const stroke: Stroke = {
+        id: `stroke-${Date.now()}`,
+        tool: activeTool,
+        points: currentStroke,
+        color: color,
+        width: lineWidth,
+      };
+
+      engineRef.current.addStroke(stroke);
     }
+
+    setCurrentStroke([]);
   };
+
+  // Redraw annotations when page changes
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx || !canvas || !engineRef.current) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Redraw annotations for current page
+    const annotation = engineRef.current.getAnnotationsForPage(pageNumber);
+    if (annotation) {
+      annotation.strokes.forEach((stroke) => {
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        stroke.points.forEach((point, index) => {
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        });
+        ctx.stroke();
+      });
+    }
+  }, [pageNumber]);
+
+  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+  }, []);
+
+  // Resize canvas to match PDF page
+  const onPageLoadSuccess = useCallback(() => {
+    const canvas = canvasRef.current;
+    const pageElement = document.querySelector('.react-pdf__Page__canvas') as HTMLCanvasElement;
+    
+    if (canvas && pageElement) {
+      canvas.width = pageElement.width;
+      canvas.height = pageElement.height;
+    }
+  }, []);
+
+  if (!pdfFile) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        PDF yükleniyor...
+      </div>
+    );
+  }
 
   return (
-    <div ref={containerRef} className="h-full w-full flex flex-col bg-gray-100">
-      {/* PDF Navigation */}
-      <div className="bg-white border-b border-gray-300 px-4 py-2 flex items-center justify-between">
+    <div className="flex flex-col h-full bg-gray-100">
+      {/* Controls */}
+      <div className="flex items-center justify-between p-4 bg-white border-b">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => handlePageChange(pageNumber - 1)}
+            onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
             disabled={pageNumber <= 1}
-            className="p-2 text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft size={20} />
           </button>
-          
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm">
             Sayfa {pageNumber} / {numPages}
           </span>
-          
           <button
-            onClick={() => handlePageChange(pageNumber + 1)}
+            onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
             disabled={pageNumber >= numPages}
-            className="p-2 text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight size={20} />
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setScale(Math.max(0.5, scale - 0.1))}
-            className="p-2 text-gray-700 hover:bg-gray-100 rounded"
+            onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}
+            className="p-2 rounded hover:bg-gray-100"
           >
-            <ZoomOut className="h-5 w-5" />
+            <ZoomOut size={20} />
           </button>
-          <span className="text-sm font-medium text-gray-700 min-w-[60px] text-center">
-            {Math.round(scale * 100)}%
-          </span>
+          <span className="text-sm">{Math.round(scale * 100)}%</span>
           <button
-            onClick={() => setScale(Math.min(2.0, scale + 0.1))}
-            className="p-2 text-gray-700 hover:bg-gray-100 rounded"
+            onClick={() => setScale((s) => Math.min(2.0, s + 0.1))}
+            className="p-2 rounded hover:bg-gray-100"
           >
-            <ZoomIn className="h-5 w-5" />
+            <ZoomIn size={20} />
           </button>
         </div>
       </div>
 
-      {/* PDF Viewer with Canvas Overlay */}
+      {/* PDF + Canvas Overlay */}
       <div className="flex-1 overflow-auto p-4">
-        <div className="relative inline-block mx-auto">
-          {/* PDF Page */}
+        <div className="mx-auto inline-block relative shadow-lg">
           <Document
             file={pdfFile}
             onLoadSuccess={onDocumentLoadSuccess}
-            loading={
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-              </div>
-            }
-            error={
-              <div className="p-8 text-center">
-                <p className="text-red-600 mb-4">PDF yüklenemedi</p>
-                <p className="text-sm text-gray-600">
-                  Lütfen public klasörüne sample.pdf dosyası ekleyin veya farklı bir PDF yükleyin
-                </p>
-              </div>
-            }
+            loading={<div className="text-center p-4">PDF yükleniyor...</div>}
+            error={<div className="text-center p-4 text-red-500">PDF yüklenemedi</div>}
           >
             <Page
               pageNumber={pageNumber}
               scale={scale}
-              renderTextLayer={true}
+              onLoadSuccess={onPageLoadSuccess}
               renderAnnotationLayer={true}
+              renderTextLayer={true}
             />
           </Document>
 
           {/* Annotation Canvas Overlay */}
           <canvas
             ref={canvasRef}
-            className="absolute top-0 left-0 cursor-crosshair pdf-annotation-canvas"
-            style={{
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'all',
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            className="absolute top-0 left-0 pointer-events-auto"
+            style={{ cursor: activeTool === 'select' ? 'default' : 'crosshair' }}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
           />
         </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="bg-blue-50 border-t border-blue-200 px-4 py-2">
-        <p className="text-sm text-blue-900">
-          💡 <strong>İpucu:</strong> Toolbar'dan kalem, işaretleyici veya silgi seçin ve PDF üzerine çizim yapın.
-          Tüm notlarınız sayfa bazında otomatik kaydedilir.
-        </p>
       </div>
     </div>
   );

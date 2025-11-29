@@ -1,75 +1,80 @@
 /**
  * Polotno Slides Editor Component
+ * Polotno'yu wrap eden React komponenti
  */
 
-import React, { useEffect, useRef } from 'react';
-import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
-import { Toolbar } from 'polotno/toolbar/toolbar';
-import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel } from 'polotno/side-panel';
-import { Workspace } from 'polotno/canvas/workspace';
+import React, { useEffect, useRef, useState } from 'react';
+import { PolotnoContainer, SidePanelWrap, Workspace, Toolbar, ZoomButtons } from 'polotno/canvas/canvas';
+import { createStore, StoreType } from 'polotno/model/store';
 import { PolotnoEngine } from './polotnoEngine';
 import { useModeStore } from '../../core/modeStore';
 
+// Import Polotno CSS
+import 'polotno/polotno.css';
+
 interface PolotnoSlidesEditorProps {
-  documentId?: string;
-  onReady?: (engine: PolotnoEngine) => void;
+  documentId: string;
+  onReady?: () => void;
 }
 
 export function PolotnoSlidesEditor({ documentId, onReady }: PolotnoSlidesEditorProps) {
+  const [store] = useState<StoreType>(() =>
+    createStore({
+      key: 'nFA5H9elEytDyPyvKL7T', // Demo key - shows watermark
+      showCredit: false,
+    })
+  );
+  
   const engineRef = useRef<PolotnoEngine | null>(null);
-  const { setEngine, config } = useModeStore();
+  const { setEngine, setLoading } = useModeStore();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize engine
   useEffect(() => {
-    if (!engineRef.current) {
-      engineRef.current = new PolotnoEngine();
-      setEngine(engineRef.current);
-      
-      if (onReady) {
-        onReady(engineRef.current);
-      }
-    }
+    engineRef.current = new PolotnoEngine(store);
+    setEngine(engineRef.current);
 
-    return () => {
+    setLoading(true);
+    engineRef.current
+      .loadDocument(documentId)
+      .then(() => {
+        setIsInitialized(true);
+        onReady?.();
+      })
+      .catch((error) => {
+        console.error('Failed to initialize Polotno:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [documentId, store, setEngine, setLoading, onReady]);
+
+  // Listen for store changes (auto-save)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const handleChange = () => {
       if (engineRef.current) {
-        engineRef.current.destroy();
-        engineRef.current = null;
+        engineRef.current.autoSave();
       }
     };
-  }, [setEngine, onReady]);
 
-  // Load document
-  useEffect(() => {
-    if (documentId && engineRef.current) {
-      engineRef.current.loadDocument(documentId);
-    }
-  }, [documentId]);
+    store.on('change', handleChange);
 
-  if (!engineRef.current) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Polotno yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const store = engineRef.current.getStore();
+    return () => {
+      store.off('change', handleChange);
+    };
+  }, [store, isInitialized]);
 
   return (
-    <div className="h-full w-full polotno-container">
-      <PolotnoContainer>
-        <SidePanelWrap>
-          <SidePanel store={store} />
-        </SidePanelWrap>
-        <WorkspaceWrap>
+    <div className="h-full w-full flex flex-col">
+      <PolotnoContainer className="flex-1">
+        <SidePanelWrap store={store} />
+        <div className="flex flex-col flex-1">
           <Toolbar store={store} />
           <Workspace store={store} />
           <ZoomButtons store={store} />
-        </WorkspaceWrap>
+        </div>
       </PolotnoContainer>
     </div>
   );

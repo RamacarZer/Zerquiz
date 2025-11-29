@@ -1,84 +1,81 @@
 /**
  * Excalidraw Board Component
+ * Excalidraw'ı wrap eden React komponenti
  */
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Excalidraw } from '@excalidraw/excalidraw';
-import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { Excalidraw, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw';
 import { ExcalidrawEngine } from './excalidrawEngine';
 import { useModeStore } from '../../core/modeStore';
 
 interface ExcalidrawBoardProps {
-  documentId?: string;
-  onReady?: (engine: ExcalidrawEngine) => void;
+  documentId: string;
+  onReady?: () => void;
 }
 
 export function ExcalidrawBoard({ documentId, onReady }: ExcalidrawBoardProps) {
-  const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
+  const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const engineRef = useRef<ExcalidrawEngine | null>(null);
-  const { config, setEngine } = useModeStore();
+  const { setEngine, activeTool, config, setLoading } = useModeStore();
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize engine
-  useEffect(() => {
-    if (!engineRef.current) {
-      engineRef.current = new ExcalidrawEngine();
-    }
-
-    return () => {
-      if (engineRef.current) {
-        engineRef.current.destroy();
-        engineRef.current = null;
-      }
-    };
-  }, []);
-
-  // Set API when ready
-  useEffect(() => {
-    if (excalidrawAPI && engineRef.current) {
-      engineRef.current.setApi(excalidrawAPI);
+  // Excalidraw API callback
+  const onExcalidrawAPI = useCallback(
+    (api: ExcalidrawImperativeAPI) => {
+      excalidrawAPIRef.current = api;
+      engineRef.current = new ExcalidrawEngine(api);
       setEngine(engineRef.current);
       
-      if (onReady) {
-        onReady(engineRef.current);
-      }
-    }
-  }, [excalidrawAPI, setEngine, onReady]);
+      // Load document
+      setLoading(true);
+      engineRef.current
+        .loadDocument(documentId)
+        .then(() => {
+          setIsInitialized(true);
+          onReady?.();
+        })
+        .catch((error) => {
+          console.error('Failed to initialize Excalidraw:', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [documentId, setEngine, setLoading, onReady]
+  );
 
-  // Load document
+  // Handle changes (auto-save)
+  const onChange = useCallback(() => {
+    if (engineRef.current && isInitialized) {
+      engineRef.current.autoSave();
+    }
+  }, [isInitialized]);
+
+  // Apply tool changes from store
   useEffect(() => {
-    if (documentId && engineRef.current && excalidrawAPI) {
-      engineRef.current.loadDocument(documentId);
+    if (engineRef.current && isInitialized) {
+      engineRef.current.setTool(activeTool);
     }
-  }, [documentId, excalidrawAPI]);
-
-  // Handle changes (autosave)
-  const handleChange = () => {
-    if (engineRef.current) {
-      engineRef.current.debouncedSave();
-    }
-  };
+  }, [activeTool, isInitialized]);
 
   return (
     <div className="h-full w-full">
       <Excalidraw
-        excalidrawAPI={(api) => setExcalidrawAPI(api)}
-        onChange={handleChange}
-        initialData={{
-          appState: {
-            viewBackgroundColor: '#ffffff',
-            gridSize: config.gridEnabled ? 20 : null,
-            zenModeEnabled: false,
-          },
-        }}
+        excalidrawAPI={onExcalidrawAPI}
+        onChange={onChange}
+        theme={config.theme}
+        gridModeEnabled={config.gridEnabled}
         UIOptions={{
           canvasActions: {
+            changeViewBackgroundColor: true,
+            clearCanvas: false, // We handle this via toolbar
+            export: false, // We handle this via toolbar
             loadScene: false,
-            export: false,
+            saveAsImage: false,
             saveToActiveFile: false,
-            toggleTheme: true,
+            toggleTheme: false,
           },
         }}
-        theme={config.theme === 'dark' ? 'dark' : 'light'}
       />
     </div>
   );

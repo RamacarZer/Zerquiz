@@ -1,89 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Wizard from '../../components/common/Wizard';
-import AdvancedRichTextEditor from '../../components/common/AdvancedRichTextEditor';
-import EnhancedWhiteboard from '../../components/common/EnhancedWhiteboard';
-import Alert from '../../components/common/Alert';
-import { Spinner } from '../../components/common/LoadingStates';
-import { 
-  Save, 
-  Eye, 
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Wizard from "../../components/common/Wizard";
+import AdvancedRichTextEditor from "../../components/common/AdvancedRichTextEditor";
+import { ExcalidrawBoard } from "../../whiteboard/engines/excalidraw/ExcalidrawBoard";
+import { contentService } from "../../services/api/contentService";
+import Alert from "../../components/common/Alert";
+import { Spinner } from "../../components/common/LoadingStates";
+import {
+  Save,
+  Eye,
   X,
   CheckCircle,
   BookOpen,
   FileQuestion,
   Presentation,
-  Trash2
-} from 'lucide-react';
+  Trash2,
+} from "lucide-react";
 import {
   realQuestionService,
   QuestionFormatType,
   QuestionPedagogicalType,
   QuestionDifficultyLevel,
   QuestionPresentationType,
-} from '../../services/api/realQuestionService';
+} from "../../services/api/realQuestionService";
 import {
   questionFormatTypeService,
   questionDifficultyLevelService,
   questionPresentationTypeService,
-} from '../../mocks/questionMocks';
+} from "../../mocks/questionMocks";
 
-const WIZARD_STEPS = ['Temel Bilgiler', 'Müfredat', 'İçerik Girişi', 'Ön İzleme'];
+const WIZARD_STEPS = [
+  "Temel Bilgiler",
+  "Müfredat",
+  "İçerik Girişi",
+  "Ön İzleme",
+];
 
-type ContentType = 'lesson' | 'question' | 'presentation';
-const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
+type ContentType = "lesson" | "question" | "presentation";
+const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 
 const FALLBACK_PEDAGOGICAL_TYPES: QuestionPedagogicalType[] = [
   {
-    id: 'knowledge',
-    code: 'knowledge',
-    name: 'Bilgi',
-    description: 'Bilgi düzeyi',
+    id: "knowledge",
+    code: "knowledge",
+    name: "Bilgi",
+    description: "Bilgi düzeyi",
     bloomLevel: 1,
     isActive: true,
     displayOrder: 1,
   },
   {
-    id: 'comprehension',
-    code: 'comprehension',
-    name: 'Kavrama',
-    description: 'Kavrama düzeyi',
+    id: "comprehension",
+    code: "comprehension",
+    name: "Kavrama",
+    description: "Kavrama düzeyi",
     bloomLevel: 2,
     isActive: true,
     displayOrder: 2,
   },
   {
-    id: 'application',
-    code: 'application',
-    name: 'Uygulama',
-    description: 'Uygulama düzeyi',
+    id: "application",
+    code: "application",
+    name: "Uygulama",
+    description: "Uygulama düzeyi",
     bloomLevel: 3,
     isActive: true,
     displayOrder: 3,
   },
   {
-    id: 'analysis',
-    code: 'analysis',
-    name: 'Analiz',
-    description: 'Analiz düzeyi',
+    id: "analysis",
+    code: "analysis",
+    name: "Analiz",
+    description: "Analiz düzeyi",
     bloomLevel: 4,
     isActive: true,
     displayOrder: 4,
   },
   {
-    id: 'synthesis',
-    code: 'synthesis',
-    name: 'Sentez',
-    description: 'Sentez düzeyi',
+    id: "synthesis",
+    code: "synthesis",
+    name: "Sentez",
+    description: "Sentez düzeyi",
     bloomLevel: 5,
     isActive: true,
     displayOrder: 5,
   },
   {
-    id: 'evaluation',
-    code: 'evaluation',
-    name: 'Değerlendirme',
-    description: 'Değerlendirme düzeyi',
+    id: "evaluation",
+    code: "evaluation",
+    name: "Değerlendirme",
+    description: "Değerlendirme düzeyi",
     bloomLevel: 6,
     isActive: true,
     displayOrder: 6,
@@ -91,17 +97,17 @@ const FALLBACK_PEDAGOGICAL_TYPES: QuestionPedagogicalType[] = [
 ];
 
 const OUTPUT_CHANNELS = [
-  { id: 'book', label: 'Kitap' },
-  { id: 'mock_exam', label: 'Deneme' },
-  { id: 'question_bank', label: 'Soru Bankası' },
-  { id: 'presentation', label: 'Sunum' },
-  { id: 'exam', label: 'Sınav' },
+  { id: "book", label: "Kitap" },
+  { id: "mock_exam", label: "Deneme" },
+  { id: "question_bank", label: "Soru Bankası" },
+  { id: "presentation", label: "Sunum" },
+  { id: "exam", label: "Sınav" },
 ];
 
 const DELIVERY_MODES = [
-  { id: 'online', label: 'Online' },
-  { id: 'offline', label: 'Offline' },
-  { id: 'hybrid', label: 'Hibrit' },
+  { id: "online", label: "Online" },
+  { id: "offline", label: "Offline" },
+  { id: "hybrid", label: "Hibrit" },
 ];
 
 export default function QuestionEditorPageV3() {
@@ -113,39 +119,53 @@ export default function QuestionEditorPageV3() {
 
   // Data sources from DB/API
   const [formatTypes, setFormatTypes] = useState<QuestionFormatType[]>([]);
-  const [difficultyLevels, setDifficultyLevels] = useState<QuestionDifficultyLevel[]>([]);
-  const [presentationTypes, setPresentationTypes] = useState<QuestionPresentationType[]>([]);
-  const [pedagogicalTypes, setPedagogicalTypes] = useState<QuestionPedagogicalType[]>(FALLBACK_PEDAGOGICAL_TYPES);
+  const [difficultyLevels, setDifficultyLevels] = useState<
+    QuestionDifficultyLevel[]
+  >([]);
+  const [presentationTypes, setPresentationTypes] = useState<
+    QuestionPresentationType[]
+  >([]);
+  const [pedagogicalTypes, setPedagogicalTypes] = useState<
+    QuestionPedagogicalType[]
+  >(FALLBACK_PEDAGOGICAL_TYPES);
 
   // Form data
-  const [contentType, setContentType] = useState<ContentType>('question');
-  const [title, setTitle] = useState('');
-  
+  const [contentType, setContentType] = useState<ContentType>("question");
+  const [title, setTitle] = useState("");
+
   // Soru metadata
-  const [formatTypeId, setFormatTypeId] = useState(''); // Soru Tipi (Çoktan seçmeli, vb.)
-  const [presentationTypeId, setPresentationTypeId] = useState(''); // İçerik Sunum Şekli (Standart, Slayt, vb.)
-  const [pedagogicalTypeId, setPedagogicalTypeId] = useState(FALLBACK_PEDAGOGICAL_TYPES[0].id);
-  const [difficultyLevelId, setDifficultyLevelId] = useState('');
+  const [formatTypeId, setFormatTypeId] = useState(""); // Soru Tipi (Çoktan seçmeli, vb.)
+  const [presentationTypeId, setPresentationTypeId] = useState(""); // İçerik Sunum Şekli (Standart, Slayt, vb.)
+  const [pedagogicalTypeId, setPedagogicalTypeId] = useState(
+    FALLBACK_PEDAGOGICAL_TYPES[0].id
+  );
+  const [difficultyLevelId, setDifficultyLevelId] = useState("");
   const [weight, setWeight] = useState(1);
-  const [selectedOutputs, setSelectedOutputs] = useState<string[]>(['question_bank']);
-  const [selectedDeliveryModes, setSelectedDeliveryModes] = useState<string[]>(['online']);
+  const [selectedOutputs, setSelectedOutputs] = useState<string[]>([
+    "question_bank",
+  ]);
+  const [selectedDeliveryModes, setSelectedDeliveryModes] = useState<string[]>([
+    "online",
+  ]);
 
   // Curriculum
-  const [subjectId, setSubjectId] = useState('');
-  const [topicId, setTopicId] = useState('');
-  const [learningOutcomeId, setLearningOutcomeId] = useState('');
+  const [subjectId, setSubjectId] = useState("");
+  const [topicId, setTopicId] = useState("");
+  const [learningOutcomeId, setLearningOutcomeId] = useState("");
 
   // Content
-  const [headerText, setHeaderText] = useState('');
-  const [questionText, setQuestionText] = useState('');
+  const [headerText, setHeaderText] = useState("");
+  const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState([
-    { key: 'A', text: '', isCorrect: false, feedback: '' },
-    { key: 'B', text: '', isCorrect: false, feedback: '' },
+    { key: "A", text: "", isCorrect: false, feedback: "" },
+    { key: "B", text: "", isCorrect: false, feedback: "" },
   ]);
-  const [explanation, setExplanation] = useState('');
+  const [explanation, setExplanation] = useState("");
 
   // Preview
-  const [previewMode, setPreviewMode] = useState<'content' | 'whiteboard'>('content');
+  const [previewMode, setPreviewMode] = useState<"content" | "whiteboard">(
+    "content"
+  );
   const [tldrawSnapshot, setTldrawSnapshot] = useState<any>(null);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -158,15 +178,18 @@ export default function QuestionEditorPageV3() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      const [formats, difficulties, presentations, pedagogies] = await Promise.all([
-        realQuestionService.getFormatTypes(),
-        realQuestionService.getDifficultyLevels(),
-        realQuestionService.getPresentationTypes(),
-        realQuestionService.getPedagogicalTypes(),
-      ]);
+      const [formats, difficulties, presentations, pedagogies] =
+        await Promise.all([
+          realQuestionService.getFormatTypes(),
+          realQuestionService.getDifficultyLevels(),
+          realQuestionService.getPresentationTypes(),
+          realQuestionService.getPedagogicalTypes(),
+        ]);
 
       const resolvedFormats =
-        formats && formats.length > 0 ? formats : await questionFormatTypeService.getAll();
+        formats && formats.length > 0
+          ? formats
+          : await questionFormatTypeService.getAll();
       const resolvedDifficulties =
         difficulties && difficulties.length > 0
           ? difficulties
@@ -176,7 +199,9 @@ export default function QuestionEditorPageV3() {
           ? presentations
           : await questionPresentationTypeService.getAll();
       const resolvedPedagogies =
-        pedagogies && pedagogies.length > 0 ? pedagogies : FALLBACK_PEDAGOGICAL_TYPES;
+        pedagogies && pedagogies.length > 0
+          ? pedagogies
+          : FALLBACK_PEDAGOGICAL_TYPES;
 
       setFormatTypes(resolvedFormats);
       setDifficultyLevels(resolvedDifficulties);
@@ -185,30 +210,45 @@ export default function QuestionEditorPageV3() {
 
       if (resolvedFormats.length > 0) setFormatTypeId(resolvedFormats[0].id);
       if (resolvedDifficulties.length > 0)
-        setDifficultyLevelId(resolvedDifficulties[2]?.id || resolvedDifficulties[0].id);
-      if (resolvedPresentations.length > 0) setPresentationTypeId(resolvedPresentations[0].id);
-      if (resolvedPedagogies.length > 0) setPedagogicalTypeId(resolvedPedagogies[0].id);
+        setDifficultyLevelId(
+          resolvedDifficulties[2]?.id || resolvedDifficulties[0].id
+        );
+      if (resolvedPresentations.length > 0)
+        setPresentationTypeId(resolvedPresentations[0].id);
+      if (resolvedPedagogies.length > 0)
+        setPedagogicalTypeId(resolvedPedagogies[0].id);
     } catch (error) {
-      console.error('Failed to load initial data:', error);
+      console.error("Failed to load initial data:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const selectedFormat = formatTypes.find(f => f.id === formatTypeId);
-  const selectedPresentation = presentationTypes.find(p => p.id === presentationTypeId);
+  const selectedFormat = formatTypes.find((f) => f.id === formatTypeId);
+  const selectedPresentation = presentationTypes.find(
+    (p) => p.id === presentationTypeId
+  );
   const formatAllowsMultiple =
     selectedFormat?.allowsMultipleCorrect ??
-    (selectedFormat as Partial<QuestionFormatType> & { supportsMultipleAnswers?: boolean })
-      ?.supportsMultipleAnswers ??
+    (
+      selectedFormat as Partial<QuestionFormatType> & {
+        supportsMultipleAnswers?: boolean;
+      }
+    )?.supportsMultipleAnswers ??
     false;
 
   const addOption = () => {
     const newKey = String.fromCharCode(65 + options.length);
-    setOptions([...options, { key: newKey, text: '', isCorrect: false, feedback: '' }]);
+    setOptions([
+      ...options,
+      { key: newKey, text: "", isCorrect: false, feedback: "" },
+    ]);
   };
 
-  const updateOption = (index: number, updates: Partial<typeof options[0]>) => {
+  const updateOption = (
+    index: number,
+    updates: Partial<(typeof options)[0]>
+  ) => {
     const newOptions = [...options];
     newOptions[index] = { ...newOptions[index], ...updates };
     setOptions(newOptions);
@@ -249,17 +289,17 @@ export default function QuestionEditorPageV3() {
 
   const handleSave = async () => {
     if (!formatTypeId || !difficultyLevelId || !questionText.trim()) {
-      alert('Soru tipi, zorluk seviyesi ve soru metni zorunludur.');
+      alert("Soru tipi, zorluk seviyesi ve soru metni zorunludur.");
       return;
     }
 
     if (selectedFormat?.requiresOptions) {
       if (!options.length) {
-        alert('Bu soru tipi için en az iki seçenek eklemelisiniz.');
+        alert("Bu soru tipi için en az iki seçenek eklemelisiniz.");
         return;
       }
       if (!options.some((option) => option.isCorrect)) {
-        alert('En az bir seçeneği doğru olarak işaretleyin.');
+        alert("En az bir seçeneği doğru olarak işaretleyin.");
         return;
       }
     }
@@ -303,11 +343,13 @@ export default function QuestionEditorPageV3() {
         await realQuestionService.createQuestion(payload);
       }
 
-      alert('Soru başarıyla kaydedildi.');
-      navigate('/questions');
+      alert("Soru başarıyla kaydedildi.");
+      navigate("/questions");
     } catch (error) {
-      console.error('Save failed:', error);
-      alert('Soru kaydedilirken bir hata oluştu. API servisinin çalıştığından emin olun.');
+      console.error("Save failed:", error);
+      alert(
+        "Soru kaydedilirken bir hata oluştu. API servisinin çalıştığından emin olun."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -324,7 +366,9 @@ export default function QuestionEditorPageV3() {
           questionText.trim().length > 0 &&
           selectedOutputs.length > 0 &&
           selectedDeliveryModes.length > 0 &&
-          (selectedFormat?.requiresOptions ? options.some(o => o.isCorrect) : true)
+          (selectedFormat?.requiresOptions
+            ? options.some((o) => o.isCorrect)
+            : true)
         );
       case 3:
         return true;
@@ -348,7 +392,10 @@ export default function QuestionEditorPageV3() {
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/questions')} className="text-gray-600 hover:text-gray-900">
+              <button
+                onClick={() => navigate("/questions")}
+                className="text-gray-600 hover:text-gray-900"
+              >
                 <X className="h-5 w-5" />
               </button>
               <input
@@ -365,7 +412,7 @@ export default function QuestionEditorPageV3() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
             >
               <Save className="h-4 w-4" />
-              {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+              {isSaving ? "Kaydediliyor..." : "Kaydet"}
             </button>
           </div>
         </div>
@@ -381,26 +428,31 @@ export default function QuestionEditorPageV3() {
           showStepIndicator={true}
           variant="inline"
         >
-          
           {/* STEP 1: Temel Bilgiler */}
           {currentStep === 0 && (
             <div className="space-y-4">
               {/* İçerik Türü - Inline */}
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-700 w-28">İçerik Türü:</span>
+                <span className="text-sm font-medium text-gray-700 w-28">
+                  İçerik Türü:
+                </span>
                 <div className="flex gap-2">
                   {[
-                    { type: 'lesson', icon: BookOpen, label: 'Ders' },
-                    { type: 'question', icon: FileQuestion, label: 'Soru' },
-                    { type: 'presentation', icon: Presentation, label: 'Sunum' }
+                    { type: "lesson", icon: BookOpen, label: "Ders" },
+                    { type: "question", icon: FileQuestion, label: "Soru" },
+                    {
+                      type: "presentation",
+                      icon: Presentation,
+                      label: "Sunum",
+                    },
                   ].map(({ type, icon: Icon, label }) => (
                     <button
                       key={type}
                       onClick={() => setContentType(type as ContentType)}
                       className={`px-3 py-1.5 border-2 rounded-lg flex items-center gap-1.5 transition text-sm ${
                         contentType === type
-                          ? 'border-blue-600 bg-blue-50 text-blue-600'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                          ? "border-blue-600 bg-blue-50 text-blue-600"
+                          : "border-gray-200 hover:border-gray-300 text-gray-700"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -415,15 +467,18 @@ export default function QuestionEditorPageV3() {
                 {/* Soru Tipi (Format) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Soru Tipi * <span className="text-xs text-gray-500">(Format)</span>
+                    Soru Tipi *{" "}
+                    <span className="text-xs text-gray-500">(Format)</span>
                   </label>
                   <select
                     value={formatTypeId}
                     onChange={(e) => setFormatTypeId(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    {formatTypes.map(format => (
-                      <option key={format.id} value={format.id}>{format.name}</option>
+                    {formatTypes.map((format) => (
+                      <option key={format.id} value={format.id}>
+                        {format.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -438,8 +493,10 @@ export default function QuestionEditorPageV3() {
                     onChange={(e) => setDifficultyLevelId(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    {difficultyLevels.map(level => (
-                      <option key={level.id} value={level.id}>{level.name}</option>
+                    {difficultyLevels.map((level) => (
+                      <option key={level.id} value={level.id}>
+                        {level.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -484,11 +541,16 @@ export default function QuestionEditorPageV3() {
           {/* STEP 2: Müfredat */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <Alert type="info" message="Soruyu müfredata bağlayabilirsiniz. Bu adım opsiyoneldir." />
+              <Alert
+                type="info"
+                message="Soruyu müfredata bağlayabilirsiniz. Bu adım opsiyoneldir."
+              />
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Branş</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Branş
+                  </label>
                   <select
                     value={subjectId}
                     onChange={(e) => setSubjectId(e.target.value)}
@@ -503,7 +565,9 @@ export default function QuestionEditorPageV3() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Konu</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Konu
+                  </label>
                   <select
                     value={topicId}
                     onChange={(e) => setTopicId(e.target.value)}
@@ -518,7 +582,9 @@ export default function QuestionEditorPageV3() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Kazanım</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Kazanım
+                  </label>
                   <select
                     value={learningOutcomeId}
                     onChange={(e) => setLearningOutcomeId(e.target.value)}
@@ -539,14 +605,18 @@ export default function QuestionEditorPageV3() {
             <div className="space-y-4">
               {/* İçerik Sunum Şekli - Inline */}
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-700 w-32">Sunum Şekli:</span>
+                <span className="text-sm font-medium text-gray-700 w-32">
+                  Sunum Şekli:
+                </span>
                 <select
                   value={presentationTypeId}
                   onChange={(e) => setPresentationTypeId(e.target.value)}
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  {presentationTypes.map(type => (
-                    <option key={type.id} value={type.id}>{type.name}</option>
+                  {presentationTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -554,7 +624,10 @@ export default function QuestionEditorPageV3() {
               {/* Üst Bilgi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Üst Bilgi <span className="text-xs text-gray-500">(Birden çok soru ile paylaşılabilir)</span>
+                  Üst Bilgi{" "}
+                  <span className="text-xs text-gray-500">
+                    (Birden çok soru ile paylaşılabilir)
+                  </span>
                 </label>
                 <textarea
                   value={headerText}
@@ -584,7 +657,9 @@ export default function QuestionEditorPageV3() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-lg p-4">
                   <div className="mb-3">
-                    <h4 className="text-sm font-semibold text-gray-900">Çıktı Türleri</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">
+                      Çıktı Türleri
+                    </h4>
                     <p className="text-xs text-gray-500">
                       Kitap, deneme, soru bankası, sunum veya sınav oluşturun
                     </p>
@@ -597,8 +672,8 @@ export default function QuestionEditorPageV3() {
                         onClick={() => handleOutputToggle(channel.id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
                           selectedOutputs.includes(channel.id)
-                            ? 'bg-blue-600 text-white border-blue-600 shadow'
-                            : 'border-gray-300 text-gray-600 hover:border-blue-300'
+                            ? "bg-blue-600 text-white border-blue-600 shadow"
+                            : "border-gray-300 text-gray-600 hover:border-blue-300"
                         }`}
                       >
                         {channel.label}
@@ -609,8 +684,12 @@ export default function QuestionEditorPageV3() {
 
                 <div className="border border-gray-200 rounded-lg p-4">
                   <div className="mb-3">
-                    <h4 className="text-sm font-semibold text-gray-900">Teslim Şekli</h4>
-                    <p className="text-xs text-gray-500">Online, offline veya hibrit dağıtım</p>
+                    <h4 className="text-sm font-semibold text-gray-900">
+                      Teslim Şekli
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Online, offline veya hibrit dağıtım
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {DELIVERY_MODES.map((mode) => (
@@ -620,8 +699,8 @@ export default function QuestionEditorPageV3() {
                         onClick={() => handleDeliveryToggle(mode.id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
                           selectedDeliveryModes.includes(mode.id)
-                            ? 'bg-emerald-600 text-white border-emerald-600 shadow'
-                            : 'border-gray-300 text-gray-600 hover:border-emerald-300'
+                            ? "bg-emerald-600 text-white border-emerald-600 shadow"
+                            : "border-gray-300 text-gray-600 hover:border-emerald-300"
                         }`}
                       >
                         {mode.label}
@@ -635,10 +714,15 @@ export default function QuestionEditorPageV3() {
               {selectedFormat?.requiresOptions && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">Şıklar *</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Şıklar *
+                    </label>
                     <button
                       onClick={addOption}
-                      disabled={selectedFormat.maxOptions !== undefined && options.length >= selectedFormat.maxOptions}
+                      disabled={
+                        selectedFormat.maxOptions !== undefined &&
+                        options.length >= selectedFormat.maxOptions
+                      }
                       className="text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
                     >
                       + Şık Ekle
@@ -647,19 +731,25 @@ export default function QuestionEditorPageV3() {
 
                   <div className="space-y-2">
                     {options.map((option, index) => (
-                      <div key={index} className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg"
+                      >
                         <input
-                          type={formatAllowsMultiple ? 'checkbox' : 'radio'}
+                          type={formatAllowsMultiple ? "checkbox" : "radio"}
                           checked={option.isCorrect}
                           onChange={(e) => {
                             if (!formatAllowsMultiple) {
                               const newOptions = options.map((opt, i) => ({
                                 ...opt,
-                                isCorrect: i === index ? e.target.checked : false
+                                isCorrect:
+                                  i === index ? e.target.checked : false,
                               }));
                               setOptions(newOptions);
                             } else {
-                              updateOption(index, { isCorrect: e.target.checked });
+                              updateOption(index, {
+                                isCorrect: e.target.checked,
+                              });
                             }
                           }}
                           className="mt-2"
@@ -672,11 +762,14 @@ export default function QuestionEditorPageV3() {
                             <input
                               type="text"
                               value={option.text}
-                              onChange={(e) => updateOption(index, { text: e.target.value })}
+                              onChange={(e) =>
+                                updateOption(index, { text: e.target.value })
+                              }
                               placeholder={`Şık ${option.key}`}
                               className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
-                            {options.length > (selectedFormat.minOptions || 2) && (
+                            {options.length >
+                              (selectedFormat.minOptions || 2) && (
                               <button
                                 onClick={() => deleteOption(index)}
                                 className="p-1.5 text-red-600 hover:bg-red-50 rounded"
@@ -687,8 +780,10 @@ export default function QuestionEditorPageV3() {
                           </div>
                           <input
                             type="text"
-                            value={option.feedback || ''}
-                            onChange={(e) => updateOption(index, { feedback: e.target.value })}
+                            value={option.feedback || ""}
+                            onChange={(e) =>
+                              updateOption(index, { feedback: e.target.value })
+                            }
                             placeholder="Geri bildirim (opsiyonel)"
                             className="w-full px-2 py-1 text-xs border border-gray-200 rounded focus:ring-2 focus:ring-blue-500 bg-white"
                           />
@@ -721,22 +816,22 @@ export default function QuestionEditorPageV3() {
               {/* Preview Mode Tabs */}
               <div className="flex gap-2 border-b border-gray-200">
                 <button
-                  onClick={() => setPreviewMode('content')}
+                  onClick={() => setPreviewMode("content")}
                   className={`px-4 py-2 text-sm font-medium transition border-b-2 ${
-                    previewMode === 'content'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                    previewMode === "content"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   <Eye className="inline h-4 w-4 mr-1.5" />
                   Soru Ön İzleme
                 </button>
                 <button
-                  onClick={() => setPreviewMode('whiteboard')}
+                  onClick={() => setPreviewMode("whiteboard")}
                   className={`px-4 py-2 text-sm font-medium transition border-b-2 ${
-                    previewMode === 'whiteboard'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                    previewMode === "whiteboard"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   🎨 Beyaz Tahta + Video Kayıt
@@ -744,7 +839,7 @@ export default function QuestionEditorPageV3() {
               </div>
 
               {/* Preview Content */}
-              {previewMode === 'content' && (
+              {previewMode === "content" && (
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
                   {headerText && (
                     <div className="mb-3 p-2 bg-blue-50 border-l-4 border-blue-500 rounded text-sm text-blue-900">
@@ -753,9 +848,13 @@ export default function QuestionEditorPageV3() {
                   )}
 
                   <div className="mb-4">
-                    <div 
+                    <div
                       className="prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: questionText || '<p class="text-gray-400">Soru metni girilmedi</p>' }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          questionText ||
+                          '<p class="text-gray-400">Soru metni girilmedi</p>',
+                      }}
                     />
                   </div>
 
@@ -766,19 +865,31 @@ export default function QuestionEditorPageV3() {
                           key={index}
                           className={`p-3 border-2 rounded-lg transition ${
                             option.isCorrect
-                              ? 'border-green-500 bg-green-50'
-                              : 'border-gray-200'
+                              ? "border-green-500 bg-green-50"
+                              : "border-gray-200"
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-sm text-gray-700">{option.key}.</span>
-                            <span className={`text-sm ${option.isCorrect ? 'font-medium text-green-900' : ''}`}>
-                              {option.text || 'Şık metni girilmedi'}
+                            <span className="font-semibold text-sm text-gray-700">
+                              {option.key}.
                             </span>
-                            {option.isCorrect && <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />}
+                            <span
+                              className={`text-sm ${
+                                option.isCorrect
+                                  ? "font-medium text-green-900"
+                                  : ""
+                              }`}
+                            >
+                              {option.text || "Şık metni girilmedi"}
+                            </span>
+                            {option.isCorrect && (
+                              <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                            )}
                           </div>
                           {option.feedback && (
-                            <div className="mt-1 ml-6 text-xs text-gray-600">💡 {option.feedback}</div>
+                            <div className="mt-1 ml-6 text-xs text-gray-600">
+                              💡 {option.feedback}
+                            </div>
                           )}
                         </div>
                       ))}
@@ -787,59 +898,62 @@ export default function QuestionEditorPageV3() {
 
                   {explanation && (
                     <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                      <div className="text-xs font-medium text-purple-900 mb-1">Açıklama / Çözüm:</div>
-                      <div className="text-sm text-purple-800">{explanation}</div>
+                      <div className="text-xs font-medium text-purple-900 mb-1">
+                        Açıklama / Çözüm:
+                      </div>
+                      <div className="text-sm text-purple-800">
+                        {explanation}
+                      </div>
                     </div>
                   )}
 
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-1">Çıktı Türleri</p>
-                      <p>{selectedOutputs.map((id) => getOutputLabel(id)).join(', ')}</p>
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Çıktı Türleri
+                      </p>
+                      <p>
+                        {selectedOutputs
+                          .map((id) => getOutputLabel(id))
+                          .join(", ")}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-1">Teslim Şekli</p>
-                      <p>{selectedDeliveryModes.map((id) => getDeliveryLabel(id)).join(', ')}</p>
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Teslim Şekli
+                      </p>
+                      <p>
+                        {selectedDeliveryModes
+                          .map((id) => getDeliveryLabel(id))
+                          .join(", ")}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {previewMode === 'whiteboard' && (
+              {previewMode === "whiteboard" && (
                 <div>
                   <Alert
                     type="info"
-                    message="Soru içeriği arka planda gösterilir. Üzerine çizim yaparak çözüm oluşturun. İstenirse video kaydı alınabilir."
+                    message="Excalidraw ile profesyonel çizim yapın. Çizimler otomatik kaydedilir."
                   />
-                  <div className="mt-3">
-                    <EnhancedWhiteboard
-                      questionContent={
-                        questionText 
-                          ? `${headerText ? `<div class="mb-2 text-sm text-blue-600 font-medium">${headerText}</div>` : ''}${questionText}${
-                              selectedFormat?.requiresOptions && options.length > 0 
-                                ? `<div class="mt-3 space-y-2">${options.map(opt => 
-                                    `<div class="text-sm"><strong>${opt.key}.</strong> ${opt.text}</div>`
-                                  ).join('')}</div>`
-                                : ''
-                            }` 
-                          : undefined
-                      }
-                      onSave={(snapshot, videoBlob) => {
-                        setTldrawSnapshot(snapshot);
-                        if (videoBlob) {
-                          setVideoBlob(videoBlob);
-                          setVideoUrl(URL.createObjectURL(videoBlob));
-                        }
+                  <div
+                    className="mt-3 border border-gray-300 rounded-lg overflow-hidden"
+                    style={{ height: "550px" }}
+                  >
+                    <ExcalidrawBoard
+                      documentId={questionId || `question-${Date.now()}`}
+                      onReady={() => {
+                        console.log("Excalidraw ready for question editing");
                       }}
-                      initialData={tldrawSnapshot}
-                      height={550}
-                      showToolbar={true}
-                      enableVideo={true}
                     />
-                    <div className="mt-2 text-xs text-gray-600">
-                      💡 <strong>9 Pozisyon:</strong> "Konum" butonuyla soruyu taşıyın | 
-                      <strong> Video:</strong> "Kayıt Başlat" ile çizimlerinizi kaydedin
-                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600">
+                    💡 <strong>Excalidraw:</strong> Profesyonel çizim araçları |
+                    <strong> Auto-save:</strong> Çizimler otomatik kaydedilir |
+                    <strong> Export:</strong> PNG/SVG/JSON olarak dışa
+                    aktarabilirsiniz
                   </div>
                 </div>
               )}
@@ -858,7 +972,7 @@ export default function QuestionEditorPageV3() {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate('/questions')}
+                onClick={() => navigate("/questions")}
                 className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 İptal
@@ -878,7 +992,7 @@ export default function QuestionEditorPageV3() {
                   disabled={isSaving || !canProceed(currentStep)}
                   className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  {isSaving ? 'Kaydediliyor...' : 'Tamamla ve Kaydet'}
+                  {isSaving ? "Kaydediliyor..." : "Tamamla ve Kaydet"}
                 </button>
               )}
             </div>
@@ -888,4 +1002,3 @@ export default function QuestionEditorPageV3() {
     </div>
   );
 }
-

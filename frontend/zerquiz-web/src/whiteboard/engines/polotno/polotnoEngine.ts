@@ -1,176 +1,154 @@
 /**
  * Polotno Engine Implementation
+ * WhiteboardEngine interface'ini Polotno için implement eder
  */
 
-import { createStore } from 'polotno/model/store';
-import { WhiteboardEngine, Tool } from '../core/engineTypes';
-import { whiteboardApi } from '../core/api';
+import { StoreType } from 'polotno/model/store';
+import { WhiteboardEngine, Tool } from '../../core/engineTypes';
+import { whiteboardApi } from '../../core/api';
+
+// Debounce utility
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
 
 export class PolotnoEngine implements WhiteboardEngine {
-  private store: any = null;
+  private store: StoreType;
   private documentId: string | null = null;
-  private saveTimeout: NodeJS.Timeout | null = null;
+  private tenantId: string = 'mock-tenant-id'; // TODO: Get from auth context
+  private ready: boolean = false;
+  private debouncedSave: ReturnType<typeof debounce>;
 
-  constructor() {
-    // Create Polotno store
-    this.store = createStore({
-      key: 'zercode-polotno-key', // License key verilmeli
-      showCredit: false,
-    });
-
-    // Auto-save on changes
-    this.store.on('change', () => {
-      this.debouncedSave();
-    });
+  constructor(store: StoreType) {
+    this.store = store;
+    this.debouncedSave = debounce(this.saveDocument.bind(this), 700);
   }
 
   async loadDocument(id: string): Promise<void> {
-    this.documentId = id;
-    
     try {
+      this.documentId = id;
       const doc = await whiteboardApi.getSlideshow(id);
       
-      if (doc.content && doc.content.pages) {
+      if (doc && doc.content) {
         this.store.loadJSON(doc.content);
       }
+      
+      this.ready = true;
     } catch (error) {
-      console.error('Failed to load slideshow:', error);
-      throw error;
+      console.error('Failed to load Polotno document:', error);
+      this.ready = true; // Continue with empty slides
     }
   }
 
   async saveDocument(): Promise<void> {
-    if (!this.store || !this.documentId) {
-      throw new Error('Engine not ready or no document ID');
+    if (!this.documentId) {
+      console.warn('No document ID set, skipping save');
+      return;
     }
 
     try {
-      const content = this.store.toJSON();
-      await whiteboardApi.updateSlideshow(this.documentId, content);
+      const json = this.store.toJSON();
+      
+      await whiteboardApi.updateSlideshow(this.documentId, {
+        content: json,
+        type: 'slides',
+        title: `Presentation ${this.documentId}`,
+        tenantId: this.tenantId,
+      });
+      
+      console.log('Polotno document saved successfully');
     } catch (error) {
-      console.error('Failed to save slideshow:', error);
+      console.error('Failed to save Polotno document:', error);
       throw error;
     }
   }
 
-  debouncedSave() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    this.saveTimeout = setTimeout(() => {
-      this.saveDocument();
-    }, 700);
-  }
-
   async exportDocument(format: 'svg' | 'png' | 'pdf' | 'json'): Promise<Blob | string> {
-    if (!this.store) {
-      throw new Error('Engine not ready');
-    }
-
-    switch (format) {
-      case 'json': {
+    try {
+      if (format === 'json') {
         const json = this.store.toJSON();
         return JSON.stringify(json, null, 2);
       }
-      
-      case 'pdf': {
-        // Polotno PDF export
-        const { exportToPDF } = await import('polotno/utils/export');
-        const blob = await exportToPDF(this.store);
-        return blob;
-      }
-      
-      case 'png': {
+
+      if (format === 'png') {
         // Export current page as PNG
         const page = this.store.activePage;
         if (!page) throw new Error('No active page');
         
-        const dataURL = await page.toDataURL();
-        const blob = await fetch(dataURL).then(r => r.blob());
-        return blob;
+        const dataURL = await page.toDataURL({ pixelRatio: 2 });
+        const response = await fetch(dataURL);
+        return await response.blob();
       }
-      
-      default:
-        throw new Error(`Export format ${format} not supported by Polotno engine`);
+
+      if (format === 'pdf') {
+        // This would require additional Polotno PDF export functionality
+        // For now, return a placeholder
+        throw new Error('PDF export requires Polotno Pro license');
+      }
+
+      throw new Error(`Export format ${format} not supported by Polotno`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      throw error;
     }
   }
 
   setTool(tool: Tool): void {
-    if (!this.store) return;
-
-    // Map generic tools to Polotno actions
-    switch (tool) {
-      case 'select':
-        // Default selection mode
-        break;
-      case 'text':
-        this.store.activePage?.addElement({
-          type: 'text',
-          text: 'Metin girin',
-          x: 100,
-          y: 100,
-          fontSize: 24,
-        });
-        break;
-      case 'rectangle':
-        this.store.activePage?.addElement({
-          type: 'rect',
-          x: 100,
-          y: 100,
-          width: 200,
-          height: 100,
-          fill: '#3b82f6',
-        });
-        break;
-      case 'circle':
-        this.store.activePage?.addElement({
-          type: 'ellipse',
-          x: 100,
-          y: 100,
-          width: 200,
-          height: 200,
-          fill: '#3b82f6',
-        });
-        break;
-      case 'pen':
-        // Enable drawing mode (not natively supported, would need custom implementation)
-        console.log('Drawing mode not directly supported in Polotno');
-        break;
-    }
+    // Polotno doesn't have explicit tool setting like Excalidraw
+    // Tools are accessed via side panel
+    // We can set the active tool in the store if needed
+    console.log(`Polotno tool change: ${tool}`);
   }
 
   clear(): void {
-    if (this.store && this.store.activePage) {
-      this.store.activePage.children.forEach((child: any) => child.remove());
+    // Clear current page
+    const page = this.store.activePage;
+    if (page) {
+      page.children.forEach((child) => {
+        child.remove();
+      });
     }
+    console.log('Current slide cleared');
   }
 
   undo(): void {
-    if (this.store) {
-      this.store.history.undo();
-    }
+    this.store.history.undo();
   }
 
   redo(): void {
-    if (this.store) {
-      this.store.history.redo();
-    }
+    this.store.history.redo();
   }
 
   isReady(): boolean {
-    return this.store !== null;
+    return this.ready;
   }
 
-  getStore() {
-    return this.store;
+  // Public method for auto-save on change
+  autoSave(): void {
+    this.debouncedSave();
   }
 
-  destroy() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
+  // Polotno-specific methods
+  addPage(): void {
+    this.store.addPage();
+  }
+
+  deletePage(pageId: string): void {
+    const page = this.store.pages.find((p) => p.id === pageId);
+    if (page) {
+      page.delete();
     }
-    this.store = null;
-    this.documentId = null;
+  }
+
+  setActivePage(pageId: string): void {
+    this.store.selectPage(pageId);
   }
 }
 

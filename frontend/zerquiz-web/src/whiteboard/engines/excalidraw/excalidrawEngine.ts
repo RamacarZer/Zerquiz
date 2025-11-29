@@ -1,167 +1,160 @@
 /**
  * Excalidraw Engine Implementation
+ * WhiteboardEngine interface'ini Excalidraw için implement eder
  */
 
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
-import { WhiteboardEngine, Tool } from '../core/engineTypes';
-import { whiteboardApi } from '../core/api';
+import { WhiteboardEngine, Tool } from '../../core/engineTypes';
+import { whiteboardApi } from '../../core/api';
+
+// Debounce utility
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
 
 export class ExcalidrawEngine implements WhiteboardEngine {
-  private api: ExcalidrawImperativeAPI | null = null;
+  private api: ExcalidrawImperativeAPI;
   private documentId: string | null = null;
-  private saveTimeout: NodeJS.Timeout | null = null;
+  private tenantId: string = 'mock-tenant-id'; // TODO: Get from auth context
+  private ready: boolean = false;
+  private debouncedSave: ReturnType<typeof debounce>;
 
-  constructor() {}
-
-  setApi(api: ExcalidrawImperativeAPI) {
+  constructor(api: ExcalidrawImperativeAPI) {
     this.api = api;
+    this.debouncedSave = debounce(this.saveDocument.bind(this), 700);
   }
 
   async loadDocument(id: string): Promise<void> {
-    this.documentId = id;
-    
     try {
+      this.documentId = id;
       const doc = await whiteboardApi.getWhiteboard(id);
       
-      if (this.api && doc.content) {
-        // Excalidraw scene'i yükle
+      if (doc && doc.content) {
         this.api.updateScene(doc.content);
       }
+      
+      this.ready = true;
     } catch (error) {
-      console.error('Failed to load whiteboard:', error);
-      throw error;
+      console.error('Failed to load Excalidraw document:', error);
+      this.ready = true; // Continue with empty canvas
     }
   }
 
   async saveDocument(): Promise<void> {
-    if (!this.api || !this.documentId) {
-      throw new Error('Engine not ready or no document ID');
+    if (!this.documentId) {
+      console.warn('No document ID set, skipping save');
+      return;
     }
 
     try {
       const elements = this.api.getSceneElements();
       const appState = this.api.getAppState();
       
-      const content = {
-        elements,
-        appState: {
-          viewBackgroundColor: appState.viewBackgroundColor,
-          currentItemStrokeColor: appState.currentItemStrokeColor,
-          currentItemBackgroundColor: appState.currentItemBackgroundColor,
-          currentItemFillStyle: appState.currentItemFillStyle,
-          currentItemStrokeWidth: appState.currentItemStrokeWidth,
-          currentItemRoughness: appState.currentItemRoughness,
-          currentItemOpacity: appState.currentItemOpacity,
-          gridSize: appState.gridSize,
-          zoom: appState.zoom,
+      await whiteboardApi.updateWhiteboard(this.documentId, {
+        content: {
+          elements,
+          appState: {
+            viewBackgroundColor: appState.viewBackgroundColor,
+            gridSize: appState.gridSize,
+          },
         },
-      };
-
-      await whiteboardApi.updateWhiteboard(this.documentId, content);
+        type: 'board',
+        title: `Whiteboard ${this.documentId}`,
+        tenantId: this.tenantId,
+      });
+      
+      console.log('Excalidraw document saved successfully');
     } catch (error) {
-      console.error('Failed to save whiteboard:', error);
+      console.error('Failed to save Excalidraw document:', error);
       throw error;
     }
   }
 
-  debouncedSave() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    this.saveTimeout = setTimeout(() => {
-      this.saveDocument();
-    }, 700);
-  }
-
   async exportDocument(format: 'svg' | 'png' | 'pdf' | 'json'): Promise<Blob | string> {
-    if (!this.api) {
-      throw new Error('Engine not ready');
-    }
+    try {
+      const elements = this.api.getSceneElements();
+      const appState = this.api.getAppState();
 
-    switch (format) {
-      case 'svg': {
+      if (format === 'json') {
+        return JSON.stringify({ elements, appState }, null, 2);
+      }
+
+      if (format === 'svg') {
         const svg = await this.api.exportToSvg({
-          elements: this.api.getSceneElements(),
-          appState: this.api.getAppState(),
+          elements,
+          appState,
           files: this.api.getFiles(),
         });
         return new Blob([svg.outerHTML], { type: 'image/svg+xml' });
       }
-      
-      case 'png': {
+
+      if (format === 'png') {
         const blob = await this.api.exportToBlob({
-          elements: this.api.getSceneElements(),
-          appState: this.api.getAppState(),
+          elements,
+          appState,
           files: this.api.getFiles(),
           mimeType: 'image/png',
         });
         return blob;
       }
-      
-      case 'json': {
-        const elements = this.api.getSceneElements();
-        const appState = this.api.getAppState();
-        return JSON.stringify({ elements, appState }, null, 2);
-      }
-      
-      default:
-        throw new Error(`Export format ${format} not supported by Excalidraw engine`);
+
+      throw new Error(`Export format ${format} not supported by Excalidraw`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      throw error;
     }
   }
 
   setTool(tool: Tool): void {
-    if (!this.api) return;
-
-    // Map generic tools to Excalidraw tools
-    const toolMap: Record<Tool, any> = {
-      select: { type: 'selection' },
-      pen: { type: 'freedraw' },
-      eraser: { type: 'eraser' },
-      arrow: { type: 'arrow' },
-      rectangle: { type: 'rectangle' },
-      circle: { type: 'ellipse' },
-      line: { type: 'line' },
-      text: { type: 'text' },
-      highlighter: { type: 'freedraw' }, // Will set opacity
-      sticky: { type: 'rectangle' }, // Rectangle with yellow fill
+    // Map our tool names to Excalidraw tool types
+    const toolMap: Record<Tool, string> = {
+      select: 'selection',
+      pen: 'freedraw',
+      eraser: 'eraser',
+      arrow: 'arrow',
+      rectangle: 'rectangle',
+      circle: 'ellipse',
+      line: 'line',
+      text: 'text',
+      highlighter: 'freedraw', // Excalidraw doesn't have highlighter, use freedraw
+      sticky: 'text', // Use text for sticky notes
     };
 
-    const excalidrawTool = toolMap[tool];
-    if (excalidrawTool) {
-      this.api.setActiveTool(excalidrawTool);
-    }
+    const excalidrawTool = toolMap[tool] || 'freedraw';
+    this.api.setActiveTool({ type: excalidrawTool as any });
   }
 
   clear(): void {
-    if (this.api) {
-      this.api.updateScene({
-        elements: [],
-      });
-    }
+    const elements = this.api.getSceneElements();
+    const elementIds = elements.map((el) => el.id);
+    this.api.updateScene({
+      elements: [],
+    });
+    console.log('Canvas cleared');
   }
 
   undo(): void {
-    if (this.api) {
-      this.api.history.undo();
-    }
+    this.api.history.undo();
   }
 
   redo(): void {
-    if (this.api) {
-      this.api.history.redo();
-    }
+    this.api.history.redo();
   }
 
   isReady(): boolean {
-    return this.api !== null;
+    return this.ready;
   }
 
-  destroy() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    this.api = null;
-    this.documentId = null;
+  // Public method for auto-save on change
+  autoSave(): void {
+    this.debouncedSave();
   }
 }
 

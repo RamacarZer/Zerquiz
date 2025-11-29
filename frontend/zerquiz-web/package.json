@@ -46,7 +46,13 @@
     "remark-math": "^6.0.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^3.22.0",
-    "zustand": "^5.0.0"
+    "zustand": "^5.0.0",
+    "@excalidraw/excalidraw": "^0.17.0",
+    "polotno": "^2.4.0",
+    "react-pdf": "^7.7.0",
+    "pdfjs-dist": "^3.11.174",
+    "mathjax-react": "^2.0.0",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@types/prismjs": "^1.26.0",
