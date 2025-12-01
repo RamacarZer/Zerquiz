@@ -1,0 +1,39 @@
+{
+  "template_id": "essay_v1",
+  "question_type_code": "essay",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "classic"
+  },
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Kompozisyon/essay soruları oluşturursun. JSON formatında yanıt ver.",
+    "temperature": 0.7,
+    "max_tokens": 1000
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: Bu içerikten {{count}} adet essay/kompozisyon sorusu üret ({{difficulty}} zorluk).\n\nKurallar:\n- Açık uçlu, derinlemesine düşünmeyi gerektiren sorular\n- Değerlendirme kriterleri belirt\n- Minimum kelime sayısı öner\n- Örnek cevap anahtarı ver\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"essay\",\n      \"stem\": \"Soru metni\",\n      \"correctAnswer\": \"Örnek cevap taslağı veya anahtar noktalar\",\n      \"explanation\": \"Değerlendirme kriterleri ve beklenen içerik\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 20,\n      \"metadata\": {\"minWords\": 200, \"maxWords\": 500}\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem"]
+  },
+  "post_processing": {
+    "auto_assign_points": 20
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "essay",
+        "stem": "Fotosentez ve solunum arasındaki ilişkiyi, enerji dönüşümü açısından karşılaştırarak açıklayınız.",
+        "correctAnswer": "Anahtar noktalar: 1) Fotosentez ışık→kimyasal, Solunum kimyasal→ATP 2) Ters reaksiyonlar 3) Madde döngüsü 4) Enerji akışı",
+        "explanation": "Değerlendirme: Karşılaştırma (30%), Enerji dönüşümü açıklaması (30%), Bilimsel doğruluk (30%), Yazım/düzen (10%)",
+        "difficulty": "hard",
+        "points": 20,
+        "metadata": {
+          "minWords": 200,
+          "maxWords": 500
+        }
+      }
+    ]
+  }
+}
+

@@ -1,0 +1,16 @@
+{
+  "question_type_code": "hotspot",
+  "template_name": "Hotspot Single Click Questions",
+  "description": "Click correct area on image",
+  "prompt_template": "Generate {{count}} hotspot questions from:\n{{content}}",
+  "system_message": "Create hotspot click questions.",
+  "example_output": {
+    "questions": [{
+      "stem": "Click on the correct location",
+      "imageUrl": "placeholder",
+      "hotspots": [{"x": 100, "y": 150, "radius": 20, "isCorrect": true}],
+      "points": 8
+    }]
+  }
+}
+

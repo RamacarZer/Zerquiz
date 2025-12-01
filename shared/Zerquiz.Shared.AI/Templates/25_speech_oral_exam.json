@@ -1,0 +1,21 @@
+{
+  "template_id": "speech_oral_exam_v1",
+  "question_type": "speech_oral_exam",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "media_based"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir dil eğitimi uzmanısın. Konuşma/sözlü sınav soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet konuşma/sözlü sınav sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- Öğrenci sesli cevap verecek\n- Değerlendirme kriterleri (akıcılık, telaffuz, içerik)\n- Süre limiti\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Aşağıdaki konuyu 2 dakika içinde anlatınız\",\n      \"topic\": \"Favori hobiniz hakkında konuşun\",\n      \"time_limit_seconds\": 120,\n      \"evaluation_criteria\": {\n        \"fluency\": {\"weight\": 30, \"description\": \"Akıcılık ve doğallık\"},\n        \"pronunciation\": {\"weight\": 25, \"description\": \"Telaffuz ve vurgu\"},\n        \"content\": {\"weight\": 25, \"description\": \"İçerik zenginliği\"},\n        \"grammar\": {\"weight\": 20, \"description\": \"Dilbilgisi doğruluğu\"}\n      },\n      \"points\": 20\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "topic", "evaluation_criteria"]
+  }
+}
+

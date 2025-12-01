@@ -1,57 +1,75 @@
 @echo off
 echo ========================================
-echo Zerquiz Servisleri Baslatiyor...
+echo  ZERQUIZ PLATFORM - Servis Başlatıcı
 echo ========================================
 echo.
 
-echo [1/8] Identity Service baslatiliyor (Port 5002)...
-start "Identity Service" cmd /k "cd services\identity\Zerquiz.Identity.Api && dotnet run"
-timeout /t 5 /nobreak >nul
+REM Identity Service
+echo [1/9] Identity Service başlatılıyor...
+start "Identity Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\identity\Zerquiz.Identity.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [2/8] Core Service baslatiliyor (Port 5001)...
-start "Core Service" cmd /k "cd services\core\Zerquiz.Core.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Core Service
+echo [2/9] Core Service başlatılıyor...
+start "Core Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\core\Zerquiz.Core.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [3/8] Curriculum Service baslatiliyor (Port 5003)...
-start "Curriculum Service" cmd /k "cd services\curriculum\Zerquiz.Curriculum.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Content Service
+echo [3/9] Content Service başlatılıyor...
+start "Content Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\content\Zerquiz.Content.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [4/8] Questions Service baslatiliyor (Port 5004)...
-start "Questions Service" cmd /k "cd services\questions\Zerquiz.Questions.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Lessons Service
+echo [4/9] Lessons Service başlatılıyor...
+start "Lessons Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\lessons\Zerquiz.Lessons.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [5/8] Exams Service baslatiliyor (Port 5005)...
-start "Exams Service" cmd /k "cd services\exams\Zerquiz.Exams.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Questions Service
+echo [5/9] Questions Service başlatılıyor...
+start "Questions Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\questions\Zerquiz.Questions.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [6/8] Grading Service baslatiliyor (Port 5006)...
-start "Grading Service" cmd /k "cd services\grading\Zerquiz.Grading.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Exams Service
+echo [6/9] Exams Service başlatılıyor...
+start "Exams Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\exams\Zerquiz.Exams.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [7/8] Royalty Service baslatiliyor (Port 5007)...
-start "Royalty Service" cmd /k "cd services\royalty\Zerquiz.Royalty.Api && dotnet run"
-timeout /t 3 /nobreak >nul
+REM Grading Service
+echo [7/9] Grading Service başlatılıyor...
+start "Grading Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\grading\Zerquiz.Grading.Api && dotnet run"
+timeout /t 5 /nobreak > nul
 
-echo [8/8] API Gateway baslatiliyor (Port 5000)...
-start "API Gateway" cmd /k "cd gateway\Zerquiz.Gateway && dotnet run"
+REM Curriculum Service
+echo [8/9] Curriculum Service başlatılıyor...
+start "Curriculum Service" cmd /k "cd /d F:\yeni_projeler\Zerquiz\services\curriculum\Zerquiz.Curriculum.Api && dotnet run"
+timeout /t 5 /nobreak > nul
+
+REM Frontend
+echo [9/9] Frontend başlatılıyor...
+start "Frontend" cmd /k "cd /d F:\yeni_projeler\Zerquiz\frontend\zerquiz-web && npm run dev"
+timeout /t 3 /nobreak > nul
 
 echo.
 echo ========================================
-echo TUM SERVISLER BASLATILDI!
+echo  TÜM SERVİSLER BAŞLATILDI!
 echo ========================================
 echo.
-echo Swagger UI Erisimleri:
-echo   - Identity:    http://localhost:5002/swagger
-echo   - Core:        http://localhost:5001/swagger
-echo   - Curriculum:  http://localhost:5003/swagger
-echo   - Questions:   http://localhost:5004/swagger
-echo   - Exams:       http://localhost:5005/swagger
-echo   - Grading:     http://localhost:5006/swagger
-echo   - Royalty:     http://localhost:5007/swagger
-echo   - API Gateway: http://localhost:5000
+echo Service URLs:
+echo  - Identity:    http://localhost:5001/swagger
+echo  - Core:        http://localhost:5002/swagger
+echo  - Content:     http://localhost:5008/swagger
+echo  - Lessons:     http://localhost:5009/swagger
+echo  - Questions:   http://localhost:5005/swagger
+echo  - Exams:       http://localhost:5003/swagger
+echo  - Grading:     http://localhost:5004/swagger
+echo  - Curriculum:  http://localhost:5007/swagger
+echo  - Frontend:    http://localhost:5173
 echo.
-echo Frontend baslatmak icin:
-echo   cd frontend\zerquiz-web
-echo   npm run dev
+echo Login:
+echo  Email:    admin@zerquiz.com
+echo  Password: Admin123!
+echo.
+echo Her servise ayrı pencere açıldı!
+echo Servisleri durdurmak için pencereleri kapatın.
 echo.
 pause

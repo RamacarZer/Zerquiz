@@ -1,63 +1,35 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   server: {
-    port: 3001,
+    port: 3000,
     proxy: {
-      "/api/identity": {
-        target: "http://localhost:5002",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/identity/, "/api"),
-      },
-      "/api/core": {
-        target: "http://localhost:5001",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/core/, "/api"),
-      },
-      "/api/curriculum": {
-        target: "http://localhost:5003",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/curriculum/, "/api"),
-      },
-      "/api/questions": {
-        target: "http://localhost:5004",
-        changeOrigin: true,
-      },
-      "/api/exams": {
-        target: "http://localhost:5005",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/exams/, "/api"),
-      },
-      "/api/grading": {
-        target: "http://localhost:5006",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/grading/, "/api"),
-      },
-      "/api/royalty": {
-        target: "http://localhost:5007",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/royalty/, "/api"),
-      },
-      "/api/presentations": {
-        target: "http://localhost:5008",
-        changeOrigin: true,
-      },
-      "/api/slides": {
-        target: "http://localhost:5008",
-        changeOrigin: true,
-      },
-      "/api/sessions": {
-        target: "http://localhost:5008",
+      '/api': {
+        target: 'http://localhost:5001',
         changeOrigin: true,
       },
     },
   },
-});
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'query-vendor': ['@tanstack/react-query'],
+          'ui-vendor': ['lucide-react'],
+        },
+      },
+    },
+  },
+})

@@ -1,0 +1,17 @@
+{
+  "question_type_code": "drag_drop_text",
+  "template_name": "Drag and Drop Text Questions",
+  "description": "Questions where students drag text elements to correct positions",
+  "prompt_template": "Generate {{count}} drag-and-drop text questions from:\n{{content}}\n\nOutput JSON with draggable items and drop zones.",
+  "system_message": "Create interactive drag-drop text exercises.",
+  "example_output": {
+    "questions": [{
+      "stem": "Drag the words to complete the sentence",
+      "draggableItems": ["word1", "word2", "word3"],
+      "dropZones": [{"id": 1, "correctItem": "word1"}],
+      "difficulty": "medium",
+      "points": 8
+    }]
+  }
+}
+

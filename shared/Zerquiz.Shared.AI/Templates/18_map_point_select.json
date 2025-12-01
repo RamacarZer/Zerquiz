@@ -1,0 +1,16 @@
+{
+  "question_type_code": "map_point_select",
+  "template_name": "Map Point Selection",
+  "description": "Select points on a map",
+  "prompt_template": "Generate {{count}} map selection questions from:\n{{content}}",
+  "system_message": "Create geography/map questions.",
+  "example_output": {
+    "questions": [{
+      "stem": "Click on the capital city",
+      "mapUrl": "placeholder",
+      "correctPoints": [{"lat": 40.7, "lng": -74.0, "label": "New York"}],
+      "points": 10
+    }]
+  }
+}
+

@@ -1,0 +1,10 @@
+{
+  "template_id": "fill_blank_v1",
+  "question_type_code": "fill_blank",
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Boşluk doldurma soruları oluşturursun. JSON formatında yanıt ver.",
+    "temperature": 0.7
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: {{count}} adet boşluk doldurma sorusu üret.\n\nKurallar:\n- Metin içinde ____ ile boşluk belirt\n- Kritik kavramları boşluk yap\n- Doğru cevabı ver\n\nÖrnek: \"Fotosentez ____ organelinde gerçekleşir.\" (Cevap: kloroplast)\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"fill_blank\",\n      \"stem\": \"Metin ____ boşluk ile.\",\n      \"correctAnswer\": \"cevap\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 5\n    }\n  ]\n}"
+}
+

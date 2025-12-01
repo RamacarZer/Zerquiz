@@ -1,0 +1,16 @@
+{
+  "question_type_code": "image_labeling",
+  "template_name": "Image Labeling Questions",
+  "description": "Label parts of an image",
+  "prompt_template": "Generate {{count}} image labeling questions from:\n{{content}}",
+  "system_message": "Create image labeling exercises.",
+  "example_output": {
+    "questions": [{
+      "stem": "Label the parts of the diagram",
+      "imageUrl": "placeholder",
+      "labels": [{"id": 1, "x": 100, "y": 50, "correctText": "Part A"}],
+      "points": 12
+    }]
+  }
+}
+

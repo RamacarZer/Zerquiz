@@ -1,0 +1,34 @@
+{
+  "template_id": "table_matching_v1",
+  "question_type": "table_matching",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "advanced"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. Tablo eşleştirme soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet tablo eşleştirme sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- 2 sütunlu tablo formatında\n- Sol sütun: Terimler/kavramlar\n- Sağ sütun: Açıklamalar/tanımlar\n- En az 4 satır içermeli\n- Eşleştirmeler karışık sırada verilmeli\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Aşağıdaki terimleri açıklamalarıyla eşleştiriniz\",\n      \"left_column\": [\"Terim 1\", \"Terim 2\", \"Terim 3\", \"Terim 4\"],\n      \"right_column\": [\"Açıklama 1\", \"Açıklama 2\", \"Açıklama 3\", \"Açıklama 4\"],\n      \"correct_matches\": {\"0\": \"2\", \"1\": \"0\", \"2\": \"3\", \"3\": \"1\"},\n      \"points\": 10,\n      \"explanation\": \"Doğru eşleştirmeler...\"\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "left_column", "right_column", "correct_matches"],
+    "min_items": 4,
+    "max_items": 8
+  },
+  "example_output": {
+    "questions": [
+      {
+        "stem": "Aşağıdaki bilim insanlarını icatlarıyla eşleştiriniz",
+        "left_column": ["Edison", "Tesla", "Newton", "Einstein"],
+        "right_column": ["Ampul", "Alternatif Akım", "Yerçekimi Kanunu", "Görelilik Teorisi"],
+        "correct_matches": {"0": "0", "1": "1", "2": "2", "3": "3"},
+        "points": 10
+      }
+    ]
+  }
+}
+

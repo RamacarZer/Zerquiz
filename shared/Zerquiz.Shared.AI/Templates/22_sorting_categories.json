@@ -1,0 +1,16 @@
+{
+  "question_type_code": "sorting_categories",
+  "template_name": "Sorting into Categories",
+  "description": "Sort items into correct categories",
+  "prompt_template": "Generate {{count}} category sorting questions from:\n{{content}}",
+  "system_message": "Create categorization exercises.",
+  "example_output": {
+    "questions": [{
+      "stem": "Sort the items into categories",
+      "items": [{"id": "item1", "text": "Apple"}],
+      "categories": [{"id": "cat1", "name": "Fruits", "correctItems": ["item1"]}],
+      "points": 12
+    }]
+  }
+}
+

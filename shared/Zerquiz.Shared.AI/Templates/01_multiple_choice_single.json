@@ -1,0 +1,50 @@
+{
+  "template_id": "mcq_single_v1",
+  "question_type_code": "multiple_choice_single",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "classic"
+  },
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Eğitim değerlendirmesi için kaliteli çoktan seçmeli sorular oluşturursun. Her sorunun tek bir doğru cevabı vardır. JSON formatında yanıt ver.",
+    "system_message_en": "You are a professional educator. You create high-quality multiple-choice questions for educational assessment. Each question has one correct answer. Respond in JSON format.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 1500
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: Bu içerikten {{count}} adet {{difficulty}} zorlukta çoktan seçmeli soru üret.\n\nKurallar:\n- Her soru için 4 şık (A, B, C, D) oluştur\n- Tek bir doğru cevap olmalı\n- Çeldiriciler mantıklı ve alakalı olmalı\n- Soru metni açık ve net olmalı\n- Doğru cevabın açıklamasını ekle\n\nZorluk seviyesi: {{difficulty}}\nDil: {{language}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"multiple_choice_single\",\n      \"stem\": \"Soru metni burada\",\n      \"options\": [\"A) Şık 1\", \"B) Şık 2\", \"C) Şık 3\", \"D) Şık 4\"],\n      \"correctAnswer\": \"B\",\n      \"explanation\": \"Açıklama burada\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 5\n    }\n  ]\n}",
+  "prompt_template_en": "Content:\n{{content}}\n\nTask: Generate {{count}} multiple-choice questions at {{difficulty}} difficulty level.\n\nRules:\n- Create 4 options (A, B, C, D) for each question\n- Only one correct answer\n- Distractors should be plausible and relevant\n- Question stem should be clear and specific\n- Include explanation for correct answer\n\nDifficulty: {{difficulty}}\nLanguage: {{language}}\n\nOutput format (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"multiple_choice_single\",\n      \"stem\": \"Question text here\",\n      \"options\": [\"A) Option 1\", \"B) Option 2\", \"C) Option 3\", \"D) Option 4\"],\n      \"correctAnswer\": \"B\",\n      \"explanation\": \"Explanation here\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 5\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "options", "correctAnswer"],
+    "min_options": 4,
+    "max_options": 4,
+    "correct_answer_format": "single_letter",
+    "require_explanation": true
+  },
+  "post_processing": {
+    "auto_assign_points": 5,
+    "auto_tag_concepts": true,
+    "auto_detect_difficulty": false
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "multiple_choice_single",
+        "stem": "Fotosentez hangi organel içerisinde gerçekleşir?",
+        "options": [
+          "A) Mitokondri",
+          "B) Kloroplast",
+          "C) Ribozom",
+          "D) Golgi cisimciği"
+        ],
+        "correctAnswer": "B",
+        "explanation": "Fotosentez, bitki hücrelerindeki kloroplast organelinde gerçekleşen bir süreçtir. Güneş ışığı enerjisi kullanılarak CO2 ve su, glikoz ve oksijene dönüştürülür.",
+        "difficulty": "medium",
+        "points": 5
+      }
+    ]
+  }
+}
+

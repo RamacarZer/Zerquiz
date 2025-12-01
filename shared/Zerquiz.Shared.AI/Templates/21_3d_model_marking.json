@@ -1,0 +1,22 @@
+{
+  "template_id": "3d_model_marking_v1",
+  "question_type": "3d_model_marking",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "advanced_interactive"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. 3D model işaretleme soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet 3D model işaretleme sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- 3D model üzerinde yapı/parça işaretleme\n- 3D koordinatlar (x, y, z)\n- Model rotasyonu bilgisi\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"3D modelde belirtilen yapıyı işaretleyiniz\",\n      \"model_url\": \"path/to/model.obj\",\n      \"correct_markers\": [\n        {\"x\": 0.5, \"y\": 0.3, \"z\": 0.8, \"label\": \"Yapı A\"},\n        {\"x\": -0.2, \"y\": 0.7, \"z\": 0.1, \"label\": \"Yapı B\"}\n      ],\n      \"tolerance\": 0.1,\n      \"points\": 20\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "model_url", "correct_markers"],
+    "min_markers": 1
+  }
+}
+

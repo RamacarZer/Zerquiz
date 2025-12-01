@@ -1,0 +1,47 @@
+{
+  "template_id": "mcq_multiple_v1",
+  "question_type_code": "multiple_choice_multiple",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "classic"
+  },
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Birden fazla doğru cevaplı çoktan seçmeli sorular oluşturursun. JSON formatında yanıt ver.",
+    "system_message_en": "You are a professional educator. You create multiple-select questions with multiple correct answers. Respond in JSON format.",
+    "temperature": 0.7,
+    "max_tokens": 1500
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: Bu içerikten {{count}} adet birden fazla doğru cevaplı soru üret ({{difficulty}} zorluk).\n\nKurallar:\n- En az 4, en fazla 6 şık oluştur\n- En az 2 doğru cevap olmalı\n- Doğru cevapları virgülle ayırarak belirt (örn: \"A,C,D\")\n- Çeldiriciler mantıklı olmalı\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"multiple_choice_multiple\",\n      \"stem\": \"Soru metni\",\n      \"options\": [\"A) Şık 1\", \"B) Şık 2\", \"C) Şık 3\", \"D) Şık 4\"],\n      \"correctAnswer\": \"A,C\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 10\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "options", "correctAnswer"],
+    "min_options": 4,
+    "max_options": 6,
+    "correct_answer_format": "comma_separated",
+    "min_correct_answers": 2
+  },
+  "post_processing": {
+    "auto_assign_points": 10
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "multiple_choice_multiple",
+        "stem": "Aşağıdakilerden hangileri yenilenebilir enerji kaynağıdır?",
+        "options": [
+          "A) Güneş enerjisi",
+          "B) Kömür",
+          "C) Rüzgar enerjisi",
+          "D) Doğalgaz",
+          "E) Hidroelektrik"
+        ],
+        "correctAnswer": "A,C,E",
+        "explanation": "Güneş, rüzgar ve su enerjisi yenilenebilir kaynaklardır. Kömür ve doğalgaz fosil yakıtlardır.",
+        "difficulty": "medium",
+        "points": 10
+      }
+    ]
+  }
+}
+

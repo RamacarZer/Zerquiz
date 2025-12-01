@@ -1,0 +1,10 @@
+{
+  "template_id": "ordering_v1",
+  "question_type_code": "ordering_sequence",
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Sıralama soruları oluşturursun. JSON formatında yanıt ver.",
+    "temperature": 0.7
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: {{count}} adet sıralama sorusu üret.\n\nKurallar:\n- Kronolojik veya mantıksal sıra\n- En az 4 öğe\n- Doğru sırayı belirt (1,2,3,4)\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"ordering_sequence\",\n      \"stem\": \"Aşağıdaki adımları sıralayınız:\",\n      \"options\": [\"A) Adım1\", \"B) Adım2\", \"C) Adım3\", \"D) Adım4\"],\n      \"correctAnswer\": \"C,A,D,B\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 10\n    }\n  ]\n}"
+}
+

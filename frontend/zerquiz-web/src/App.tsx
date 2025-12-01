@@ -1,703 +1,224 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DashboardLayout } from "./components/layout/DashboardLayout";
-import LoginPage from "./pages/auth/LoginPage";
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { LanguageProvider } from './hooks/useLanguage';
+import Layout from './components/layout/Layout';
 
-// Existing Pages
-import SimpleDashboard from "./pages/dashboard/SimpleDashboard";
-import ExamsPage from "./pages/exams/ExamsPage";
-import UserManagementPage from "./pages/users/UserManagementPage";
-import UserProfilePage from "./pages/users/UserProfilePage";
-import { UserProfilePage as ProfilePage } from "./pages/profile/UserProfilePage";
-import RolesManagementPage from "./pages/users/RolesManagementPage";
-import DepartmentsManagementPage from "./pages/users/DepartmentsManagementPage";
-import PositionsManagementPage from "./pages/users/PositionsManagementPage";
-import EducationModelManagementPage from "./pages/curriculum/EducationModelManagementPage";
-import CurriculumManagementPageV2 from "./pages/curriculum/CurriculumManagementPageV2";
-import QuestionListPage from "./pages/questions/QuestionListPage";
-import QuestionListPageEnhanced from "./pages/questions/QuestionListPageEnhanced";
-import QuestionCreatePage from "./pages/questions/QuestionCreatePage";
-import QuestionBuilderPage from "./pages/questions/QuestionBuilderPage";
-import TenantManagementPage from "./pages/tenants/TenantManagementPage";
-import TenantCreatePage from "./pages/tenants/TenantCreatePage";
-import TenantDetailPage from "./pages/tenants/TenantDetailPage";
-import TenantEditPage from "./pages/tenants/TenantEditPage";
-import { LicensePackagesPage } from "./pages/licenses/LicensePackagesPage";
-import PresentationListPage from "./pages/presentation/PresentationListPage";
-import PresentationBuilderPage from "./pages/presentation/PresentationBuilderPage";
-import PresentationPlayerPage from "./pages/presentation/PresentationPlayerPage";
+// Lazy load pages for better performance
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 
-// New Pages
-import AdminDashboard from "./pages/dashboard/AdminDashboard";
-import SubscriptionsPage from "./pages/finance/SubscriptionsPage";
-import AuthorDashboard from "./pages/royalty/AuthorDashboard";
-import CertificatesPage from "./pages/certificates/CertificatesPage";
-import NotificationCenter from "./pages/notifications/NotificationCenter";
-import TenantSettings from "./pages/settings/TenantSettings";
-import PortalSettings from "./pages/settings/PortalSettings";
-import OrganizationSettings from "./pages/settings/OrganizationSettings";
-import MailProviderSettingsPage from "./pages/settings/MailProviderSettingsPage";
-import LocationManagementPage from "./pages/locations/LocationManagementPage";
-import DynamicFieldsManagementPage from "./pages/settings/DynamicFieldsManagementPage";
-import RealTimeMonitoringPage from "./pages/monitoring/RealTimeMonitoringPage";
-import RubricEvaluationPage from "./pages/evaluation/RubricEvaluationPage";
-import MathEditorDemoPage from "./pages/editors/MathEditorDemoPage";
-import CodeEditorDemoPage from "./pages/editors/CodeEditorDemoPage";
-import GamificationPage from "./pages/gamification/GamificationPage";
-import QuestionPoolManagementPage from "./pages/questions/QuestionPoolManagementPage";
-import { OfflineSettingsPage } from "./pages/settings/OfflineSettingsPage";
-import { AIAnalyticsDashboardPage } from "./pages/analytics/AIAnalyticsDashboardPage";
-import { LTIIntegrationPage } from "./pages/integrations/LTIIntegrationPage";
-import { AudioVideoRecorderDemoPage } from "./components/recording/AudioVideoRecorder";
-import { Whiteboard } from "./components/whiteboard/Whiteboard";
-import { MultiLanguageDemoPage } from "./contexts/LanguageContext";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import { ParentPortalPage } from "./pages/parent/ParentPortalPage";
+// Content pages
+const ContentLibraryPage = lazy(() => import('./pages/content/ContentLibraryPage'));
+const AIGenerationPage = lazy(() => import('./pages/content/AIGenerationPage'));
 
-// Enhanced Pages (Mock Development)
-import QuestionEditorPage from "./pages/questions/QuestionEditorPage";
-import QuestionEditorPageV3 from "./pages/questions/QuestionEditorPageV3";
-import QuestionEditorPageV4 from "./pages/questions/QuestionEditorPageV4";
-import PresentationEditorPageAdvanced from "./pages/presentation/PresentationEditorPageAdvanced";
-import ExamWizardPage from "./pages/exams/ExamWizardPage";
-import ExamSessionPageEnhanced from "./pages/exams/ExamSessionPageEnhanced";
-import AdvancedExamSessionPage from "./pages/exams/AdvancedExamSessionPage";
-import ExamGradingPage from "./pages/grading/ExamGradingPage";
-import ExamManagementPage from "./pages/exams/ExamManagementPage";
-import StudentExamPortalPage from "./pages/student/StudentExamPortalPage";
-import ExamReviewPage from "./pages/exam-review/ExamReviewPage";
-import ExamPresentationPage from "./pages/exam-presentation/ExamPresentationPage";
-import AdminDashboardPage from "./pages/dashboard/AdminDashboardPage";
-import QuestionReviewQueuePage from "./pages/review/QuestionReviewQueuePage";
-import CertificatesPageEnhanced from "./pages/certificates/CertificatesPageEnhanced";
-import SubscriptionsPageEnhanced from "./pages/subscriptions/SubscriptionsPageEnhanced";
-import PresentationBuilderPageEnhanced from "./pages/presentations/PresentationBuilderPageEnhanced";
-import AdvancedFinancePage from "./pages/finance/AdvancedFinancePage";
-import ContractManagementPage from "./pages/contracts/ContractManagementPage";
-import CommunicationCenterPage from "./pages/communication/CommunicationCenterPage";
-import CommunicationCenterPageAdvanced from "./pages/communication/CommunicationCenterPageAdvanced";
-import RoyaltyManagementPage from "./pages/royalty/RoyaltyManagementPage";
-import CoursesPage from "./pages/courses/CoursesPage";
-import { WhiteboardPage } from "./pages/whiteboard/WhiteboardPage";
+// Lesson pages
+const LessonPlansListPage = lazy(() => import('./pages/lessons/LessonPlansListPage'));
+const LessonTemplatesPage = lazy(() => import('./pages/lessons/LessonTemplatesPage'));
 
-const queryClient = new QueryClient();
+// Assignment pages
+const AssignmentManagePage = lazy(() => import('./pages/assignments/AssignmentManagePage'));
+
+// Analytics pages
+const StudentProgressPage = lazy(() => import('./pages/analytics/StudentProgressPage'));
+
+// AI Assistant pages
+const WritingAssistantPage = lazy(() => import('./pages/ai/WritingAssistantPage'));
+const AutoModuleGeneratorPage = lazy(() => import('./pages/ai/AutoModuleGeneratorPage'));
+
+// Question pages
+const QuestionGeneratorAdvanced = lazy(() => import('./pages/questions/QuestionGeneratorAdvanced'));
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+    </div>
+  </div>
+);
+
+// Protected Route wrapper
+function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
+  const { isAuthenticated, hasAnyRole, loading } = useAuth();
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (roles && roles.length > 0 && !hasAnyRole(roles)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Layout with Sidebar
+function AppLayout({ children }: { children: React.ReactNode }) {
+  return <Layout>{children}</Layout>;
+}
+
+// Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <AuthProvider>
+        <LanguageProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/unauthorized" element={<div className="flex items-center justify-center h-screen"><div className="text-center"><h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Unauthorized</h1><p className="text-gray-600 dark:text-gray-400">You don't have permission to access this page.</p></div></div>} />
 
-          {/* Protected Routes with Dashboard Layout */}
-          <Route
-            path="/dashboard"
-            element={
-              <DashboardLayout>
-                <AdminDashboardPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <DashboardLayout>
-                <ProfilePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/dashboard/simple"
-            element={
-              <DashboardLayout>
-                <SimpleDashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/questions"
-            element={
-              <DashboardLayout>
-                <QuestionListPageEnhanced />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/questions/pool"
-            element={
-              <DashboardLayout>
-                <QuestionPoolManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/questions-old"
-            element={
-              <DashboardLayout>
-                <QuestionListPage />
-              </DashboardLayout>
-            }
-          />
-          <Route path="/questions/editor" element={<QuestionEditorPageV4 />} />
-          <Route path="/questions/editor/:id" element={<QuestionEditorPageV4 />} />
-          <Route path="/questions/editor-v3" element={<QuestionEditorPageV3 />} />
-          <Route path="/questions/editor-old" element={<QuestionEditorPage />} />
-          <Route path="/questions/create" element={<QuestionBuilderPage />} />
-          <Route
-            path="/questions/create-legacy"
-            element={
-              <DashboardLayout>
-                <QuestionCreatePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/exams"
-            element={
-              <DashboardLayout>
-                <ExamManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/exams/old"
-            element={
-              <DashboardLayout>
-                <ExamsPage />
-              </DashboardLayout>
-            }
-          />
-          <Route path="/exams/wizard" element={<ExamWizardPage />} />
-          <Route path="/exams/wizard/:id" element={<ExamWizardPage />} />
-          <Route path="/exams/:id/session" element={<AdvancedExamSessionPage />} />
-          <Route path="/exams/:id/session-old" element={<ExamSessionPageEnhanced />} />
-          <Route path="/exams/:id/grading" element={<ExamGradingPage />} />
-          <Route path="/exams/:id/present" element={<ExamPresentationPage />} />
-          <Route
-            path="/exams/:id/monitor"
-            element={
-              <DashboardLayout>
-                <RealTimeMonitoringPage />
-              </DashboardLayout>
-            }
-          />
-          {/* Student Exam Routes */}
-          <Route
-            path="/student/exams"
-            element={
-              <DashboardLayout>
-                <StudentExamPortalPage />
-              </DashboardLayout>
-            }
-          />
-          <Route path="/student/exam/:id/review" element={<ExamReviewPage />} />
-          <Route path="/teacher/exam/:id/review" element={<ExamReviewPage />} />
-          <Route
-            path="/evaluation/rubric"
-            element={
-              <DashboardLayout>
-                <RubricEvaluationPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/editors/math"
-            element={
-              <DashboardLayout>
-                <MathEditorDemoPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/editors/code"
-            element={
-              <DashboardLayout>
-                <CodeEditorDemoPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/gamification"
-            element={
-              <DashboardLayout>
-                <GamificationPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/review/queue"
-            element={
-              <DashboardLayout>
-                <QuestionReviewQueuePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <DashboardLayout>
-                <UserManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users/:id"
-            element={
-              <DashboardLayout>
-                <UserProfilePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users/roles"
-            element={
-              <DashboardLayout>
-                <RolesManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users/departments"
-            element={
-              <DashboardLayout>
-                <DepartmentsManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/users/positions"
-            element={
-              <DashboardLayout>
-                <PositionsManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/tenants"
-            element={
-              <DashboardLayout>
-                <TenantManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/tenants/create"
-            element={
-              <DashboardLayout>
-                <TenantCreatePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/tenants/:id"
-            element={
-              <DashboardLayout>
-                <TenantDetailPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/tenants/:id/edit"
-            element={
-              <DashboardLayout>
-                <TenantEditPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/licenses"
-            element={
-              <DashboardLayout>
-                <LicensePackagesPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/curriculum"
-            element={
-              <DashboardLayout>
-                <CurriculumManagementPageV2 />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/curriculum/education-models"
-            element={
-              <DashboardLayout>
-                <EducationModelManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/courses"
-            element={
-              <DashboardLayout>
-                <CoursesPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/presentations"
-            element={
-              <DashboardLayout>
-                <PresentationBuilderPageEnhanced />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/presentations-old"
-            element={
-              <DashboardLayout>
-                <PresentationListPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/presentations/editor"
-            element={<PresentationEditorPageAdvanced />}
-          />
-          <Route
-            path="/presentations/editor/:id"
-            element={<PresentationEditorPageAdvanced />}
-          />
-          <Route
-            path="/presentations/create"
-            element={<PresentationBuilderPage />}
-          />
-          <Route
-            path="/presentations/:id/edit"
-            element={<PresentationBuilderPage />}
-          />
-          <Route
-            path="/presentations/:id/play"
-            element={<PresentationPlayerPage />}
-          />
-          <Route
-            path="/grading"
-            element={
-              <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Değerlendirme</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
-              </DashboardLayout>
-            }
-          />
-          {/* New Enhanced Pages */}
-          <Route
-            path="/dashboard/admin"
-            element={
-              <DashboardLayout>
-                <AdminDashboard />
-              </DashboardLayout>
-            }
-          />
-          {/* Finance Routes - Mali Yönetim */}
-          <Route
-            path="/finance/overview"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/cash"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/income-expense"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/budget"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/perdiem"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/invoices"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/proforma"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/payments"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/subscriptions"
-            element={
-              <DashboardLayout>
-                <SubscriptionsPageEnhanced />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/subscriptions-old"
-            element={
-              <DashboardLayout>
-                <SubscriptionsPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/finance/advanced"
-            element={
-              <DashboardLayout>
-                <AdvancedFinancePage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/contracts"
-            element={
-              <DashboardLayout>
-                <ContractManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/communication"
-            element={
-              <DashboardLayout>
-                <CommunicationCenterPageAdvanced />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/communication-old"
-            element={
-              <DashboardLayout>
-                <CommunicationCenterPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/royalty/author-dashboard"
-            element={
-              <DashboardLayout>
-                <AuthorDashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/royalty"
-            element={
-              <DashboardLayout>
-                <RoyaltyManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/royalty/:section"
-            element={
-              <DashboardLayout>
-                <RoyaltyManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/certificates"
-            element={
-              <DashboardLayout>
-                <CertificatesPageEnhanced />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/certificates-old"
-            element={
-              <DashboardLayout>
-                <CertificatesPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <DashboardLayout>
-                <NotificationCenter />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings/portal"
-            element={
-              <DashboardLayout>
-                <PortalSettings />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings/organization"
-            element={
-              <DashboardLayout>
-                <OrganizationSettings />
-              </DashboardLayout>
-            }
-          />
-          {/* Legacy route - redirect to organization */}
-          <Route
-            path="/settings/tenant"
-            element={
-              <DashboardLayout>
-                <OrganizationSettings />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <DashboardLayout>
-                <OrganizationSettings />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings/mail-providers"
-            element={
-              <DashboardLayout>
-                <MailProviderSettingsPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings/offline"
-            element={
-              <DashboardLayout>
-                <OfflineSettingsPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings/language"
-            element={
-              <DashboardLayout>
-                <MultiLanguageDemoPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/analytics/ai"
-            element={
-              <DashboardLayout>
-                <AIAnalyticsDashboardPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/integrations/lti"
-            element={
-              <DashboardLayout>
-                <LTIIntegrationPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/recording/demo"
-            element={
-              <DashboardLayout>
-                <AudioVideoRecorderDemoPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/whiteboard"
-            element={<Whiteboard />}
-          />
-          <Route
-            path="/whiteboard-suite"
-            element={<WhiteboardPage />}
-          />
-          <Route
-            path="/whiteboard-suite/:id"
-            element={<WhiteboardPage />}
-          />
-          <Route
-            path="/parent/portal"
-            element={
-              <DashboardLayout>
-                <ParentPortalPage />
-              </DashboardLayout>
-            }
-          />
-          {/* Location Management - Lokasyon Yönetimi */}
-          <Route
-            path="/locations/management"
-            element={
-              <DashboardLayout>
-                <LocationManagementPage />
-              </DashboardLayout>
-            }
-          />
-          {/* Dynamic Fields Management - Dinamik Alan Yönetimi */}
-          <Route
-            path="/settings/dynamic-fields"
-            element={
-              <DashboardLayout>
-                <DynamicFieldsManagementPage />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/audit-logs"
-            element={
-              <DashboardLayout>
-                <div className="p-8">
-                  <h1 className="text-3xl font-bold">Audit Logları</h1>
-                  <p className="text-gray-600 mt-2">
-                    Bu modül geliştirilme aşamasında...
-                  </p>
-                </div>
-              </DashboardLayout>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-      </LanguageProvider>
+                {/* Protected routes with layout */}
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <Navigate to="/dashboard" replace />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Dashboard */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <DashboardPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Content Management */}
+                <Route
+                  path="/content-library"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <ContentLibraryPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ai-generate"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <AIGenerationPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Lesson Planning */}
+                <Route
+                  path="/lesson-plans"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <LessonPlansListPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/lesson-templates"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <LessonTemplatesPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Assignments */}
+                <Route
+                  path="/assignments"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <AssignmentManagePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Analytics */}
+                <Route
+                  path="/analytics/student-progress"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <StudentProgressPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* AI Assistants */}
+                <Route
+                  path="/ai-assistants/writing"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <WritingAssistantPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/auto-generate-module"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <AutoModuleGeneratorPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Question Generator */}
+                <Route
+                  path="/questions/generator"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <QuestionGeneratorAdvanced />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </LanguageProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

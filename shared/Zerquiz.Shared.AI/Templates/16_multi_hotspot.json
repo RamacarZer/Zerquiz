@@ -1,0 +1,23 @@
+{
+  "template_id": "multi_hotspot_v1",
+  "question_type": "multi_hotspot",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "interactive"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. Multi-hotspot (çoklu nokta seçme) soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet multi-hotspot sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- Görsel/diyagram üzerinde birden fazla nokta işaretlenecek\n- Her doğru nokta için koordinat belirt\n- Minimum 2, maksimum 5 doğru nokta\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Diyagram üzerinde belirtilen yapıları işaretleyiniz\",\n      \"image_url\": \"path/to/image.png\",\n      \"correct_points\": [\n        {\"x\": 150, \"y\": 200, \"label\": \"Nokta 1\"},\n        {\"x\": 300, \"y\": 150, \"label\": \"Nokta 2\"},\n        {\"x\": 450, \"y\": 350, \"label\": \"Nokta 3\"}\n      ],\n      \"tolerance_radius\": 20,\n      \"points\": 15\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "correct_points"],
+    "min_points": 2,
+    "max_points": 5
+  }
+}
+

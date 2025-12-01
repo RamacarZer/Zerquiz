@@ -1,0 +1,37 @@
+{
+  "template_id": "true_false_v1",
+  "question_type_code": "true_false",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "classic"
+  },
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Doğru/Yanlış soruları oluşturursun. Her ifade kesin doğru veya kesin yanlış olmalıdır. JSON formatında yanıt ver.",
+    "temperature": 0.7,
+    "max_tokens": 1000
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: Bu içerikten {{count}} adet Doğru/Yanlış sorusu üret ({{difficulty}} zorluk).\n\nKurallar:\n- Her ifade net ve kesin olmalı\n- Belirsiz ifadelerden kaçın\n- Doğru cevabı \"Doğru\" veya \"Yanlış\" olarak belirt\n- Açıklama ekle\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"true_false\",\n      \"stem\": \"İfade metni\",\n      \"options\": [\"Doğru\", \"Yanlış\"],\n      \"correctAnswer\": \"Doğru\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 5\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "correctAnswer"],
+    "correct_answer_values": ["Doğru", "Yanlış", "True", "False"]
+  },
+  "post_processing": {
+    "auto_assign_points": 5
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "true_false",
+        "stem": "Fotosentez sırasında oksijen üretilir.",
+        "options": ["Doğru", "Yanlış"],
+        "correctAnswer": "Doğru",
+        "explanation": "Fotosentez sırasında su molekülleri parçalanarak oksijen açığa çıkar.",
+        "difficulty": "easy",
+        "points": 5
+      }
+    ]
+  }
+}
+

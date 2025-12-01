@@ -1,0 +1,21 @@
+{
+  "template_id": "gif_animation_v1",
+  "question_type": "gif_animation",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "media_based"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. Animasyon/GIF tabanlı sorular oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet animasyon tabanlı soru oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- GIF/animasyon gösterilen bir süreç\n- Süreci anlama/yorumlama soruları\n- Adım adım değerlendirme\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Animasyonu izleyerek soruları cevaplayınız\",\n      \"animation_url\": \"path/to/animation.gif\",\n      \"description\": \"Hücre bölünmesi süreci\",\n      \"loop_count\": 3,\n      \"questions\": [\n        {\"text\": \"İlk aşamada ne olur?\", \"answer\": \"Kromozomlar çoğalır\"},\n        {\"text\": \"Kaç aşama vardır?\", \"answer\": \"4\"}\n      ],\n      \"points\": 12\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "animation_url", "questions"]
+  }
+}
+

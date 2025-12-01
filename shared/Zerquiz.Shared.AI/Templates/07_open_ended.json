@@ -1,0 +1,39 @@
+{
+  "question_type_code": "open_ended",
+  "template_name": "Open-Ended Question Generation",
+  "description": "Generate open-ended questions that require detailed, creative responses",
+  "metadata": {
+    "category": "classic",
+    "difficulty_levels": ["medium", "hard"],
+    "supported_languages": ["tr", "en", "ar"]
+  },
+  "prompt_template": "Based on the following content:\n\n{{content}}\n\nGenerate {{count}} open-ended questions at {{difficulty}} difficulty level in {{language}} language.\n\nRequirements:\n- Questions should encourage critical thinking\n- No single correct answer\n- Require explanation and reasoning\n- Difficulty: {{difficulty}}\n\nOutput Format (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"open_ended\",\n      \"stem\": \"Open-ended question\",\n      \"guidingPoints\": [\"Point 1\", \"Point 2\"],\n      \"sampleResponse\": \"Example of a good answer\",\n      \"rubric\": {\n        \"depth\": \"Quality of analysis (40%)\",\n        \"evidence\": \"Use of examples (30%)\",\n        \"clarity\": \"Clear expression (30%)\"\n      },\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 20\n    }\n  ]\n}",
+  "system_message": "You are an expert educator creating thought-provoking open-ended questions.",
+  "validation_rules": {
+    "required_fields": ["stem", "guidingPoints", "sampleResponse"],
+    "min_guiding_points": 2
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "open_ended",
+        "stem": "Yapay zekanın eğitim sistemine entegrasyonunun potansiyel faydaları ve riskleri nelerdir? Görüşlerinizi örneklerle destekleyerek açıklayınız.",
+        "guidingPoints": [
+          "Kişiselleştirilmiş öğrenme imkanları",
+          "Öğretmen rolündeki değişimler",
+          "Etik ve gizlilik endişeleri",
+          "Erişim eşitsizliği"
+        ],
+        "sampleResponse": "AI eğitimde kişiselleştirilmiş öğrenme fırsatları sunarken, veri gizliliği ve dijital uçurum gibi riskler de beraberinde getiriyor...",
+        "rubric": {
+          "depth": "Analiz derinliği ve eleştirel düşünme (40%)",
+          "evidence": "Örneklerle destekleme (30%)",
+          "clarity": "İfade netliği ve yapı (30%)"
+        },
+        "difficulty": "hard",
+        "points": 20
+      }
+    ]
+  }
+}
+

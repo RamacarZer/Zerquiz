@@ -1,0 +1,38 @@
+{
+  "question_type_code": "image_prompt",
+  "template_name": "Image-Based Question Generation",
+  "description": "Generate questions based on images or visual content",
+  "metadata": {
+    "category": "media_based",
+    "difficulty_levels": ["easy", "medium", "hard"],
+    "supported_languages": ["tr", "en", "ar"]
+  },
+  "prompt_template": "Given the following content about visual/image-based material:\n\n{{content}}\n\nGenerate {{count}} image-based questions at {{difficulty}} difficulty level in {{language}} language.\n\nRequirements:\n- Questions should describe or reference visual elements\n- Include image description or context\n- Provide answer based on image analysis\n- Difficulty: {{difficulty}}\n- Language: {{language}}\n\nOutput Format (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"image_prompt\",\n      \"stem\": \"Question about the image\",\n      \"imageDescription\": \"Description of what the image shows\",\n      \"imageUrl\": \"placeholder-url\",\n      \"correctAnswer\": \"Expected answer\",\n      \"acceptableAnswers\": [\"answer1\", \"answer2\"],\n      \"explanation\": \"Why this answer is correct\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 10\n    }\n  ]\n}",
+  "system_message": "You are an expert educator creating visual learning assessments. Focus on questions that test visual literacy and observation skills.",
+  "validation_rules": {
+    "required_fields": ["stem", "imageDescription", "correctAnswer"],
+    "min_description_length": 20,
+    "max_description_length": 500
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "image_prompt",
+        "stem": "Resimde görülen yapının mimari stili nedir?",
+        "imageDescription": "Gotik tarzda bir katedral, sivri kemerler ve vitray pencereler ile",
+        "imageUrl": "placeholder-url",
+        "correctAnswer": "Gotik mimari",
+        "acceptableAnswers": ["Gotik", "Gotik mimari", "Gothic architecture"],
+        "explanation": "Sivri kemerler ve vitray pencereler Gotik mimarinin karakteristik özellikleridir.",
+        "difficulty": "medium",
+        "points": 10
+      }
+    ]
+  },
+  "generation_config": {
+    "temperature": 0.7,
+    "max_tokens": 1500,
+    "context_window": 2000
+  }
+}
+

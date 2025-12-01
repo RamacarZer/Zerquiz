@@ -1,0 +1,23 @@
+{
+  "template_id": "matrix_type_v1",
+  "question_type": "matrix_type",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "advanced"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. Matrix/kıyaslama tablosu soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet matrix tipi soru oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- Satırlar: Nesneler/kavramlar\n- Sütunlar: Özellikler/kriterler\n- Her hücre için Evet/Hayır veya puan\n- En az 3x3 matrix\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Aşağıdaki tabloyu doldurunuz\",\n      \"rows\": [\"Satır 1\", \"Satır 2\", \"Satır 3\"],\n      \"columns\": [\"Sütun 1\", \"Sütun 2\", \"Sütun 3\"],\n      \"correct_matrix\": [[true, false, true], [false, true, false], [true, true, false]],\n      \"points\": 12\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "rows", "columns", "correct_matrix"],
+    "min_rows": 3,
+    "min_columns": 3
+  }
+}
+

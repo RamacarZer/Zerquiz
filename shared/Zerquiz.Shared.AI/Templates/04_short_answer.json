@@ -1,0 +1,32 @@
+{
+  "template_id": "short_answer_v1",
+  "question_type_code": "short_answer",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "classic"
+  },
+  "prompt_config": {
+    "system_message_tr": "Sen profesyonel bir eğitimcisin. Kısa cevaplı sorular oluşturursun (1-2 cümle). JSON formatında yanıt ver.",
+    "temperature": 0.7,
+    "max_tokens": 1000
+  },
+  "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: Bu içerikten {{count}} adet kısa cevaplı soru üret ({{difficulty}} zorluk).\n\nKurallar:\n- Cevap 1-2 cümle olmalı\n- Net ve spesifik sorular sor\n- Örnek cevap ver\n- Alternatif kabul edilebilir cevapları | ile ayır\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"short_answer\",\n      \"stem\": \"Soru metni\",\n      \"correctAnswer\": \"Örnek cevap | Alternatif cevap\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 5\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "correctAnswer"]
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "short_answer",
+        "stem": "Fotosentez nedir? Kısaca açıklayınız.",
+        "correctAnswer": "Bitkilerin güneş ışığı enerjisini kullanarak glikoz ürettiği süreçtir | Işık enerjisinin kimyasal enerjiye dönüştürüldüğü olaydır",
+        "explanation": "Fotosentez, kloroplastlarda gerçekleşen ve ışık enerjisini kimyasal bağlara dönüştüren temel biyolojik süreçtir.",
+        "difficulty": "medium",
+        "points": 5
+      }
+    ]
+  }
+}
+

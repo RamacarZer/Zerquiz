@@ -1,0 +1,21 @@
+{
+  "template_id": "code_execution_v1",
+  "question_type": "code_execution",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "advanced"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir programlama eğitimi uzmanısın. Kod çalıştırma ve analiz soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2500
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet kod çalıştırma sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- Kod snippet'i ver\n- Çıktıyı tahmin ettir VEYA kodu tamamlat\n- Programlama dili belirt\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Aşağıdaki kodun çıktısı ne olur?\",\n      \"language\": \"python\",\n      \"code\": \"def factorial(n):\\n    return 1 if n == 0 else n * factorial(n-1)\\nprint(factorial(5))\",\n      \"question_type\": \"output_prediction\",\n      \"correct_answer\": \"120\",\n      \"points\": 12\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "language", "code", "correct_answer"]
+  }
+}
+

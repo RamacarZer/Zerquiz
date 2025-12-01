@@ -1,217 +1,172 @@
-/**
- * Content Service
- * İçerik oluşturma ve yönetimi için API servisi (Mock)
- */
+// Content API Service
+import { apiClient } from '../../lib/api-client';
 
-import apiClient from './apiClient';
-
-export interface ContentItem {
+export interface ContentFile {
   id: string;
-  tenantId: string;
-  contentType: 'question' | 'book' | 'presentation' | 'flashcard' | 'dictionary' | 'activity';
   title: string;
-  description?: string;
-  status: 'draft' | 'review' | 'approved' | 'published' | 'archived';
-  contentJson: any;
-  metadata?: any;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  contentType: 'pdf' | 'docx' | 'pptx' | 'txt';
+  fileSize: number;
+  processingStatus: 'pending' | 'processing' | 'ready' | 'failed';
+  uploadedAt: string;
+  processedAt?: string;
+  tags?: string[];
+  metadata?: {
+    pageCount?: number;
+    wordCount?: number;
+    estimatedReadingTimeMinutes?: number;
+    languageDetected?: string;
+    textPreview?: string;
+  };
 }
 
-export interface ContentAsset {
+export interface GenerationJobResponse {
+  jobId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  message: string;
+}
+
+export interface GenerationJobStatus {
   id: string;
-  contentId: string;
-  assetType: 'whiteboard' | 'image' | 'video' | 'audio' | 'pdf';
-  assetFormat: 'excalidraw_json' | 'polotno_json' | 'pdf_annotations' | 'png' | 'mp4' | 'svg';
-  fileUrl?: string;
-  fileSizeBytes?: number;
-  assetJson?: any;
-  metadata?: any;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  completedItems: number;
+  totalItems: number;
+  errorMessage?: string;
+  startedAt?: string;
+  completedAt?: string;
 }
 
-// Mock data store
-const MOCK_CONTENTS: Record<string, ContentItem> = {};
-const MOCK_ASSETS: Record<string, ContentAsset[]> = {};
+export interface GeneratedContentItem {
+  id: string;
+  generationType: 'quiz' | 'flashcard' | 'summary' | 'worksheet';
+  questionTypeCode?: string;
+  status: 'draft' | 'reviewed' | 'published' | 'rejected';
+  itemCount: number;
+  difficulty?: string;
+  language?: string;
+  createdAt: string;
+  publishedAt?: string;
+  preview: string;
+}
+
+export interface QuizGenerationRequest {
+  contentItemId: string;
+  questionTypes: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  count: number;
+  language: string;
+}
+
+export interface FlashcardGenerationRequest {
+  contentItemId: string;
+  count: number;
+  language: string;
+}
+
+export interface SummaryGenerationRequest {
+  contentItemId: string;
+  length: 'short' | 'medium' | 'long';
+  language: string;
+}
+
+export interface WorksheetGenerationRequest {
+  contentItemId: string;
+  questionTypes: string[];
+  count: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  language: string;
+  includeAnswerKey: boolean;
+}
 
 export const contentService = {
-  /**
-   * İçerik oluştur
-   */
-  async createContent(data: Partial<ContentItem>): Promise<ContentItem> {
-    // Mock implementation
-    const newContent: ContentItem = {
-      id: `content-${Date.now()}`,
-      tenantId: data.tenantId || 'tenant-001',
-      contentType: data.contentType || 'question',
-      title: data.title || 'Yeni İçerik',
-      description: data.description,
-      status: data.status || 'draft',
-      contentJson: data.contentJson || {},
-      metadata: data.metadata,
-      createdBy: data.createdBy || 'user-001',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    MOCK_CONTENTS[newContent.id] = newContent;
-    console.log('Content created:', newContent);
-    return newContent;
-
-    // Real implementation:
-    // return apiClient.post('/api/content/items', data);
-  },
-
-  /**
-   * İçerik getir
-   */
-  async getContent(id: string): Promise<ContentItem> {
-    // Mock implementation
-    const content = MOCK_CONTENTS[id];
-    if (!content) {
-      throw new Error(`Content not found: ${id}`);
-    }
-    return content;
-
-    // Real implementation:
-    // return apiClient.get(`/api/content/items/${id}`);
-  },
-
-  /**
-   * İçerik güncelle
-   */
-  async updateContent(id: string, data: Partial<ContentItem>): Promise<ContentItem> {
-    // Mock implementation
-    const existing = MOCK_CONTENTS[id];
-    if (!existing) {
-      throw new Error(`Content not found: ${id}`);
-    }
-
-    const updated = {
-      ...existing,
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-
-    MOCK_CONTENTS[id] = updated;
-    console.log('Content updated:', updated);
-    return updated;
-
-    // Real implementation:
-    // return apiClient.put(`/api/content/items/${id}`, data);
-  },
-
-  /**
-   * İçerik sil
-   */
-  async deleteContent(id: string): Promise<void> {
-    // Mock implementation
-    delete MOCK_CONTENTS[id];
-    delete MOCK_ASSETS[id];
-    console.log('Content deleted:', id);
-
-    // Real implementation:
-    // return apiClient.delete(`/api/content/items/${id}`);
-  },
-
-  /**
-   * İçerik listele
-   */
-  async listContents(filters?: {
-    contentType?: string;
-    status?: string;
-    tenantId?: string;
-  }): Promise<ContentItem[]> {
-    // Mock implementation
-    let items = Object.values(MOCK_CONTENTS);
-
-    if (filters?.contentType) {
-      items = items.filter((item) => item.contentType === filters.contentType);
-    }
-
-    if (filters?.status) {
-      items = items.filter((item) => item.status === filters.status);
-    }
-
-    if (filters?.tenantId) {
-      items = items.filter((item) => item.tenantId === filters.tenantId);
-    }
-
-    return items;
-
-    // Real implementation:
-    // return apiClient.get('/api/content/items', { params: filters });
-  },
-
-  /**
-   * Asset ekle (whiteboard, image, etc.)
-   */
-  async addAsset(contentId: string, asset: Partial<ContentAsset>): Promise<ContentAsset> {
-    // Mock implementation
-    const newAsset: ContentAsset = {
-      id: `asset-${Date.now()}`,
-      contentId,
-      assetType: asset.assetType || 'whiteboard',
-      assetFormat: asset.assetFormat || 'excalidraw_json',
-      fileUrl: asset.fileUrl,
-      fileSizeBytes: asset.fileSizeBytes,
-      assetJson: asset.assetJson,
-      metadata: asset.metadata,
-    };
-
-    if (!MOCK_ASSETS[contentId]) {
-      MOCK_ASSETS[contentId] = [];
-    }
-
-    MOCK_ASSETS[contentId].push(newAsset);
-    console.log('Asset added:', newAsset);
-    return newAsset;
-
-    // Real implementation:
-    // return apiClient.post(`/api/content/items/${contentId}/assets`, asset);
-  },
-
-  /**
-   * Asset'leri getir
-   */
-  async getAssets(contentId: string): Promise<ContentAsset[]> {
-    // Mock implementation
-    return MOCK_ASSETS[contentId] || [];
-
-    // Real implementation:
-    // return apiClient.get(`/api/content/items/${contentId}/assets`);
-  },
-
-  /**
-   * Whiteboard asset kaydet (convenience method)
-   */
-  async saveWhiteboardAsset(
-    contentId: string,
-    whiteboardData: any,
-    format: 'excalidraw_json' | 'polotno_json' = 'excalidraw_json'
-  ): Promise<ContentAsset> {
-    return this.addAsset(contentId, {
-      assetType: 'whiteboard',
-      assetFormat: format,
-      assetJson: whiteboardData,
-      fileSizeBytes: JSON.stringify(whiteboardData).length,
+  // Get all content files
+  async getAll(tenantId: string, contentType?: string, page = 1, pageSize = 20): Promise<{ total: number; items: ContentFile[] }> {
+    const params = new URLSearchParams({ 
+      tenantId,
+      page: page.toString(), 
+      pageSize: pageSize.toString() 
     });
+    if (contentType) params.append('contentType', contentType);
+    
+    const response = await apiClient.get(`/content/list?${params}`);
+    return response.data;
   },
 
-  /**
-   * PDF asset kaydet
-   */
-  async savePdfAsset(
-    contentId: string,
-    pdfUrl: string,
-    annotations?: any
-  ): Promise<ContentAsset> {
-    return this.addAsset(contentId, {
-      assetType: 'pdf',
-      assetFormat: 'pdf_annotations',
-      fileUrl: pdfUrl,
-      assetJson: annotations,
+  // Get single content file with metadata
+  async getById(id: string): Promise<ContentFile> {
+    const response = await apiClient.get(`/content/${id}`);
+    return response.data;
+  },
+
+  // Upload new file
+  async upload(file: File, title?: string, tenantId?: string, userId?: string): Promise<ContentFile> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (title) formData.append('title', title);
+    if (tenantId) formData.append('tenantId', tenantId);
+    if (userId) formData.append('userId', userId);
+    
+    const response = await apiClient.post('/content/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
+    return response.data;
+  },
+
+  // Delete content file
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`/content/${id}`);
+  },
+
+  // Get extracted text
+  async getExtractedText(id: string): Promise<{ extractedText: string }> {
+    const response = await apiClient.get(`/content/${id}/extract`);
+    return response.data;
+  },
+
+  // === AI GENERATION ENDPOINTS ===
+
+  // Generate Quiz
+  async generateQuiz(request: QuizGenerationRequest): Promise<GenerationJobResponse> {
+    const response = await apiClient.post('/AIGeneration/generate/quiz', request);
+    return response.data;
+  },
+
+  // Generate Flashcards
+  async generateFlashcards(request: FlashcardGenerationRequest): Promise<GenerationJobResponse> {
+    const response = await apiClient.post('/AIGeneration/generate/flashcards', request);
+    return response.data;
+  },
+
+  // Generate Summary
+  async generateSummary(request: SummaryGenerationRequest): Promise<GenerationJobResponse> {
+    const response = await apiClient.post('/AIGeneration/generate/summary', request);
+    return response.data;
+  },
+
+  // Generate Worksheet
+  async generateWorksheet(request: WorksheetGenerationRequest): Promise<GenerationJobResponse> {
+    const response = await apiClient.post('/AIGeneration/generate/worksheet', request);
+    return response.data;
+  },
+
+  // Get generation job status
+  async getJobStatus(jobId: string): Promise<GenerationJobStatus> {
+    const response = await apiClient.get(`/AIGeneration/job/${jobId}/status`);
+    return response.data;
+  },
+
+  // Get generated content for a content item
+  async getGeneratedContent(contentId: string, type?: string): Promise<GeneratedContentItem[]> {
+    const params = type ? `?type=${type}` : '';
+    const response = await apiClient.get(`/AIGeneration/content/${contentId}/generated${params}`);
+    return response.data;
+  },
+
+  // Approve generated content
+  async approveGenerated(id: string): Promise<{ message: string }> {
+    const response = await apiClient.post(`/AIGeneration/${id}/approve`);
+    return response.data;
   },
 };
-

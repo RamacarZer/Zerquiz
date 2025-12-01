@@ -1,0 +1,16 @@
+{
+  "question_type_code": "drag_drop_image",
+  "template_name": "Drag and Drop Image Questions",
+  "description": "Visual drag-drop questions with images",
+  "prompt_template": "Generate {{count}} drag-drop image questions from:\n{{content}}",
+  "system_message": "Create visual drag-drop exercises.",
+  "example_output": {
+    "questions": [{
+      "stem": "Drag images to correct categories",
+      "images": [{"id": "img1", "description": "Apple"}],
+      "categories": [{"id": "cat1", "name": "Fruits", "correctImages": ["img1"]}],
+      "points": 10
+    }]
+  }
+}
+

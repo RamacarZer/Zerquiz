@@ -1,0 +1,16 @@
+{
+  "question_type_code": "area_selection",
+  "template_name": "Area Selection Questions",
+  "description": "Select specific areas on image",
+  "prompt_template": "Generate {{count}} area selection questions from:\n{{content}}",
+  "system_message": "Create area selection exercises.",
+  "example_output": {
+    "questions": [{
+      "stem": "Select the highlighted region",
+      "imageUrl": "placeholder",
+      "correctAreas": [{"x": 100, "y": 100, "width": 50, "height": 50}],
+      "points": 10
+    }]
+  }
+}
+

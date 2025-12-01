@@ -1,0 +1,21 @@
+{
+  "template_id": "chart_graph_v1",
+  "question_type": "chart_graph",
+  "metadata": {
+    "created_by": "system",
+    "version": "1.0",
+    "language": "tr",
+    "category": "media_based"
+  },
+  "prompt_config": {
+    "system_message": "Sen bir eğitim içeriği uzmanısın. Grafik ve chart yorumlama soruları oluşturuyorsun.",
+    "context_window": 2000,
+    "temperature": 0.7,
+    "max_tokens": 2000
+  },
+  "prompt_template": "{{system_message}}\n\nVerilen içerikten {{count}} adet grafik/chart sorusu oluştur.\n\nİçerik:\n{{content}}\n\nTalimatlar:\n- Grafik verilerini tanımla (çizgi, bar, pasta vb.)\n- Yorumlama soruları sor\n- Trend analizi, karşılaştırma\n- Zorluk: {{difficulty}}\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"stem\": \"Aşağıdaki grafiği inceleyerek soruları cevaplayınız\",\n      \"chart_type\": \"line\",\n      \"chart_data\": {\n        \"labels\": [\"2020\", \"2021\", \"2022\", \"2023\"],\n        \"datasets\": [{\n          \"label\": \"Satışlar\",\n          \"data\": [100, 150, 180, 220]\n        }]\n      },\n      \"questions\": [\n        {\"text\": \"Hangi yılda en yüksek artış görülmüştür?\", \"answer\": \"2021\"},\n        {\"text\": \"2020-2023 arası toplam artış yüzdesi nedir?\", \"answer\": \"120%\"}\n      ],\n      \"points\": 15\n    }\n  ]\n}",
+  "validation": {
+    "required_fields": ["stem", "chart_type", "chart_data", "questions"]
+  }
+}
+

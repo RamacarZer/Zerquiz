@@ -1,0 +1,47 @@
+{
+  "question_type_code": "table_data",
+  "template_name": "Table/Data Analysis Questions",
+  "description": "Generate questions that require analyzing tabular data",
+  "metadata": {
+    "category": "media_based",
+    "difficulty_levels": ["easy", "medium", "hard"],
+    "supported_languages": ["tr", "en", "ar"]
+  },
+  "prompt_template": "Given the following content containing tabular data or statistics:\n\n{{content}}\n\nGenerate {{count}} data analysis questions at {{difficulty}} difficulty level in {{language}} language.\n\nRequirements:\n- Questions should require data interpretation\n- Include table/data description\n- Test analytical thinking\n- May involve calculations or comparisons\n- Difficulty: {{difficulty}}\n- Language: {{language}}\n\nOutput Format (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"table_data\",\n      \"stem\": \"Question about the data\",\n      \"tableData\": {\n        \"headers\": [\"Column1\", \"Column2\"],\n        \"rows\": [[\"value1\", \"value2\"]]\n      },\n      \"questionType\": \"interpretation|calculation|comparison\",\n      \"correctAnswer\": \"Expected answer\",\n      \"workingSteps\": [\"Step 1\", \"Step 2\"],\n      \"explanation\": \"How to solve\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 15\n    }\n  ]\n}",
+  "system_message": "You are an expert educator creating data literacy assessments. Focus on questions that develop analytical and critical thinking skills.",
+  "validation_rules": {
+    "required_fields": ["stem", "tableData", "correctAnswer"],
+    "min_data_points": 4
+  },
+  "example_output": {
+    "questions": [
+      {
+        "questionTypeCode": "table_data",
+        "stem": "Tabloya göre en yüksek satış artışı hangi ayda gerçekleşmiştir?",
+        "tableData": {
+          "headers": ["Ay", "Satış (TL)", "Artış (%)"],
+          "rows": [
+            ["Ocak", "10000", "5"],
+            ["Şubat", "12000", "20"],
+            ["Mart", "11000", "-8"]
+          ]
+        },
+        "questionType": "comparison",
+        "correctAnswer": "Şubat",
+        "workingSteps": [
+          "Artış yüzdelerine bakılır",
+          "En yüksek artış %20 ile Şubat ayında"
+        ],
+        "explanation": "Şubat ayında %20 artış ile en yüksek büyüme görülmüştür.",
+        "difficulty": "easy",
+        "points": 10
+      }
+    ]
+  },
+  "generation_config": {
+    "temperature": 0.6,
+    "max_tokens": 1800,
+    "context_window": 2500
+  }
+}
+
