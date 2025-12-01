@@ -5,6 +5,8 @@ using Zerquiz.Identity.Infrastructure.Persistence;
 
 namespace Zerquiz.Identity.Api.Controllers;
 
+// TEMPORARY: Disabled due to missing Permissions entity
+/*
 [ApiController]
 [Route("api/[controller]")]
 public class PermissionsController : ControllerBase
@@ -324,9 +326,15 @@ public class PermissionsController : ControllerBase
         return permissions;
     }
 }
+*/
 
+// Temporarily disabled records
+/*
+// Temporarily disabled records
+/*
 public record CreatePermissionRequest(string Code, string Name, string? Description, string Module, string Action, string? Resource, string? Category, int? DisplayOrder);
 public record UpdatePermissionRequest(string? Name, string? Description, string? Category, int? DisplayOrder);
 public record AssignPermissionRequest(Guid RoleId, Guid PermissionId, bool? IsGranted, DateTime? ValidFrom, DateTime? ValidTo);
 public record RevokePermissionRequest(Guid RoleId, Guid PermissionId);
+*/
 

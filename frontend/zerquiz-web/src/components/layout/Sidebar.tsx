@@ -4,7 +4,9 @@ import {
   LayoutDashboard, FolderOpen, BookOpen, ClipboardList, HelpCircle, FileText,
   BarChart3, Bot, Trophy, Settings, Upload, Sparkles, List, Layout, Plus,
   FileCheck, Database, FilePlus, TrendingUp, Users, Brain, PenTool, Search,
-  Zap, Award, Building, ChevronDown, ChevronRight, Menu, X, Bell, User
+  Zap, Award, Building, ChevronDown, ChevronRight, Menu, X, Bell, User, Shield, Book,
+  Monitor, GraduationCap, DollarSign, CreditCard, Calendar, Key, Package, Coins,
+  FileSignature, MessageSquare, Plug, Link2, Activity, MapPin
 } from 'lucide-react';
 import { getFilteredMenu, getMenuLabel, getQuickActions, MenuItem } from '../../config/navigation';
 import { useAuth } from '../../hooks/useAuth';
@@ -15,7 +17,9 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   LayoutDashboard, FolderOpen, BookOpen, ClipboardList, HelpCircle, FileText,
   BarChart3, Bot, Trophy, Settings, Upload, Sparkles, List, Layout, Plus,
   FileCheck, Database, FilePlus, TrendingUp, Users, Brain, PenTool, Search,
-  Zap, Award, Building
+  Zap, Award, Building, Shield, Book, Monitor, GraduationCap, DollarSign,
+  CreditCard, Calendar, Key, Package, Coins, FileSignature, MessageSquare,
+  Plug, Link: Link2, Activity, MapPin
 };
 
 interface SidebarProps {
@@ -30,6 +34,10 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Debug: Log user and roles
+  console.log('🔍 Sidebar - User:', user);
+  console.log('🔍 Sidebar - Roles:', roles);
 
   const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
 
@@ -49,6 +57,9 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
 
   const filteredMenu = getFilteredMenu(roles || []);
   const quickActions = getQuickActions(roles || []);
+  
+  console.log('📋 Sidebar - Filtered Menu:', filteredMenu);
+  console.log('⚡ Sidebar - Quick Actions:', quickActions);
 
   const renderIcon = (iconName: string, className: string = '') => {
     const Icon = iconMap[iconName];
@@ -164,59 +175,12 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
 
       {/* Main Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
-        {/* Main Section */}
-        <div className="mb-6">
-          {!isCollapsed && (
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 px-2">
-              {language === 'tr' ? 'Ana Menü' : 'Main Menu'}
-            </h3>
-          )}
-          {filteredMenu
-            .filter(item => item.section === 'main')
-            .map(item => renderMenuItem(item))}
-        </div>
-
-        {/* AI Section */}
-        {filteredMenu.some(item => item.section === 'ai') && (
-          <div className="mb-6">
-            {!isCollapsed && (
-              <h3 className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase mb-2 px-2">
-                ✨ {language === 'tr' ? 'AI Özellikler' : 'AI Features'}
-              </h3>
-            )}
-            {filteredMenu
-              .filter(item => item.section === 'ai')
-              .map(item => renderMenuItem(item))}
-          </div>
+        {!isCollapsed && (
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 px-2">
+            {language === 'tr' ? 'Ana Menü' : 'Main Menu'}
+          </h3>
         )}
-
-        {/* Reports Section */}
-        {filteredMenu.some(item => item.section === 'reports') && (
-          <div className="mb-6">
-            {!isCollapsed && (
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 px-2">
-                {language === 'tr' ? 'Raporlar' : 'Reports'}
-              </h3>
-            )}
-            {filteredMenu
-              .filter(item => item.section === 'reports')
-              .map(item => renderMenuItem(item))}
-          </div>
-        )}
-
-        {/* Admin Section */}
-        {filteredMenu.some(item => item.section === 'admin') && (
-          <div>
-            {!isCollapsed && (
-              <h3 className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase mb-2 px-2">
-                {language === 'tr' ? 'Yönetim' : 'Administration'}
-              </h3>
-            )}
-            {filteredMenu
-              .filter(item => item.section === 'admin')
-              .map(item => renderMenuItem(item))}
-          </div>
-        )}
+        {filteredMenu.map(item => renderMenuItem(item))}
       </nav>
 
       {/* User Profile (Bottom) */}

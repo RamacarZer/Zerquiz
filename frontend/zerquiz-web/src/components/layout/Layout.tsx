@@ -1,7 +1,7 @@
 // Main layout component
 
 import { ReactNode } from 'react';
-import Sidebar from './Sidebar';
+import { Sidebar } from './Sidebar';
 import Header from './Header';
 
 interface LayoutProps {

@@ -1,3 +1,5 @@
+// TEMPORARY: Disabled due to missing shared library
+/*
 using Microsoft.AspNetCore.Mvc;
 using Zerquiz.Shared.Reporting;
 
@@ -189,10 +191,12 @@ public class ReportsController : ControllerBase
         return Ok(templates);
     }
 }
+*/
 
+/*
 public record GenerateReportRequest(string ReportType, Dictionary<string, object> Parameters, string? TemplateId, string? OutputFormat);
 public record ExamResultsReportRequest(Guid ExamId, bool IncludeDetails, string? Format);
 public record StudentPerformanceReportRequest(Guid StudentId, DateTime FromDate, DateTime ToDate, string? Format);
 public record FinancialReportRequest(DateTime FromDate, DateTime ToDate, bool IncludeRoyalties, bool IncludePayouts, string? Format);
 public record AuditLogReportRequest(DateTime FromDate, DateTime ToDate, Guid? UserId, string? Action);
-
+*/

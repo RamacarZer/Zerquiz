@@ -1,3 +1,5 @@
+using System;
+
 namespace Zerquiz.Content.Domain.Entities;
 
 public class GeneratedContent

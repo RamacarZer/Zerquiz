@@ -55,7 +55,7 @@ public class ContentDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.ContentItemId);
             entity.HasIndex(e => e.GenerationType);
-            entity.HasIndex(e => e.GenerationStatus);
+            entity.HasIndex(e => e.Status);
             entity.Property(e => e.GeneratedData).HasColumnType("jsonb");
             entity.HasOne(e => e.ContentItem)
                 .WithMany(e => e.GeneratedContents)

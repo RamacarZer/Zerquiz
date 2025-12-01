@@ -158,6 +158,7 @@ public class AuthService : IAuthService
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Phone = user.Phone,
+                TenantId = user.TenantId,
                 IsActive = user.IsActive,
                 Roles = roles,
                 Permissions = permissions

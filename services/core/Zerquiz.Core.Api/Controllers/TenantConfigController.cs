@@ -1,3 +1,5 @@
+// TEMPORARY: Disabled due to missing dependencies
+/*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Infrastructure.Persistence;
@@ -237,8 +239,10 @@ public class TenantConfigController : ControllerBase
         return true; // Simulated success
     }
 }
+*/
 
+/*
 public record SetCustomDomainRequest(string CustomDomain);
 public record UpdateSettingsRequest(Dictionary<string, object> Settings);
 public record UpdateBrandingRequest(string? Logo, string? PrimaryColor, string? SecondaryColor, string? Favicon, string? CustomCss);
-
+*/

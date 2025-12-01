@@ -7,6 +7,7 @@ export interface MenuItem {
   path: string;
   roles: string[]; // Allowed roles
   badge?: string | number; // Optional badge
+  section?: 'main' | 'ai' | 'reports' | 'admin' | 'settings'; // Menu section
   children?: MenuItem[];
 }
 
@@ -27,6 +28,7 @@ export const menuItems: MenuItem[] = [
     icon: 'LayoutDashboard',
     path: '/dashboard',
     roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+    section: 'main',
   },
   {
     id: 'content',
@@ -35,6 +37,7 @@ export const menuItems: MenuItem[] = [
     path: '/content-library',
     roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
     badge: 'NEW',
+    section: 'main',
   },
   {
     id: 'ai-generate',
@@ -155,6 +158,328 @@ export const menuItems: MenuItem[] = [
         icon: 'Database',
         path: '/questions/bank',
         roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+    ],
+  },
+  {
+    id: 'exams',
+    labelKey: 'exams',
+    icon: 'FileText',
+    path: '/exams',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+    children: [
+      {
+        id: 'exam-list',
+        labelKey: 'exam_list',
+        icon: 'List',
+        path: '/exams',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+      },
+      {
+        id: 'exam-management',
+        labelKey: 'exam_management',
+        icon: 'Settings',
+        path: '/exams/manage',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+    ],
+  },
+  {
+    id: 'grading',
+    labelKey: 'grading',
+    icon: 'Award',
+    path: '/grading',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+  },
+  // ============================================
+  // CONTENT & PUBLISHING
+  // ============================================
+  {
+    id: 'presentations',
+    labelKey: 'presentations',
+    icon: 'Monitor',
+    path: '/presentations',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+    children: [
+      {
+        id: 'presentation-list',
+        labelKey: 'presentation_list',
+        icon: 'List',
+        path: '/presentations',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+      {
+        id: 'presentation-builder',
+        labelKey: 'presentation_builder',
+        icon: 'Plus',
+        path: '/presentations/builder',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+    ],
+  },
+  {
+    id: 'courses',
+    labelKey: 'courses',
+    icon: 'GraduationCap',
+    path: '/courses',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+  },
+  {
+    id: 'certificates',
+    labelKey: 'certificates',
+    icon: 'Award',
+    path: '/certificates',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+  },
+  // ============================================
+  // FINANCIAL & BUSINESS
+  // ============================================
+  {
+    id: 'finance',
+    labelKey: 'finance',
+    icon: 'DollarSign',
+    path: '/finance',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+    children: [
+      {
+        id: 'payments',
+        labelKey: 'payments',
+        icon: 'CreditCard',
+        path: '/finance/payments',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+      {
+        id: 'subscriptions',
+        labelKey: 'subscriptions',
+        icon: 'Calendar',
+        path: '/finance/subscriptions',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+      {
+        id: 'invoices',
+        labelKey: 'invoices',
+        icon: 'FileText',
+        path: '/finance/invoices',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'licenses',
+    labelKey: 'licenses',
+    icon: 'Key',
+    path: '/licenses',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+    children: [
+      {
+        id: 'license-packages',
+        labelKey: 'license_packages',
+        icon: 'Package',
+        path: '/licenses/packages',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'royalty',
+    labelKey: 'royalty_management',
+    icon: 'Coins',
+    path: '/royalty',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+    children: [
+      {
+        id: 'author-dashboard',
+        labelKey: 'author_dashboard',
+        icon: 'BarChart3',
+        path: '/royalty/author-dashboard',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+      {
+        id: 'royalty-reports',
+        labelKey: 'royalty_reports',
+        icon: 'FileText',
+        path: '/royalty/reports',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'contracts',
+    labelKey: 'contracts',
+    icon: 'FileSignature',
+    path: '/contracts',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+  },
+  // ============================================
+  // COMMUNICATION & COLLABORATION
+  // ============================================
+  {
+    id: 'communication',
+    labelKey: 'communication',
+    icon: 'MessageSquare',
+    path: '/communication',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+  },
+  {
+    id: 'notifications',
+    labelKey: 'notifications',
+    icon: 'Bell',
+    path: '/notifications',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student'],
+  },
+  {
+    id: 'parent-portal',
+    labelKey: 'parent_portal',
+    icon: 'Users',
+    path: '/parent-portal',
+    roles: ['Parent', 'SuperAdmin', 'TenantAdmin'],
+  },
+  // ============================================
+  // INTEGRATIONS & ADVANCED
+  // ============================================
+  {
+    id: 'integrations',
+    labelKey: 'integrations',
+    icon: 'Plug',
+    path: '/integrations',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+    children: [
+      {
+        id: 'lti-integration',
+        labelKey: 'lti_integration',
+        icon: 'Link',
+        path: '/integrations/lti',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'monitoring',
+    labelKey: 'monitoring',
+    icon: 'Activity',
+    path: '/monitoring',
+    roles: ['SuperAdmin'],
+  },
+  {
+    id: 'locations',
+    labelKey: 'locations',
+    icon: 'MapPin',
+    path: '/locations',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+  },
+  // ============================================
+  // ADMIN & SYSTEM MANAGEMENT
+  // ============================================
+  {
+    id: 'tenants',
+    labelKey: 'tenant_management',
+    icon: 'Building',
+    path: '/admin/tenants',
+    roles: ['SuperAdmin'],
+    children: [
+      {
+        id: 'tenant-list',
+        labelKey: 'tenants',
+        icon: 'List',
+        path: '/admin/tenants',
+        roles: ['SuperAdmin'],
+      },
+      {
+        id: 'tenant-settings',
+        labelKey: 'tenant_settings',
+        icon: 'Settings',
+        path: '/admin/tenant-settings',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'users',
+    labelKey: 'user_management',
+    icon: 'Users',
+    path: '/admin/users',
+    roles: ['SuperAdmin', 'TenantAdmin'],
+    children: [
+      {
+        id: 'users-list',
+        labelKey: 'users',
+        icon: 'List',
+        path: '/admin/users',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+      {
+        id: 'roles',
+        labelKey: 'roles_permissions',
+        icon: 'Shield',
+        path: '/admin/roles',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+      {
+        id: 'departments',
+        labelKey: 'departments',
+        icon: 'Building',
+        path: '/admin/departments',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'curriculum',
+    labelKey: 'curriculum_management',
+    icon: 'BookOpen',
+    path: '/admin/curriculum',
+    roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+    children: [
+      {
+        id: 'subjects',
+        labelKey: 'subjects',
+        icon: 'Book',
+        path: '/admin/curriculum/subjects',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+      {
+        id: 'topics',
+        labelKey: 'topics',
+        icon: 'List',
+        path: '/admin/curriculum/topics',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher'],
+      },
+      {
+        id: 'grades',
+        labelKey: 'grades',
+        icon: 'Award',
+        path: '/admin/curriculum/grades',
+        roles: ['SuperAdmin', 'TenantAdmin'],
+      },
+    ],
+  },
+  {
+    id: 'system',
+    labelKey: 'system_management',
+    icon: 'Settings',
+    path: '/admin/system',
+    roles: ['SuperAdmin'],
+    children: [
+      {
+        id: 'definitions',
+        labelKey: 'system_definitions',
+        icon: 'Database',
+        path: '/admin/system/definitions',
+        roles: ['SuperAdmin'],
+      },
+      {
+        id: 'ai-config',
+        labelKey: 'ai_configuration',
+        icon: 'Bot',
+        path: '/admin/system/ai-config',
+        roles: ['SuperAdmin'],
+      },
+      {
+        id: 'audit-logs',
+        labelKey: 'audit_logs',
+        icon: 'FileText',
+        path: '/admin/system/audit-logs',
+        roles: ['SuperAdmin'],
       },
     ],
   },

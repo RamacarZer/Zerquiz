@@ -1,3 +1,5 @@
+// TEMPORARY: Disabled due to missing shared library
+/*
 using Microsoft.AspNetCore.Mvc;
 using Zerquiz.Shared.Notifications;
 
@@ -264,11 +266,13 @@ public class NotificationsController : ControllerBase
         );
     }
 }
+*/
 
+/*
 public record SendEmailRequest(string To, string? Cc, string? Bcc, string Subject, string Body, bool? IsHtml);
 public record SendSmsRequest(string PhoneNumber, string Message, string? SenderId);
 public record SendPushRequest(string UserId, string Title, string Body, Dictionary<string, string>? Data, string? Icon, string? Sound);
 public record SendBulkEmailRequest(List<string> Recipients, string Subject, string Body, bool? IsHtml);
 public record SendTemplatedEmailRequest(string TemplateName, string To, Dictionary<string, string> Variables);
 public record SendByEventRequest(string EventType, string UserId, Dictionary<string, string> Data);
-
+*/

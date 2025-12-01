@@ -1,3 +1,5 @@
+// TEMPORARY: Disabled due to entity schema mismatch
+/*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Infrastructure.Persistence;
@@ -281,7 +283,9 @@ public class AuditLogsController : ControllerBase
         });
     }
 }
+*/
 
+/*
 public record SearchAuditLogsRequest(
     List<Guid>? UserIds,
     List<string>? EntityTypes,
@@ -294,3 +298,4 @@ public record SearchAuditLogsRequest(
 );
 
 public record ExportAuditLogsRequest(DateTime? FromDate, DateTime? ToDate, string Format = "csv");
+*/

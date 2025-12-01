@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -23,7 +26,7 @@ public class LocalFileStorageService : IStorageService
 
     public LocalFileStorageService(IConfiguration configuration, ILogger<LocalFileStorageService> logger)
     {
-        _storagePath = configuration.GetValue<string>("Storage:LocalPath") ?? Path.Combine(Directory.GetCurrentDirectory(), "storage");
+        _storagePath = configuration["Storage:LocalPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "storage");
         _logger = logger;
 
         // Ensure storage directory exists

@@ -2,9 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Application.Interfaces;
 using Zerquiz.Core.Infrastructure.Persistence;
 using Zerquiz.Core.Infrastructure.Services;
-using Zerquiz.Shared.Storage;
-using Zerquiz.Shared.Notifications;
-using Zerquiz.Shared.Reporting;
+// TEMPORARY: Disabled due to missing shared libraries
+// using Zerquiz.Shared.Storage;
+// using Zerquiz.Shared.Notifications;
+// using Zerquiz.Shared.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ builder.Services.AddDbContext<CoreDbContext>(options =>
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+// TEMPORARY: Disabled shared services due to missing libraries
+/*
 // Shared Services
 builder.Services.AddSingleton<IStorageService>(sp =>
 {
@@ -42,6 +45,7 @@ builder.Services.AddSingleton<IReportingService>(sp =>
     var logger = sp.GetRequiredService<ILogger<LocalReportingService>>();
     return new LocalReportingService(logger);
 });
+*/
 
 // CORS
 builder.Services.AddCors(options =>
@@ -65,7 +69,8 @@ using (var scope = app.Services.CreateScope())
         await context.Database.EnsureCreatedAsync();
         // Create schema if not exists
         await context.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS core_schema");
-        await context.Database.MigrateAsync();
+        // TEMPORARY: Skip migration due to pending model changes
+        // await context.Database.MigrateAsync();
     }
     catch (Exception ex)
     {

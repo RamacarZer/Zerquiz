@@ -1,3 +1,5 @@
+// TEMPORARY: Disabled due to missing shared library
+/*
 using Microsoft.AspNetCore.Mvc;
 using Zerquiz.Shared.Storage;
 
@@ -218,4 +220,4 @@ public class MediaController : ControllerBase
         }
     }
 }
-
+*/

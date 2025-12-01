@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Zerquiz.Shared.Contracts.Domain;
 
 namespace Zerquiz.Content.Domain.Entities;
@@ -57,34 +59,5 @@ public class ContentMetadata : BaseEntity
     
     // Timestamps
     public DateTime ExtractedAt { get; set; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// AI-generated content from ContentItem
-/// </summary>
-public class GeneratedContent : BaseEntity
-{
-    public Guid ContentItemId { get; set; }
-    public ContentItem ContentItem { get; set; } = null!;
-    
-    // Generation Info
-    public string GenerationType { get; set; } = string.Empty; // quiz, flashcard, summary, worksheet
-    public string? QuestionTypeCode { get; set; } // If quiz
-    public string GeneratedData { get; set; } = string.Empty; // JSONB - Generated content
-    
-    // AI Details
-    public string? Prompt { get; set; } // Used prompt
-    public string AIProvider { get; set; } = string.Empty; // openai, azure, etc.
-    public string AIModel { get; set; } = string.Empty;
-    public int TokensUsed { get; set; }
-    
-    // Status
-    public string GenerationStatus { get; set; } = "pending"; // pending, processing, completed, failed, approved, rejected
-    public DateTime? CompletedAt { get; set; }
-    public string? ErrorMessage { get; set; }
-    
-    // Usage
-    public int UsageCount { get; set; }
-    public DateTime? LastUsedAt { get; set; }
 }
 

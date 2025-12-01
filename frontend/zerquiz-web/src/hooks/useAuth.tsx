@@ -48,38 +48,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('http://localhost:5002/api/Auth/login', {
+      console.log('🔐 Login attempt:', { email });
+      
+      // Direct connection to Identity Service (no gateway yet)
+      const response = await fetch('http://localhost:5001/api/Auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
+      console.log('📡 Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorData = await response.json();
+        console.error('❌ Login failed:', errorData);
+        throw new Error(errorData.message || 'Login failed');
       }
 
-      const data = await response.json();
+      const apiResponse = await response.json();
+      console.log('✅ API Response:', apiResponse);
+      
+      // Backend returns: { success: true, data: { accessToken, refreshToken, user: { id, email, roles, ... } } }
+      if (!apiResponse.success || !apiResponse.data) {
+        console.error('❌ Invalid response format:', apiResponse);
+        throw new Error(apiResponse.message || 'Login failed');
+      }
+
+      const { accessToken, user: backendUser } = apiResponse.data;
+      console.log('👤 User data:', backendUser);
       
       const userData: User = {
-        id: data.userId,
-        email: data.email,
-        name: data.name,
-        roles: data.roles || [],
-        tenantId: data.tenantId,
-        language: data.language || 'tr'
+        id: backendUser.id,
+        email: backendUser.email,
+        name: `${backendUser.firstName || ''} ${backendUser.lastName || ''}`.trim(),
+        roles: backendUser.roles || [],
+        tenantId: backendUser.tenantId || '',
+        language: backendUser.language || 'tr'
       };
 
       setUser(userData);
-      setToken(data.token);
+      setToken(accessToken);
       
       // Persist to localStorage
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userId', data.userId);
-      localStorage.setItem('tenantId', data.tenantId);
+      localStorage.setItem('userId', backendUser.id);
+      if (backendUser.tenantId) {
+        localStorage.setItem('tenantId', backendUser.tenantId);
+      }
+      
+      console.log('🎉 Login successful!');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('💥 Login error:', error);
       throw error;
     }
   };
