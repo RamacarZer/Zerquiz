@@ -1,4 +1,9 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using Zerquiz.Content.Infrastructure.Persistence;
 using Zerquiz.Content.Infrastructure.Services;
 using Zerquiz.Shared.AI.Providers;
@@ -17,7 +22,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Database
 builder.Services.AddDbContext<ContentDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ContentDatabase")));
 
 // Services
 builder.Services.AddScoped<PdfExtractionService>();

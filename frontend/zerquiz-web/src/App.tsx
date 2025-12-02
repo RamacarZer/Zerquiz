@@ -29,6 +29,7 @@ const AutoModuleGeneratorPage = lazy(() => import('./pages/ai/AutoModuleGenerato
 
 // Question pages
 const QuestionGeneratorAdvanced = lazy(() => import('./pages/questions/QuestionGeneratorAdvanced'));
+const QuestionCreationModeSelector = lazy(() => import('./pages/questions/QuestionCreationModeSelector'));
 
 // Profile & Settings pages
 const UserProfilePage = lazy(() => import('./pages/profile/UserProfilePage'));
@@ -256,6 +257,16 @@ function App() {
                 />
 
                 {/* Question Generator */}
+                <Route
+                  path="/questions/mode-select"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <QuestionCreationModeSelector />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/questions/generator"
                   element={

@@ -1,7 +1,7 @@
 // Main layout component
 
 import { ReactNode } from 'react';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './Sidebar-Dynamic'; // Dynamic menu from database
 import Header from './Header';
 
 interface LayoutProps {

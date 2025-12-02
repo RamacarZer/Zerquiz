@@ -18,10 +18,26 @@ public class CoreDbContext : DbContext
     public DbSet<SystemParameter> SystemParameters => Set<SystemParameter>();
     public DbSet<TenantTheme> TenantThemes => Set<TenantTheme>();
     
+    // Hierarchical Definition System
+    public DbSet<DefinitionGroup> DefinitionGroups => Set<DefinitionGroup>();
+    public DbSet<DefinitionGroupTranslation> DefinitionGroupTranslations => Set<DefinitionGroupTranslation>();
+    public DbSet<Definition> Definitions => Set<Definition>();
+    public DbSet<DefinitionTranslation> DefinitionTranslations => Set<DefinitionTranslation>();
+    public DbSet<DefinitionRelation> DefinitionRelations => Set<DefinitionRelation>();
+    
     // License & Branding System
     public DbSet<LicensePackage> LicensePackages => Set<LicensePackage>();
     public DbSet<TenantLicense> TenantLicenses => Set<TenantLicense>();
     public DbSet<TenantBrandingSettings> TenantBrandingSettings => Set<TenantBrandingSettings>();
+    
+    // Dynamic Menu System
+    public DbSet<Module> Modules => Set<Module>();
+    public DbSet<ModuleTranslation> ModuleTranslations => Set<ModuleTranslation>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<MenuItemTranslation> MenuItemTranslations => Set<MenuItemTranslation>();
+    public DbSet<MenuPermission> MenuPermissions => Set<MenuPermission>();
+    public DbSet<TenantModule> TenantModules => Set<TenantModule>();
+    public DbSet<UserModulePermission> UserModulePermissions => Set<UserModulePermission>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<UsageTracking> UsageTrackings => Set<UsageTracking>();
     // TODO: Add SystemFeature and UserPermission entities later
@@ -167,6 +183,100 @@ public class CoreDbContext : DbContext
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
 
+        // DefinitionGroup configuration
+        modelBuilder.Entity<DefinitionGroup>(entity =>
+        {
+            entity.ToTable("definition_groups", "core_schema");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.IconName).HasMaxLength(50);
+            
+            entity.HasQueryFilter(e => e.DeletedAt == null);
+        });
+
+        // DefinitionGroupTranslation configuration
+        modelBuilder.Entity<DefinitionGroupTranslation>(entity =>
+        {
+            entity.ToTable("definition_group_translations", "core_schema");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.DefinitionGroupId, e.LanguageCode }).IsUnique();
+            
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            
+            entity.HasOne(e => e.DefinitionGroup)
+                .WithMany(dg => dg.Translations)
+                .HasForeignKey(e => e.DefinitionGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Definition configuration
+        modelBuilder.Entity<Definition>(entity =>
+        {
+            entity.ToTable("definitions", "core_schema");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.DefinitionGroupId, e.Code }).IsUnique();
+            entity.HasIndex(e => e.ParentDefinitionId);
+            
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Value).HasMaxLength(500);
+            entity.Property(e => e.IconName).HasMaxLength(50);
+            entity.Property(e => e.ColorCode).HasMaxLength(20);
+            entity.Property(e => e.ChildIds).HasColumnType("uuid[]");
+            
+            entity.HasOne(e => e.DefinitionGroup)
+                .WithMany(dg => dg.Definitions)
+                .HasForeignKey(e => e.DefinitionGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ParentDefinition)
+                .WithMany(d => d.ChildDefinitions)
+                .HasForeignKey(e => e.ParentDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasQueryFilter(e => e.DeletedAt == null);
+        });
+
+        // DefinitionTranslation configuration
+        modelBuilder.Entity<DefinitionTranslation>(entity =>
+        {
+            entity.ToTable("definition_translations", "core_schema");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.DefinitionId, e.LanguageCode }).IsUnique();
+            
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            
+            entity.HasOne(e => e.Definition)
+                .WithMany(d => d.Translations)
+                .HasForeignKey(e => e.DefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // DefinitionRelation configuration
+        modelBuilder.Entity<DefinitionRelation>(entity =>
+        {
+            entity.ToTable("definition_relations", "core_schema");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.SourceDefinitionId, e.TargetDefinitionId, e.RelationType }).IsUnique();
+            
+            entity.Property(e => e.RelationType).IsRequired().HasMaxLength(50);
+            
+            entity.HasOne(e => e.SourceDefinition)
+                .WithMany(d => d.RelationsAsSource)
+                .HasForeignKey(e => e.SourceDefinitionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.TargetDefinition)
+                .WithMany(d => d.RelationsAsTarget)
+                .HasForeignKey(e => e.TargetDefinitionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         // LicensePackage configuration
         modelBuilder.Entity<LicensePackage>(entity =>
         {
@@ -291,6 +401,123 @@ public class CoreDbContext : DbContext
             entity.HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId);
+        });
+
+        // Module configuration
+        modelBuilder.Entity<Module>(entity =>
+        {
+            entity.ToTable("modules");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.IconName).HasMaxLength(50);
+            
+            entity.HasQueryFilter(e => e.DeletedAt == null);
+        });
+
+        // ModuleTranslation configuration
+        modelBuilder.Entity<ModuleTranslation>(entity =>
+        {
+            entity.ToTable("module_translations");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ModuleId, e.LanguageCode }).IsUnique();
+            
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            
+            entity.HasOne(e => e.Module)
+                .WithMany(m => m.Translations)
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // MenuItem configuration
+        modelBuilder.Entity<MenuItem>(entity =>
+        {
+            entity.ToTable("menu_items");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ModuleId, e.Code }).IsUnique();
+            entity.HasIndex(e => e.ParentMenuId);
+            
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.IconName).HasMaxLength(50);
+            entity.Property(e => e.Path).HasMaxLength(500);
+            entity.Property(e => e.MenuType).HasMaxLength(20);
+            entity.Property(e => e.BadgeText).HasMaxLength(50);
+            entity.Property(e => e.BadgeColor).HasMaxLength(20);
+            
+            entity.HasOne(e => e.Module)
+                .WithMany(m => m.MenuItems)
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ParentMenu)
+                .WithMany(m => m.ChildMenus)
+                .HasForeignKey(e => e.ParentMenuId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasQueryFilter(e => e.DeletedAt == null);
+        });
+
+        // MenuItemTranslation configuration
+        modelBuilder.Entity<MenuItemTranslation>(entity =>
+        {
+            entity.ToTable("menu_item_translations");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.MenuItemId, e.LanguageCode }).IsUnique();
+            
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.BadgeText).HasMaxLength(50);
+            
+            entity.HasOne(e => e.MenuItem)
+                .WithMany(m => m.Translations)
+                .HasForeignKey(e => e.MenuItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // MenuPermission configuration
+        modelBuilder.Entity<MenuPermission>(entity =>
+        {
+            entity.ToTable("menu_permissions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.MenuItemId, e.RoleName }).IsUnique();
+            
+            entity.Property(e => e.RoleName).IsRequired().HasMaxLength(100);
+            
+            entity.HasOne(e => e.MenuItem)
+                .WithMany(m => m.Permissions)
+                .HasForeignKey(e => e.MenuItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TenantModule configuration (already exists, but adding navigation)
+        modelBuilder.Entity<TenantModule>(entity =>
+        {
+            entity.ToTable("tenant_modules");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.TenantId, e.ModuleId }).IsUnique();
+            
+            entity.HasOne(e => e.Module)
+                .WithMany(m => m.TenantModules)
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserModulePermission configuration
+        modelBuilder.Entity<UserModulePermission>(entity =>
+        {
+            entity.ToTable("user_module_permissions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.ModuleId }).IsUnique();
+            
+            entity.HasOne(e => e.Module)
+                .WithMany()
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // TODO: UserPermission configuration (will be added later)

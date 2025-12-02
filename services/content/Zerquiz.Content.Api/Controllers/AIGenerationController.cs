@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Text.Json;
 using Zerquiz.Content.Domain.Entities;
 using Zerquiz.Content.Infrastructure.Persistence;
@@ -21,8 +26,17 @@ public class AIGenerationController : ControllerBase
         _logger = logger;
     }
 
-    private string GetTenantId() => User.FindFirst("tenantId")?.Value ?? "";
-    private string GetUserId() => User.FindFirst("sub")?.Value ?? User.FindFirst("userId")?.Value ?? "";
+    private Guid? GetTenantId()
+    {
+        var tenantIdStr = User.FindFirst("tenantId")?.Value;
+        return string.IsNullOrEmpty(tenantIdStr) ? null : Guid.Parse(tenantIdStr);
+    }
+    
+    private Guid GetUserId()
+    {
+        var userIdStr = User.FindFirst("sub")?.Value ?? User.FindFirst("userId")?.Value;
+        return Guid.Parse(userIdStr ?? Guid.Empty.ToString());
+    }
 
     // POST: api/AIGeneration/generate/quiz
     [HttpPost("generate/quiz")]

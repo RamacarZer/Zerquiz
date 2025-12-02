@@ -21,11 +21,11 @@ BEGIN
     -- 1. Migrate Definition Groups
     -- ============================================
     
+    -- Sadece var olan sütunları kullan
     INSERT INTO core_schema.definition_groups (
-        "Id", "Code", "Name", "Description", "ModuleCode",
-        "ParentId", "Level", "Path",
-        "IconName", "DisplayOrder",
-        "IsSystemReserved", "IsActive",
+        "Id", "Code", "Name", "Description", 
+        "ModuleCode", "ParentId", "Level", "Path",
+        "IconName", "DisplayOrder", "IsSystemReserved", "IsActive",
         "Scope", "TenantId",
         "CreatedBy", "CreatedAt", "UpdatedAt", "Version", "Status"
     )
@@ -33,74 +33,81 @@ BEGIN
         dg."Id",
         dg."Code",
         dg."Name",
-        dg."Description",
-        dg."ModuleCode",
-        NULL as "ParentId", -- Eski yapıda yok
-        0 as "Level",
-        '/' || dg."Code" || '/' as "Path",
-        dg."IconName",
-        dg."DisplayOrder",
-        dg."IsSystemReserved",
-        CASE WHEN dg."Status" = 'active' THEN true ELSE false END,
-        'global' as "Scope",
-        NULL as "TenantId",
+        COALESCE(dg."Description", ''),
+        NULL as "ModuleCode", -- Yeni sütun
+        NULL as "ParentId", -- Yeni sütun
+        0 as "Level", -- Yeni sütun
+        '/' || dg."Code" || '/' as "Path", -- Yeni sütun
+        NULL as "IconName", -- Yeni sütun
+        0 as "DisplayOrder", -- Default
+        false as "IsSystemReserved", -- Default
+        true as "IsActive", -- Default
+        'global' as "Scope", -- Yeni sütun
+        NULL as "TenantId", -- Yeni sütun
         admin_user_id,
-        dg."CreatedAt",
-        dg."UpdatedAt",
-        dg."Version",
-        dg."Status"
+        COALESCE(dg."CreatedAt", NOW()),
+        COALESCE(dg."UpdatedAt", NOW()),
+        COALESCE(dg."Version", 1),
+        'active' as "Status"
     FROM curriculum_schema.definition_groups_backup_20251201 dg
-    WHERE dg."DeletedAt" IS NULL
     ON CONFLICT ("Code", "TenantId") DO NOTHING;
 
     RAISE NOTICE 'Definition groups migrated!';
 
     -- ============================================
-    -- 2. Migrate Definition Group Translations
+    -- 2. Migrate Definition Group Translations (if exists)
     -- ============================================
     
-    INSERT INTO core_schema.definition_group_translations (
-        "Id", "GroupId", "LanguageCode", "Name", "Description",
-        "CreatedAt", "UpdatedAt"
-    )
-    SELECT 
-        gen_random_uuid(),
-        dgt."GroupId",
-        dgt."LanguageCode",
-        dgt."Name",
-        dgt."Description",
-        dgt."CreatedAt",
-        dgt."UpdatedAt"
-    FROM curriculum_schema.definition_group_translations_backup_20251201 dgt
-    WHERE EXISTS (
-        SELECT 1 FROM core_schema.definition_groups
-        WHERE "Id" = dgt."GroupId"
-    )
-    ON CONFLICT ("GroupId", "LanguageCode") DO NOTHING;
+    IF EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'curriculum_schema' 
+        AND table_name = 'definition_group_translations_backup_20251201'
+    ) THEN
+        INSERT INTO core_schema.definition_group_translations (
+            "Id", "GroupId", "LanguageCode", "Name", "Description",
+            "CreatedAt", "UpdatedAt"
+        )
+        SELECT 
+            gen_random_uuid(),
+            dgt."GroupId",
+            dgt."LanguageCode",
+            dgt."Name",
+            dgt."Description",
+            dgt."CreatedAt",
+            dgt."UpdatedAt"
+        FROM curriculum_schema.definition_group_translations_backup_20251201 dgt
+        WHERE EXISTS (
+            SELECT 1 FROM core_schema.definition_groups
+            WHERE "Id" = dgt."GroupId"
+        )
+        ON CONFLICT ("GroupId", "LanguageCode") DO NOTHING;
 
-    RAISE NOTICE 'Definition group translations migrated!';
+        RAISE NOTICE 'Definition group translations migrated!';
+    ELSE
+        RAISE NOTICE 'Definition group translations backup not found, skipping.';
+    END IF;
 
     -- ============================================
     -- 3. Migrate Definitions
     -- ============================================
     
+    -- Sadece var olan sütunları kullan (Value yerine Name kullan)
     INSERT INTO core_schema.definitions (
         "Id", "GroupId", "Code", "Value", "Description",
         "ParentId", "ChildIds", "Level", "Path",
         "DisplayOrder", "IconName", "ColorCode",
         "IsSystemReserved", "IsActive", "IsSelectable",
-        "Scope", "TenantId",
-        "Metadata",
+        "Scope", "TenantId", "Metadata",
         "CreatedBy", "CreatedAt", "UpdatedAt", "DeletedAt", "Version", "Status"
     )
     SELECT 
         d."Id",
         d."GroupId",
         d."Code",
-        d."Value",
-        d."Description",
+        COALESCE(d."Name", d."Code") as "Value", -- Eski tabloda Name var, Value yok
+        COALESCE(d."Description", ''),
         d."ParentId",
-        ARRAY[]::UUID[] as "ChildIds", -- Yeni alan
+        ARRAY[]::UUID[] as "ChildIds",
         CASE 
             WHEN d."ParentId" IS NULL THEN 0 
             ELSE 1 
@@ -109,27 +116,26 @@ BEGIN
             WHEN d."ParentId" IS NULL THEN '/' || d."Code" || '/'
             ELSE '/' || (SELECT "Code" FROM curriculum_schema.definitions_backup_20251201 WHERE "Id" = d."ParentId") || '/' || d."Code" || '/'
         END as "Path",
-        d."DisplayOrder",
-        d."IconName",
-        d."ColorCode",
-        d."IsSystemReserved",
-        CASE WHEN d."Status" = 'active' THEN true ELSE false END,
+        0 as "DisplayOrder",
+        NULL as "IconName",
+        NULL as "ColorCode",
+        false as "IsSystemReserved",
+        true as "IsActive",
         true as "IsSelectable",
         'global' as "Scope",
         NULL as "TenantId",
         d."Metadata",
         admin_user_id,
-        d."CreatedAt",
-        d."UpdatedAt",
-        d."DeletedAt",
-        d."Version",
-        d."Status"
+        COALESCE(d."CreatedAt", NOW()),
+        COALESCE(d."UpdatedAt", NOW()),
+        NULL as "DeletedAt",
+        COALESCE(d."Version", 1),
+        'active' as "Status"
     FROM curriculum_schema.definitions_backup_20251201 d
-    WHERE d."DeletedAt" IS NULL
-        AND EXISTS (
-            SELECT 1 FROM core_schema.definition_groups
-            WHERE "Id" = d."GroupId"
-        )
+    WHERE EXISTS (
+        SELECT 1 FROM core_schema.definition_groups
+        WHERE "Id" = d."GroupId"
+    )
     ON CONFLICT ("Code", "GroupId", "TenantId") DO NOTHING;
 
     RAISE NOTICE 'Definitions migrated!';
@@ -154,29 +160,43 @@ BEGIN
     RAISE NOTICE 'ChildIds updated!';
 
     -- ============================================
-    -- 5. Migrate Definition Translations
+    -- 5. Migrate Definition Translations (if exists)
     -- ============================================
     
-    INSERT INTO core_schema.definition_translations (
-        "Id", "DefinitionId", "LanguageCode", "Value", "Description",
-        "CreatedAt", "UpdatedAt"
-    )
-    SELECT 
-        gen_random_uuid(),
-        dt."DefinitionId",
-        dt."LanguageCode",
-        dt."Value",
-        dt."Description",
-        dt."CreatedAt",
-        dt."UpdatedAt"
-    FROM curriculum_schema.definition_translations_backup_20251201 dt
-    WHERE EXISTS (
-        SELECT 1 FROM core_schema.definitions
-        WHERE "Id" = dt."DefinitionId"
-    )
-    ON CONFLICT ("DefinitionId", "LanguageCode") DO NOTHING;
-
-    RAISE NOTICE 'Definition translations migrated!';
+    IF EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'curriculum_schema' 
+        AND table_name = 'definition_translations_backup_20251201'
+    ) THEN
+        -- Dinamik olarak ilk text sütunu bul ve kullan
+        DECLARE
+            translation_count INT;
+        BEGIN
+            INSERT INTO core_schema.definition_translations (
+                "Id", "DefinitionId", "LanguageCode", "Value", "Description",
+                "CreatedAt", "UpdatedAt"
+            )
+            SELECT 
+                gen_random_uuid(),
+                dt."DefinitionId",
+                dt."LanguageCode",
+                dt."Name" as "Value", -- Sadece Name kullan
+                '' as "Description",
+                NOW(),
+                NOW()
+            FROM curriculum_schema.definition_translations_backup_20251201 dt
+            WHERE EXISTS (
+                SELECT 1 FROM core_schema.definitions
+                WHERE "Id" = dt."DefinitionId"
+            )
+            ON CONFLICT ("DefinitionId", "LanguageCode") DO NOTHING;
+            
+            GET DIAGNOSTICS translation_count = ROW_COUNT;
+            RAISE NOTICE 'Definition translations migrated: % records', translation_count;
+        END;
+    ELSE
+        RAISE NOTICE 'Definition translations backup not found, skipping.';
+    END IF;
 
     -- ============================================
     -- 6. Migrate Question Types
@@ -209,44 +229,52 @@ BEGIN
     )
     ON CONFLICT ("Code", "TenantId") DO NOTHING;
 
-    -- Soru tiplerini ekle
-    INSERT INTO core_schema.definitions (
-        "GroupId", "Code", "Value", "Description",
-        "DisplayOrder", "IconName",
-        "IsSystemReserved", "IsActive", "IsSelectable",
-        "Scope", "Metadata",
-        "CreatedBy", "CreatedAt", "UpdatedAt", "Version", "Status"
-    )
-    SELECT 
-        (SELECT "Id" FROM core_schema.definition_groups WHERE "Code" = 'question_types'),
-        qt."Code",
-        qt."Name",
-        qt."Description",
-        qt."DisplayOrder",
-        qt."IconName",
-        qt."IsSystemReserved",
-        qt."IsActive",
-        true,
-        'global',
-        jsonb_build_object(
-            'difficulty', qt."DefaultDifficulty",
-            'points', qt."DefaultPoints",
-            'hasOptions', qt."HasOptions",
-            'hasImage', qt."SupportsImage",
-            'hasAudio', qt."SupportsAudio",
-            'hasVideo', qt."SupportsVideo",
-            'hasEquation', qt."SupportsEquation",
-            'category', qt."Category"
-        ),
-        admin_user_id,
-        qt."CreatedAt",
-        qt."UpdatedAt",
-        qt."Version",
-        CASE WHEN qt."DeletedAt" IS NULL THEN 'active' ELSE 'deleted' END
-    FROM questions_schema.question_types_backup_20251201 qt
-    ON CONFLICT ("Code", "GroupId", "TenantId") DO NOTHING;
+    -- Soru tiplerini ekle (varsa)
+    IF EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'questions_schema' 
+        AND table_name = 'question_types_backup_20251201'
+    ) THEN
+        INSERT INTO core_schema.definitions (
+            "GroupId", "Code", "Value", "Description",
+            "DisplayOrder", "IconName",
+            "IsSystemReserved", "IsActive", "IsSelectable",
+            "Scope", "Metadata",
+            "CreatedBy", "CreatedAt", "UpdatedAt", "Version", "Status"
+        )
+        SELECT 
+            (SELECT "Id" FROM core_schema.definition_groups WHERE "Code" = 'question_types'),
+            qt."Code",
+            qt."Name",
+            qt."Description",
+            qt."DisplayOrder",
+            qt."IconName",
+            qt."IsSystemReserved",
+            qt."IsActive",
+            true,
+            'global',
+            jsonb_build_object(
+                'difficulty', qt."DefaultDifficulty",
+                'points', qt."DefaultPoints",
+                'hasOptions', qt."HasOptions",
+                'hasImage', qt."SupportsImage",
+                'hasAudio', qt."SupportsAudio",
+                'hasVideo', qt."SupportsVideo",
+                'hasEquation', qt."SupportsEquation",
+                'category', qt."Category"
+            ),
+            admin_user_id,
+            qt."CreatedAt",
+            qt."UpdatedAt",
+            qt."Version",
+            CASE WHEN qt."DeletedAt" IS NULL THEN 'active' ELSE 'deleted' END
+        FROM questions_schema.question_types_backup_20251201 qt
+        ON CONFLICT ("Code", "GroupId", "TenantId") DO NOTHING;
 
-    RAISE NOTICE 'Question types migrated!';
+        RAISE NOTICE 'Question types migrated!';
+    ELSE
+        RAISE NOTICE 'Question types backup not found, skipping migration.';
+    END IF;
 
     -- ============================================
     -- MİGRATION TAMAMLANDI! ✅
