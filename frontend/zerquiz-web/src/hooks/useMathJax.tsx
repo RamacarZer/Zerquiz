@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * Hook to trigger MathJax re-rendering when content changes
@@ -9,15 +9,15 @@ export const useMathJax = (dependencies: any[] = []) => {
       if (window.MathJax && window.MathJax.typesetPromise) {
         window.MathJax.typesetPromise()
           .then(() => {
-            console.log('MathJax typeset complete');
+            console.log("MathJax typeset complete");
           })
-          .catch((err: any) => console.error('MathJax typeset failed:', err));
+          .catch((err: any) => console.error("MathJax typeset failed:", err));
       }
     };
 
     // Small delay to ensure DOM is updated
     const timer = setTimeout(typeset, 100);
-    
+
     return () => clearTimeout(timer);
   }, dependencies);
 };
@@ -28,11 +28,14 @@ export const useMathJax = (dependencies: any[] = []) => {
 export const typesetMath = (elementId?: string) => {
   if (!window.MathJax) return;
 
-  const element = elementId ? document.getElementById(elementId) : document.body;
-  
+  const element = elementId
+    ? document.getElementById(elementId)
+    : document.body;
+
   if (window.MathJax.typesetPromise) {
-    window.MathJax.typesetPromise([element])
-      .catch((err: any) => console.error('MathJax typeset error:', err));
+    window.MathJax.typesetPromise([element]).catch((err: any) =>
+      console.error("MathJax typeset error:", err)
+    );
   }
 };
 
@@ -50,4 +53,3 @@ declare global {
 }
 
 export default useMathJax;
-

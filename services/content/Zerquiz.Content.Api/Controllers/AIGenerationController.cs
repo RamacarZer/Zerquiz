@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Zerquiz.Content.Domain.Entities;
 using Zerquiz.Content.Infrastructure.Persistence;
+using Zerquiz.Shared.AI.Interfaces;
+using Zerquiz.Shared.AI.Models;
 
 namespace Zerquiz.Content.Api.Controllers;
 
@@ -19,11 +21,16 @@ public class AIGenerationController : ControllerBase
 {
     private readonly ContentDbContext _context;
     private readonly ILogger<AIGenerationController> _logger;
+    private readonly IAIProvider _aiProvider;
 
-    public AIGenerationController(ContentDbContext context, ILogger<AIGenerationController> logger)
+    public AIGenerationController(
+        ContentDbContext context,
+        ILogger<AIGenerationController> logger,
+        IAIProvider aiProvider)
     {
         _context = context;
         _logger = logger;
+        _aiProvider = aiProvider;
     }
 
     private Guid? GetTenantId()
@@ -318,36 +325,78 @@ public class AIGenerationController : ControllerBase
             job.StartedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            // TODO: Integrate with AI Provider Service
-            // For now, create placeholder generated content
-            var config = JsonSerializer.Deserialize<Dictionary<string, object>>(job.Configuration);
+            // Get content item
+            var contentItem = await _context.ContentItems.FindAsync(job.ContentItemId);
+            if (contentItem == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Content item not found";
+                await _context.SaveChangesAsync();
+                return;
+            }
 
-            // Simulate AI generation
-            await Task.Delay(3000);
+            // Parse configuration
+            var config = JsonSerializer.Deserialize<QuizGenerationConfig>(job.Configuration);
+            if (config == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Invalid configuration";
+                await _context.SaveChangesAsync();
+                return;
+            }
 
+            // Get extracted text
+            var extractedText = contentItem.ExtractedText;
+            if (string.IsNullOrEmpty(extractedText))
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "No extracted text available";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Call AI Provider
+            var input = new ContentInput
+            {
+                Content = extractedText,
+                Language = config.Language ?? "tr"
+            };
+
+            var quizConfig = new QuizConfig
+            {
+                Count = config.Count,
+                QuestionTypeCodes = config.QuestionTypes ?? new List<string> { "multiple_choice_single" },
+                Difficulty = config.Difficulty ?? "medium",
+                Language = config.Language ?? "tr",
+                IncludeExplanations = true
+            };
+
+            _logger.LogInformation("Calling AI provider to generate {Count} questions", config.Count);
+            var aiResult = await _aiProvider.GenerateQuizAsync(input, quizConfig);
+
+            if (!aiResult.Success || aiResult.Data == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = aiResult.Error ?? "AI generation failed";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Save generated content
             var generated = new GeneratedContent
             {
                 Id = Guid.NewGuid(),
                 TenantId = job.TenantId,
                 ContentItemId = job.ContentItemId,
                 GenerationType = "quiz",
-                GeneratedData = JsonSerializer.Serialize(new
-                {
-                    questions = new[]
-                    {
-                        new
-                        {
-                            stem = "Sample AI-generated question",
-                            options = new[] { "A. Option 1", "B. Option 2", "C. Option 3", "D. Option 4" },
-                            correct_answer = "A",
-                            explanation = "AI explanation",
-                            difficulty = "medium",
-                            points = 5
-                        }
-                    }
-                }),
+                GeneratedData = JsonSerializer.Serialize(aiResult.Data),
                 Status = "draft",
-                ItemCount = 1,
+                ItemCount = aiResult.Data.Questions?.Count ?? 0,
+                Difficulty = config.Difficulty,
+                Language = config.Language,
+                TokensUsed = aiResult.TokensUsed,
+                Model = aiResult.Model,
+                Provider = aiResult.Provider,
                 CreatedBy = job.CreatedBy,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -357,9 +406,13 @@ public class AIGenerationController : ControllerBase
 
             job.Status = "completed";
             job.Progress = 100;
-            job.CompletedItems = job.TotalItems;
+            job.CompletedItems = config.Count;
             job.CompletedAt = DateTime.UtcNow;
+            
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully generated {Count} questions for job {JobId}", 
+                generated.ItemCount, jobId);
         }
         catch (Exception ex)
         {
@@ -376,22 +429,294 @@ public class AIGenerationController : ControllerBase
 
     private async Task ProcessFlashcardGenerationAsync(Guid jobId)
     {
-        // Similar to ProcessQuizGenerationAsync
-        // TODO: Implement AI integration
-        await Task.CompletedTask;
+        try
+        {
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job == null) return;
+
+            job.Status = "processing";
+            job.StartedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var contentItem = await _context.ContentItems.FindAsync(job.ContentItemId);
+            if (contentItem == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Content item not found";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            var config = JsonSerializer.Deserialize<FlashcardGenerationConfig>(job.Configuration);
+            if (config == null || string.IsNullOrEmpty(contentItem.ExtractedText))
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Invalid configuration or no extracted text";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Call AI Provider
+            var input = new ContentInput
+            {
+                Content = contentItem.ExtractedText,
+                Language = config.Language ?? "tr"
+            };
+
+            _logger.LogInformation("Calling AI provider to generate {Count} flashcards", config.Count);
+            var aiResult = await _aiProvider.GenerateFlashcardsAsync(input, config.Count);
+
+            if (!aiResult.Success || aiResult.Data == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = aiResult.Error ?? "AI generation failed";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Save generated content
+            var generated = new GeneratedContent
+            {
+                Id = Guid.NewGuid(),
+                TenantId = job.TenantId,
+                ContentItemId = job.ContentItemId,
+                GenerationType = "flashcard",
+                GeneratedData = JsonSerializer.Serialize(aiResult.Data),
+                Status = "draft",
+                ItemCount = aiResult.Data.Cards?.Count ?? 0,
+                Language = config.Language,
+                TokensUsed = aiResult.TokensUsed,
+                Model = aiResult.Model,
+                Provider = aiResult.Provider,
+                CreatedBy = job.CreatedBy,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.GeneratedContents.Add(generated);
+
+            job.Status = "completed";
+            job.Progress = 100;
+            job.CompletedItems = config.Count;
+            job.CompletedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully generated {Count} flashcards for job {JobId}", 
+                generated.ItemCount, jobId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing flashcard generation job {JobId}", jobId);
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job != null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = ex.Message;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 
     private async Task ProcessSummaryGenerationAsync(Guid jobId)
     {
-        // TODO: Implement AI integration
-        await Task.CompletedTask;
+        try
+        {
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job == null) return;
+
+            job.Status = "processing";
+            job.StartedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var contentItem = await _context.ContentItems.FindAsync(job.ContentItemId);
+            if (contentItem == null || string.IsNullOrEmpty(contentItem.ExtractedText))
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Content item not found or no extracted text";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            var config = JsonSerializer.Deserialize<SummaryGenerationConfig>(job.Configuration);
+            var summaryLength = Enum.TryParse<SummaryLength>(config?.Length ?? "medium", true, out var length) 
+                ? length 
+                : SummaryLength.Medium;
+
+            // Call AI Provider
+            var input = new ContentInput
+            {
+                Content = contentItem.ExtractedText,
+                Language = config?.Language ?? "tr"
+            };
+
+            _logger.LogInformation("Calling AI provider to generate {Length} summary", summaryLength);
+            var aiResult = await _aiProvider.GenerateSummaryAsync(input, summaryLength);
+
+            if (!aiResult.Success || string.IsNullOrEmpty(aiResult.Data))
+            {
+                job.Status = "failed";
+                job.ErrorMessage = aiResult.Error ?? "AI generation failed";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Save generated content
+            var generated = new GeneratedContent
+            {
+                Id = Guid.NewGuid(),
+                TenantId = job.TenantId,
+                ContentItemId = job.ContentItemId,
+                GenerationType = "summary",
+                GeneratedData = JsonSerializer.Serialize(new { summary = aiResult.Data }),
+                Status = "draft",
+                ItemCount = 1,
+                Language = config?.Language,
+                TokensUsed = aiResult.TokensUsed,
+                Model = aiResult.Model,
+                Provider = aiResult.Provider,
+                CreatedBy = job.CreatedBy,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.GeneratedContents.Add(generated);
+
+            job.Status = "completed";
+            job.Progress = 100;
+            job.CompletedItems = 1;
+            job.CompletedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully generated summary for job {JobId}", jobId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing summary generation job {JobId}", jobId);
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job != null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = ex.Message;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 
     private async Task ProcessWorksheetGenerationAsync(Guid jobId)
     {
-        // TODO: Implement AI integration
-        await Task.CompletedTask;
+        try
+        {
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job == null) return;
+
+            job.Status = "processing";
+            job.StartedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var contentItem = await _context.ContentItems.FindAsync(job.ContentItemId);
+            if (contentItem == null || string.IsNullOrEmpty(contentItem.ExtractedText))
+            {
+                job.Status = "failed";
+                job.ErrorMessage = "Content item not found or no extracted text";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            var config = JsonSerializer.Deserialize<WorksheetGenerationConfig>(job.Configuration);
+
+            // Call AI Provider
+            var input = new ContentInput
+            {
+                Content = contentItem.ExtractedText,
+                Language = config?.Language ?? "tr"
+            };
+
+            _logger.LogInformation("Calling AI provider to generate worksheet");
+            var aiResult = await _aiProvider.GenerateWorksheetAsync(input);
+
+            if (!aiResult.Success || aiResult.Data == null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = aiResult.Error ?? "AI generation failed";
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            // Save generated content
+            var generated = new GeneratedContent
+            {
+                Id = Guid.NewGuid(),
+                TenantId = job.TenantId,
+                ContentItemId = job.ContentItemId,
+                GenerationType = "worksheet",
+                GeneratedData = JsonSerializer.Serialize(aiResult.Data),
+                Status = "draft",
+                ItemCount = aiResult.Data.Questions?.Count ?? 0,
+                Difficulty = config?.Difficulty,
+                Language = config?.Language,
+                TokensUsed = aiResult.TokensUsed,
+                Model = aiResult.Model,
+                Provider = aiResult.Provider,
+                CreatedBy = job.CreatedBy,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.GeneratedContents.Add(generated);
+
+            job.Status = "completed";
+            job.Progress = 100;
+            job.CompletedItems = config?.Count ?? 1;
+            job.CompletedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully generated worksheet for job {JobId}", jobId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing worksheet generation job {JobId}", jobId);
+            var job = await _context.GenerationJobs.FindAsync(jobId);
+            if (job != null)
+            {
+                job.Status = "failed";
+                job.ErrorMessage = ex.Message;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
+}
+
+// Configuration DTOs for deserialization
+internal class QuizGenerationConfig
+{
+    public List<string>? QuestionTypes { get; set; }
+    public string? Difficulty { get; set; }
+    public int Count { get; set; }
+    public string? Language { get; set; }
+}
+
+internal class FlashcardGenerationConfig
+{
+    public int Count { get; set; }
+    public string? Language { get; set; }
+}
+
+internal class SummaryGenerationConfig
+{
+    public string? Length { get; set; }
+    public string? Language { get; set; }
+}
+
+internal class WorksheetGenerationConfig
+{
+    public List<string>? QuestionTypes { get; set; }
+    public int Count { get; set; }
+    public string? Difficulty { get; set; }
+    public string? Language { get; set; }
+    public bool IncludeAnswerKey { get; set; }
 }
 
 // Request DTOs
