@@ -90,3 +90,6 @@ dotnet run
 
 Şu anda **App.tsx** dosyasındaki JSX hatasını düzeltmem gerekiyor. Dosyayı inceleyip düzelteyim.
 
+
+
+

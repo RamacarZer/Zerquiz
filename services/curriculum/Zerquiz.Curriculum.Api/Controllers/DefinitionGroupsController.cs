@@ -22,31 +22,39 @@ public class DefinitionGroupsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<DefinitionGroupDto>>> GetAll()
     {
-        var groups = await _context.DefinitionGroups
-            .Include(g => g.Translations)
-            .Where(g => g.IsActive)
-            .OrderBy(g => g.DisplayOrder)
-            .ToListAsync();
-
-        var result = groups.Select(g => new DefinitionGroupDto
+        try
         {
-            Id = g.Id,
-            Code = g.Code,
-            Name = g.Name,
-            Description = g.Description,
-            IsSystem = g.IsSystem,
-            DisplayOrder = g.DisplayOrder,
-            Icon = g.Icon,
-            IsActive = g.IsActive,
-            Translations = g.Translations.Select(t => new TranslationDto
-            {
-                LanguageCode = t.LanguageCode,
-                Name = t.Name,
-                Description = t.Description
-            }).ToList()
-        }).ToList();
+            var groups = await _context.DefinitionGroups
+                .AsNoTracking()
+                .Include(g => g.Translations)
+                .Where(g => g.IsActive)
+                .OrderBy(g => g.DisplayOrder)
+                .ToListAsync();
 
-        return Ok(result);
+            var result = groups.Select(g => new DefinitionGroupDto
+            {
+                Id = g.Id,
+                Code = g.Code,
+                Name = g.Name,
+                Description = g.Description,
+                IsSystem = g.IsSystem,
+                DisplayOrder = g.DisplayOrder,
+                Icon = g.Icon,
+                IsActive = g.IsActive,
+                Translations = g.Translations.Select(t => new TranslationDto
+                {
+                    LanguageCode = t.LanguageCode,
+                    Name = t.Name,
+                    Description = t.Description
+                }).ToList()
+            }).ToList();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+        }
     }
 
     /// <summary>

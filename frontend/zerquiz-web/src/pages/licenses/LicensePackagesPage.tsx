@@ -11,12 +11,86 @@ import {
 } from '../../services/api/licenseService';
 import { BasicInfoForm, QuotasForm, FeaturesForm, PricingForm } from './PackageFormSections';
 
-export const LicensePackagesPage: React.FC = () => {
-  const [packages, setPackages] = useState<LicensePackageDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('list');
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingPackage, setEditingPackage] = useState<LicensePackageDto | null>(null);
+const LicensePackagesPage: React.FC = () => {
+  // Mock data for demo
+  const mockPackages: LicensePackageDto[] = [
+    {
+      id: '1',
+      name: 'Starter',
+      description: 'Küçük okullar ve bireysel eğitmenler için',
+      code: 'STARTER',
+      durationDays: 365,
+      maxUsers: 10,
+      maxStudents: 100,
+      maxCourses: 10,
+      maxQuestions: 500,
+      maxExams: 20,
+      features: ['Temel Özellikler', 'E-posta Desteği', '10 Kullanıcı'],
+      price: 99,
+      currency: 'USD',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: '2',
+      name: 'Professional',
+      description: 'Orta ölçekli eğitim kurumları için',
+      code: 'PRO',
+      durationDays: 365,
+      maxUsers: 50,
+      maxStudents: 500,
+      maxCourses: 50,
+      maxQuestions: 5000,
+      maxExams: 100,
+      features: ['Tüm Özellikler', 'Öncelikli Destek', '50 Kullanıcı', 'API Erişimi'],
+      price: 299,
+      currency: 'USD',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: '3',
+      name: 'Enterprise',
+      description: 'Büyük kurumlar ve üniversiteler için',
+      code: 'ENTERPRISE',
+      durationDays: 365,
+      maxUsers: -1,
+      maxStudents: -1,
+      maxCourses: -1,
+      maxQuestions: -1,
+      maxExams: -1,
+      features: ['Sınırsız Kullanım', '7/24 Destek', 'Özel Entegrasyon', 'White Label'],
+      price: 999,
+      currency: 'USD',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  const [packages, setPackages] = useState<LicensePackageDto[]>(mockPackages);
+  const [loading, setLoading] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<LicensePackageDto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  const [formData, setFormData] = useState<Partial<CreateLicensePackageRequest>>({
+    name: '',
+    description: '',
+    code: '',
+    durationDays: 365,
+    maxUsers: 100,
+    maxStudents: 1000,
+    maxCourses: 50,
+    maxQuestions: 5000,
+    maxExams: 100,
+    features: [],
+    price: 0,
+    currency: 'USD',
+    isActive: true,
+  });
 
   useEffect(() => {
     loadPackages();
@@ -25,333 +99,248 @@ export const LicensePackagesPage: React.FC = () => {
   const loadPackages = async () => {
     try {
       setLoading(true);
-      const data = await getLicensePackages();
-      setPackages(Array.isArray(data) ? data : []);
+      // Using mock data instead of API for demo
+      // const data = await getLicensePackages();
+      // setPackages(data);
+      setPackages(mockPackages);
     } catch (error) {
-      console.error('Paketler yüklenemedi:', error);
-      setPackages([]);
+      console.error('Error loading packages:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateNew = () => {
-    setEditingPackage(null);
-    setIsCreating(true);
-    setActiveTab('form');
+  const handleCreate = () => {
+    setSelectedPackage(null);
+    setFormData({
+      name: '',
+      description: '',
+      code: '',
+      durationDays: 365,
+      maxUsers: 100,
+      maxStudents: 1000,
+      maxCourses: 50,
+      maxQuestions: 5000,
+      maxExams: 100,
+      features: [],
+      price: 0,
+      currency: 'USD',
+      isActive: true,
+    });
+    setCurrentStep(0);
+    setIsModalOpen(true);
   };
 
   const handleEdit = (pkg: LicensePackageDto) => {
-    setEditingPackage(pkg);
-    setIsCreating(false);
-    setActiveTab('form');
+    setSelectedPackage(pkg);
+    setFormData(pkg);
+    setCurrentStep(0);
+    setIsModalOpen(true);
   };
 
-  const handleCancelForm = () => {
-    setIsCreating(false);
-    setEditingPackage(null);
-    setActiveTab('list');
-  };
-
-  const handleSaveSuccess = () => {
-    setIsCreating(false);
-    setEditingPackage(null);
-    setActiveTab('list');
-    loadPackages();
-  };
-
-  const tabs = useMemo(() => [
-    {
-      id: 'list',
-      label: '📋 Paket Listesi',
-      content: <PackageListTab packages={packages} loading={loading} onEdit={handleEdit} onDelete={async (id) => {
-        if (confirm('Bu paketi silmek istediğinizden emin misiniz?')) {
-          await deleteLicensePackage(id);
-          loadPackages();
-        }
-      }} />
-    },
-    {
-      id: 'form',
-      label: isCreating ? '➕ Yeni Paket' : '✏️ Paket Düzenle',
-      content: <PackageFormTab 
-        package={editingPackage} 
-        onCancel={handleCancelForm}
-        onSuccess={handleSaveSuccess}
-      />
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bu paketi silmek istediğinizden emin misiniz?')) return;
+    
+    try {
+      // Mock deletion
+      setPackages(packages.filter(p => p.id !== id));
+      // await deleteLicensePackage(id);
+      // await loadPackages();
+    } catch (error) {
+      console.error('Error deleting package:', error);
     }
-  ], [packages, loading, isCreating, editingPackage]);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (selectedPackage) {
+        // Mock update
+        setPackages(packages.map(p => p.id === selectedPackage.id ? { ...p, ...formData } : p));
+        // await updateLicensePackage(selectedPackage.id, formData as CreateLicensePackageRequest);
+      } else {
+        // Mock create
+        const newPackage = {
+          ...formData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as LicensePackageDto;
+        setPackages([...packages, newPackage]);
+        // await createLicensePackage(formData as CreateLicensePackageRequest);
+      }
+      setIsModalOpen(false);
+      // await loadPackages();
+    } catch (error) {
+      console.error('Error saving package:', error);
+    }
+  };
+
+  const steps = [
+    { label: 'Basic Info', component: <BasicInfoForm data={formData} onChange={setFormData} /> },
+    { label: 'Quotas', component: <QuotasForm data={formData} onChange={setFormData} /> },
+    { label: 'Features', component: <FeaturesForm data={formData} onChange={setFormData} /> },
+    { label: 'Pricing', component: <PricingForm data={formData} onChange={setFormData} /> },
+  ];
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">📦 Lisans Paketleri Yönetimi</h1>
-        {activeTab === 'list' && (
-          <Button onClick={handleCreateNew}>➕ Yeni Paket Oluştur</Button>
-        )}
-      </div>
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lisans Paketleri</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Kurum için lisans paketlerini yönetin</p>
+          </div>
+          <button
+            onClick={handleCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Yeni Paket
+          </button>
+        </div>
 
-      <Tabs 
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
-    </div>
-  );
-};
-
-// ===================== PACKAGE LIST TAB =====================
-interface PackageListTabProps {
-  packages: LicensePackageDto[];
-  loading: boolean;
-  onEdit: (pkg: LicensePackageDto) => void;
-  onDelete: (id: string) => void;
-}
-
-const PackageListTab: React.FC<PackageListTabProps> = ({ packages, loading, onEdit, onDelete }) => {
-  if (loading) {
-    return <div className="text-center py-8">Yükleniyor...</div>;
-  }
-
-  if (!packages || packages.length === 0) {
-    return (
-      <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <p className="text-gray-500 mb-4">Henüz lisans paketi oluşturulmamış</p>
-        <p className="text-sm text-gray-400">Yeni paket eklemek için yukarıdaki butona tıklayın</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto pr-2">
-      {packages.map((pkg) => (
-        <div key={pkg.id} className="bg-white rounded-lg shadow-md border-2 hover:border-blue-400 transition-all relative">
-          {pkg.isHighlighted && (
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-xs font-bold">
-              {pkg.highlightText || '⭐ Öne Çıkan'}
-            </div>
-          )}
-          
-          <div className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
-                <span className="text-xs text-gray-500 font-mono">{pkg.code}</span>
-              </div>
-              <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                pkg.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-              }`}>
-                {pkg.isActive ? '✓ Aktif' : '✗ Pasif'}
-              </span>
-            </div>
-
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{pkg.description}</p>
-
-            <div className="border-t pt-4 mb-4">
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="text-2xl font-bold text-blue-600">
-                  {pkg.monthlyPrice === 0 ? 'Ücretsiz' : `₺${pkg.monthlyPrice.toLocaleString()}`}
-                </span>
-                {pkg.monthlyPrice > 0 && <span className="text-gray-500 text-sm">/ay</span>}
-              </div>
-              {pkg.yearlyPrice > 0 && (
-                <div className="text-sm text-gray-600">
-                  Yıllık: ₺{pkg.yearlyPrice.toLocaleString()} 
-                  {pkg.monthlyPrice > 0 && pkg.yearlyPrice < pkg.monthlyPrice * 12 && (
-                    <span className="ml-2 text-green-600 font-semibold">
-                      %{Math.round((1 - pkg.yearlyPrice / (pkg.monthlyPrice * 12)) * 100)} tasarruf
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {packages.map((pkg) => (
+              <div 
+                key={pkg.id} 
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{pkg.name}</h3>
+                    <span className="inline-block mt-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs rounded">
+                      {pkg.code}
                     </span>
-                  )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      ${pkg.price}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">/{pkg.durationDays} gün</div>
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-2 mb-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">👥 Kullanıcı:</span>
-                <span className="font-semibold">{pkg.maxUsers === 0 ? '∞ Sınırsız' : pkg.maxUsers}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">❓ Soru:</span>
-                <span className="font-semibold">{pkg.maxQuestions === 0 ? '∞ Sınırsız' : pkg.maxQuestions.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">📝 Sınav:</span>
-                <span className="font-semibold">{pkg.maxExams === 0 ? '∞ Sınırsız' : pkg.maxExams}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">💾 Depolama:</span>
-                <span className="font-semibold">{pkg.maxStorageGB} GB</span>
-              </div>
-            </div>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{pkg.description}</p>
 
-            <div className="border-t pt-4">
-              <div className="text-xs text-gray-500 mb-2">Özellikler:</div>
-              <div className="flex flex-wrap gap-1 mb-4">
-                {pkg.features.slice(0, 3).map((feature, idx) => (
-                  <span key={idx} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">
-                    {feature}
-                  </span>
-                ))}
-                {pkg.features.length > 3 && (
-                  <span className="text-xs text-gray-500">+{pkg.features.length - 3}</span>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Kullanıcı:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {pkg.maxUsers === -1 ? 'Sınırsız' : pkg.maxUsers}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Öğrenci:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {pkg.maxStudents === -1 ? 'Sınırsız' : pkg.maxStudents}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Kurs:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {pkg.maxCourses === -1 ? 'Sınırsız' : pkg.maxCourses}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Sınav:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {pkg.maxExams === -1 ? 'Sınırsız' : pkg.maxExams}
+                    </span>
+                  </div>
+                </div>
+
+                {pkg.features && pkg.features.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Özellikler:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {pkg.features.map((feature, idx) => (
+                        <span 
+                          key={idx} 
+                          className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </div>
 
+                <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => handleEdit(pkg)}
+                    className="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    onClick={() => handleDelete(pkg.id)}
+                    className="flex-1 px-3 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    Sil
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {selectedPackage ? 'Edit Package' : 'Create Package'}
+            </h2>
+            
+            <Tabs
+              tabs={steps.map(s => s.label)}
+              activeTab={currentStep}
+              onChange={setCurrentStep}
+            />
+
+            <div className="mt-4">
+              {steps[currentStep].component}
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <Button
+                onClick={() => setIsModalOpen(false)}
+                variant="secondary"
+              >
+                Cancel
+              </Button>
               <div className="flex gap-2">
-                <Button size="sm" variant="primary" onClick={() => onEdit(pkg)} className="flex-1">
-                  ✏️ Düzenle
-                </Button>
-                <Button size="sm" variant="danger" onClick={() => onDelete(pkg.id)} className="flex-1">
-                  🗑️ Sil
-                </Button>
+                {currentStep > 0 && (
+                  <Button
+                    onClick={() => setCurrentStep(currentStep - 1)}
+                    variant="secondary"
+                  >
+                    Previous
+                  </Button>
+                )}
+                {currentStep < steps.length - 1 ? (
+                  <Button onClick={() => setCurrentStep(currentStep + 1)}>
+                    Next
+                  </Button>
+                ) : (
+                  <Button onClick={handleSubmit}>
+                    {selectedPackage ? 'Update' : 'Create'}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
-      ))}
+      )}
+      </div>
     </div>
   );
 };
 
-// ===================== PACKAGE FORM TAB =====================
-interface PackageFormTabProps {
-  package: LicensePackageDto | null;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
-
-const PackageFormTab: React.FC<PackageFormTabProps> = ({ package: pkg, onCancel, onSuccess }) => {
-  const [formTab, setFormTab] = useState('basic');
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<CreateLicensePackageRequest>({
-    code: '',
-    name: '',
-    description: '',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    currency: 'TRY',
-    trialDays: 14,
-    maxUsers: 0,
-    maxStudents: 0,
-    maxQuestions: 0,
-    maxExams: 0,
-    maxStorageGB: 0,
-    maxApiCallsPerMonth: 0,
-    maxModules: 0,
-    maxCases: 0,
-    maxDocuments: 0,
-    features: [],
-    isActive: true,
-    isPublic: true,
-    isHighlighted: false,
-    highlightText: '',
-    displayOrder: 1
-  });
-
-  useEffect(() => {
-    if (pkg) {
-      setFormData({
-        code: pkg.code,
-        name: pkg.name,
-        description: pkg.description || '',
-        monthlyPrice: pkg.monthlyPrice,
-        yearlyPrice: pkg.yearlyPrice,
-        currency: pkg.currency,
-        trialDays: pkg.trialDays,
-        maxUsers: pkg.maxUsers,
-        maxStudents: pkg.maxStudents,
-        maxQuestions: pkg.maxQuestions,
-        maxExams: pkg.maxExams,
-        maxStorageGB: pkg.maxStorageGB,
-        maxApiCallsPerMonth: pkg.maxApiCallsPerMonth,
-        maxModules: pkg.maxModules,
-        maxCases: pkg.maxCases,
-        maxDocuments: pkg.maxDocuments,
-        features: pkg.features,
-        isActive: pkg.isActive,
-        isPublic: pkg.isPublic,
-        isHighlighted: pkg.isHighlighted,
-        highlightText: pkg.highlightText || '',
-        displayOrder: pkg.displayOrder
-      });
-    }
-  }, [pkg]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    try {
-      if (pkg) {
-        await updateLicensePackage(pkg.id, { ...formData, id: pkg.id });
-      } else {
-        await createLicensePackage(formData);
-      }
-      alert('Paket başarıyla kaydedildi!');
-      onSuccess();
-    } catch (error) {
-      console.error('Kayıt hatası:', error);
-      alert('Paket kaydedilemedi!');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const formTabs = useMemo(() => [
-    {
-      id: 'basic',
-      label: 'Temel Bilgiler',
-      content: <BasicInfoForm formData={formData} setFormData={setFormData} />
-    },
-    {
-      id: 'quotas',
-      label: 'Kotalar',
-      content: <QuotasForm formData={formData} setFormData={setFormData} />
-    },
-    {
-      id: 'features',
-      label: 'Özellikler',
-      content: <FeaturesForm formData={formData} setFormData={setFormData} />
-    },
-    {
-      id: 'pricing',
-      label: 'Fiyatlandırma',
-      content: <PricingForm formData={formData} setFormData={setFormData} />
-    }
-  ], [formData]);
-
-  const currentTabIndex = formTabs.findIndex(t => t.id === formTab);
-
-  return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
-      <Tabs tabs={formTabs} activeTab={formTab} onTabChange={setFormTab} />
-
-      <div className="flex justify-between items-center mt-6 pt-6 border-t">
-        <div className="flex gap-2">
-          {currentTabIndex > 0 && (
-            <Button type="button" variant="secondary" onClick={() => setFormTab(formTabs[currentTabIndex - 1].id)}>
-              ← Önceki
-            </Button>
-          )}
-          {currentTabIndex < formTabs.length - 1 && (
-            <Button type="button" variant="secondary" onClick={() => setFormTab(formTabs[currentTabIndex + 1].id)}>
-              Sonraki →
-            </Button>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            ✗ İptal
-          </Button>
-          <Button type="submit" variant="primary" disabled={saving}>
-            {saving ? 'Kaydediliyor...' : '✓ Kaydet'}
-          </Button>
-        </div>
-      </div>
-    </form>
-  );
-};
-
-
+export default LicensePackagesPage;

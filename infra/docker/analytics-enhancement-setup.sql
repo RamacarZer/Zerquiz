@@ -82,3 +82,6 @@ COMMENT ON TABLE grading_schema.learning_style_profiles IS 'AI-analyzed learning
 COMMENT ON TABLE grading_schema.study_recommendations IS 'AI-generated study recommendations for students';
 COMMENT ON TABLE grading_schema.classroom_dashboards IS 'Aggregate classroom analytics for teachers';
 
+
+
+

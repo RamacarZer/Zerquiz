@@ -137,3 +137,6 @@ JOIN identity_schema.roles r ON ur."RoleId" = r."Id" AND r."DeletedAt" IS NULL
 WHERE u."Email" = 'admin@zerquiz.com'
 AND u."DeletedAt" IS NULL;
 
+
+
+

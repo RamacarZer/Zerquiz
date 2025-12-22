@@ -1,21 +1,30 @@
-using Zerquiz.Shared.Contracts.Domain;
-
 namespace Zerquiz.Core.Domain.Entities;
 
 /// <summary>
-/// Module - Top-level feature module
+/// Module - Top-level feature module (matches core_schema.modules exactly)
 /// </summary>
-public class Module : BaseEntity
+public class Module
 {
+    public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? IconName { get; set; }
     public int DisplayOrder { get; set; }
-    // IsActive inherited from BaseEntity
+    public Guid? ParentModuleId { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool IsSystemReserved { get; set; } = false;
     public bool RequiresLicense { get; set; } = false;
+    public string? LicenseFeatureCode { get; set; }
+    public string? Version { get; set; } = "1.0";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public Guid? CreatedBy { get; set; }
+    public Guid? TenantId { get; set; }
     
     // Navigation properties
+    public virtual Module? ParentModule { get; set; }
+    public virtual ICollection<Module> ChildModules { get; set; } = new List<Module>();
     public virtual ICollection<ModuleTranslation> Translations { get; set; } = new List<ModuleTranslation>();
     public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
     public virtual ICollection<TenantModule> TenantModules { get; set; } = new List<TenantModule>();
@@ -31,19 +40,22 @@ public class ModuleTranslation
     public string LanguageCode { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     public virtual Module Module { get; set; } = null!;
 }
 
 /// <summary>
-/// MenuItem - Individual menu item
+/// MenuItem - Individual menu item (matches core_schema.menu_items exactly)
 /// </summary>
-public class MenuItem : BaseEntity
+public class MenuItem
 {
-    // ModuleId inherited from BaseEntity
+    public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
+    public Guid? ModuleId { get; set; }
     public Guid? ParentMenuId { get; set; }
-    public string Label { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty; // LabelKey from DB
     public string? IconName { get; set; }
     public string? Path { get; set; }
     public int DisplayOrder { get; set; }
@@ -51,10 +63,19 @@ public class MenuItem : BaseEntity
     public string MenuType { get; set; } = "link"; // link, dropdown, divider, group
     public string? BadgeText { get; set; }
     public string? BadgeColor { get; set; }
-    // IsActive inherited from BaseEntity
+    public bool IsVisible { get; set; } = true;
+    public bool IsActive { get; set; } = true;
+    public bool IsSystemReserved { get; set; } = false;
+    public bool OpenInNewTab { get; set; } = false;
+    public string? CssClass { get; set; }
+    public string? Metadata { get; set; } // JSONB as string
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public Guid? CreatedBy { get; set; }
+    public Guid? TenantId { get; set; }
     
     // Navigation properties
-    public virtual Module Module { get; set; } = null!;
+    public virtual Module? Module { get; set; }
     public virtual MenuItem? ParentMenu { get; set; }
     public virtual ICollection<MenuItem> ChildMenus { get; set; } = new List<MenuItem>();
     public virtual ICollection<MenuItemTranslation> Translations { get; set; } = new List<MenuItemTranslation>();
@@ -70,7 +91,10 @@ public class MenuItemTranslation
     public Guid MenuItemId { get; set; }
     public string LanguageCode { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
-    public string? BadgeText { get; set; }
+    public string? Description { get; set; }
+    public string? Tooltip { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     public virtual MenuItem MenuItem { get; set; } = null!;
 }
@@ -82,10 +106,12 @@ public class MenuPermission
 {
     public Guid Id { get; set; }
     public Guid MenuItemId { get; set; }
-    public string RoleName { get; set; } = string.Empty;
+    public Guid? RoleId { get; set; }
     public bool CanView { get; set; } = true;
-    public bool CanEdit { get; set; } = false;
-    public bool CanDelete { get; set; } = false;
+    public bool CanAccess { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public Guid? CreatedBy { get; set; }
     
     public virtual MenuItem MenuItem { get; set; } = null!;
 }

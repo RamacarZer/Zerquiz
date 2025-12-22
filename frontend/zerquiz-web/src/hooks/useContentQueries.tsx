@@ -1,6 +1,12 @@
 // React Query Hooks for Content Management
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { contentService, type ContentFile, type GenerationRequest } from '../services/api/contentService';
+import { 
+  contentService, 
+  type QuizGenerationRequest,
+  type FlashcardGenerationRequest,
+  type SummaryGenerationRequest,
+  type WorksheetGenerationRequest
+} from '../services/api/contentService';
 
 // Query Keys
 export const contentKeys = {
@@ -13,11 +19,12 @@ export const contentKeys = {
 };
 
 // Get all content files
-export function useContentList() {
+export function useContentList(tenantId: string, contentType?: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: contentKeys.lists(),
-    queryFn: () => contentService.getAll(),
+    queryKey: contentKeys.list(`${tenantId}-${contentType}-${page}-${pageSize}`),
+    queryFn: () => contentService.getAll(tenantId, contentType, page, pageSize),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!tenantId,
   });
 }
 
@@ -35,10 +42,9 @@ export function useContentUpload() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { file: File; metadata?: any }) =>
-      contentService.upload(data.file, data.metadata),
+    mutationFn: (data: { file: File; title?: string; tenantId?: string; userId?: string }) =>
+      contentService.upload(data.file, data.title, data.tenantId, data.userId),
     onSuccess: () => {
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: contentKeys.lists() });
     },
   });
@@ -56,55 +62,106 @@ export function useContentDelete() {
   });
 }
 
-// Extract text from PDF
+// Extract text
 export function useExtractText(id: string) {
   return useQuery({
     queryKey: [...contentKeys.detail(id), 'extract'],
-    queryFn: () => contentService.extractText(id),
+    queryFn: () => contentService.getExtractedText(id),
     enabled: false, // Manual trigger
   });
 }
 
-// Generate content with AI
-export function useGenerateContent() {
+// === AI GENERATION HOOKS ===
+
+// Generate Quiz
+export function useGenerateQuiz() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: GenerationRequest) =>
-      contentService.generateContent(request),
-    onSuccess: (data) => {
-      // Invalidate related queries
+    mutationFn: (request: QuizGenerationRequest) =>
+      contentService.generateQuiz(request),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: contentKeys.all });
     },
   });
 }
 
-// Get generation status
-export function useGenerationStatus(id: string, enabled = false) {
+// Generate Flashcards
+export function useGenerateFlashcards() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: FlashcardGenerationRequest) =>
+      contentService.generateFlashcards(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contentKeys.all });
+    },
+  });
+}
+
+// Generate Summary
+export function useGenerateSummary() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: SummaryGenerationRequest) =>
+      contentService.generateSummary(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contentKeys.all });
+    },
+  });
+}
+
+// Generate Worksheet
+export function useGenerateWorksheet() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: WorksheetGenerationRequest) =>
+      contentService.generateWorksheet(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contentKeys.all });
+    },
+  });
+}
+
+// Get generation job status with auto-polling
+export function useGenerationJobStatus(jobId: string, enabled = false) {
   return useQuery({
-    queryKey: contentKeys.generation(id),
-    queryFn: () => contentService.getGenerationStatus(id),
-    enabled: enabled && !!id,
+    queryKey: ['generation-job', jobId],
+    queryFn: () => contentService.getJobStatus(jobId),
+    enabled: enabled && !!jobId,
     refetchInterval: (data) => {
       // Stop polling if completed or failed
       if (data?.status === 'completed' || data?.status === 'failed') {
         return false;
       }
-      return 2000; // Poll every 2 seconds
+      return 3000; // Poll every 3 seconds
     },
   });
 }
 
-// Approve generation
-export function useApproveGeneration() {
+// Get generated content
+export function useGeneratedContent(contentId: string, type?: string) {
+  return useQuery({
+    queryKey: ['generated-content', contentId, type],
+    queryFn: () => contentService.getGeneratedContent(contentId, type),
+    enabled: !!contentId,
+  });
+}
+
+// Approve generated content
+export function useApproveGenerated() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
-      contentService.approveGeneration(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: contentKeys.generation(variables.id) });
+    mutationFn: (id: string) => contentService.approveGenerated(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['generated-content'] });
     },
   });
 }
+
+
+
 

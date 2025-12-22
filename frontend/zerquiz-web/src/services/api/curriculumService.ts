@@ -96,7 +96,7 @@ export interface CreateLearningOutcomeRequest {
 // Education Models - Standalone exports
 export const getEducationModels = async (): Promise<EducationModelDto[]> => {
   const response = await apiClient.get<ApiResponse<EducationModelDto[]>>(
-    "/curriculum/educationmodels"
+    "/api/curriculum/EducationModels"
   );
   return response.data.data || [];
 };
@@ -105,21 +105,21 @@ export const curriculumService = {
   // Education Models
   getEducationModels: async () => {
     const response = await apiClient.get<ApiResponse<EducationModelDto[]>>(
-      "/curriculum/educationmodels"
+      "/api/curriculum/EducationModels"
     );
     return response.data.data;
   },
 
   getEducationModel: async (id: string) => {
     const response = await apiClient.get<ApiResponse<EducationModelDto>>(
-      `/curriculum/educationmodels/${id}`
+      `/api/curriculum/EducationModels/${id}`
     );
     return response.data.data;
   },
 
   createEducationModel: async (data: CreateEducationModelRequest) => {
     const response = await apiClient.post<ApiResponse<EducationModelDto>>(
-      "/curriculum/educationmodels",
+      "/api/curriculum/EducationModels",
       data
     );
     return response.data.data;
@@ -130,7 +130,7 @@ export const curriculumService = {
     data: CreateEducationModelRequest
   ) => {
     const response = await apiClient.put<ApiResponse<EducationModelDto>>(
-      `/curriculum/educationmodels/${id}`,
+      `/api/curriculum/EducationModels/${id}`,
       data
     );
     return response.data.data;
@@ -138,14 +138,14 @@ export const curriculumService = {
 
   deleteEducationModel: async (id: string) => {
     const response = await apiClient.delete<ApiResponse<boolean>>(
-      `/curriculum/educationmodels/${id}`
+      `/api/curriculum/EducationModels/${id}`
     );
     return response.data.data;
   },
 
   toggleEducationModelStatus: async (id: string) => {
     const response = await apiClient.put<ApiResponse<boolean>>(
-      `/curriculum/educationmodels/${id}/toggle-status`
+      `/api/curriculum/EducationModels/${id}/toggle-status`
     );
     return response.data.data;
   },
@@ -153,21 +153,21 @@ export const curriculumService = {
   // Subjects
   getSubjects: async () => {
     const response = await apiClient.get<ApiResponse<SubjectDto[]>>(
-      "/curriculum/subjects"
+      "/api/curriculum/Subjects"
     );
     return response.data.data;
   },
 
   getSubject: async (id: string) => {
     const response = await apiClient.get<ApiResponse<SubjectDto>>(
-      `/curriculum/subjects/${id}`
+      `/api/curriculum/Subjects/${id}`
     );
     return response.data.data;
   },
 
   createSubject: async (data: CreateSubjectRequest) => {
     const response = await apiClient.post<ApiResponse<SubjectDto>>(
-      "/curriculum/subjects",
+      "/api/curriculum/Subjects",
       data
     );
     return response.data.data;
@@ -175,7 +175,7 @@ export const curriculumService = {
 
   updateSubject: async (id: string, data: CreateSubjectRequest) => {
     const response = await apiClient.put<ApiResponse<SubjectDto>>(
-      `/curriculum/subjects/${id}`,
+      `/api/curriculum/Subjects/${id}`,
       data
     );
     return response.data.data;
@@ -183,7 +183,7 @@ export const curriculumService = {
 
   deleteSubject: async (id: string) => {
     const response = await apiClient.delete<ApiResponse<boolean>>(
-      `/curriculum/subjects/${id}`
+      `/api/curriculum/Subjects/${id}`
     );
     return response.data.data;
   },
@@ -191,7 +191,7 @@ export const curriculumService = {
   // Topics
   getTopics: async (subjectId?: string) => {
     const response = await apiClient.get<ApiResponse<TopicDto[]>>(
-      "/curriculum/topics",
+      "/api/curriculum/Topics",
       { params: { subjectId } }
     );
     return response.data.data;
@@ -199,21 +199,21 @@ export const curriculumService = {
 
   getTopicsBySubject: async (subjectId: string) => {
     const response = await apiClient.get<ApiResponse<TopicDto[]>>(
-      `/curriculum/topics/subject/${subjectId}`
+      `/api/curriculum/Topics/subject/${subjectId}`
     );
     return response.data.data;
   },
 
   getTopic: async (id: string) => {
     const response = await apiClient.get<ApiResponse<any>>(
-      `/curriculum/topics/${id}`
+      `/api/curriculum/Topics/${id}`
     );
     return response.data.data;
   },
 
   createTopic: async (data: CreateTopicRequest) => {
     const response = await apiClient.post<ApiResponse<TopicDto>>(
-      "/curriculum/topics",
+      "/api/curriculum/Topics",
       data
     );
     return response.data.data;
@@ -224,7 +224,7 @@ export const curriculumService = {
     data: { name: string; displayOrder: number }
   ) => {
     const response = await apiClient.put<ApiResponse<TopicDto>>(
-      `/curriculum/topics/${id}`,
+      `/api/curriculum/Topics/${id}`,
       data
     );
     return response.data.data;
@@ -232,7 +232,7 @@ export const curriculumService = {
 
   deleteTopic: async (id: string) => {
     const response = await apiClient.delete<ApiResponse<boolean>>(
-      `/curriculum/topics/${id}`
+      `/api/curriculum/Topics/${id}`
     );
     return response.data.data;
   },
@@ -240,7 +240,7 @@ export const curriculumService = {
   // Curricula
   getCurricula: async (educationModelId?: string, year?: number) => {
     const response = await apiClient.get<ApiResponse<CurriculumDto[]>>(
-      "/curriculum/curricula",
+      "/api/curriculum/Curricula",
       { params: { educationModelId, year } }
     );
     return response.data.data;
@@ -248,7 +248,7 @@ export const curriculumService = {
 
   createCurriculum: async (data: CreateCurriculumRequest) => {
     const response = await apiClient.post<ApiResponse<CurriculumDto>>(
-      "/curriculum/curricula",
+      "/api/curriculum/Curricula",
       data
     );
     return response.data.data;
@@ -261,7 +261,7 @@ export const curriculumService = {
     topicId?: string
   ) => {
     const response = await apiClient.get<ApiResponse<LearningOutcomeDto[]>>(
-      "/curriculum/learningoutcomes",
+      "/api/curriculum/LearningOutcomes",
       { params: { curriculumId, subjectId, topicId } }
     );
     return response.data.data;
@@ -269,7 +269,7 @@ export const curriculumService = {
 
   createLearningOutcome: async (data: CreateLearningOutcomeRequest) => {
     const response = await apiClient.post<ApiResponse<LearningOutcomeDto>>(
-      "/curriculum/learningoutcomes",
+      "/api/curriculum/LearningOutcomes",
       data
     );
     return response.data.data;
@@ -280,7 +280,7 @@ export const curriculumService = {
     data: { description: string; details?: string }
   ) => {
     const response = await apiClient.put<ApiResponse<LearningOutcomeDto>>(
-      `/curriculum/learningoutcomes/${id}`,
+      `/api/curriculum/LearningOutcomes/${id}`,
       data
     );
     return response.data.data;
@@ -288,7 +288,7 @@ export const curriculumService = {
 
   deleteLearningOutcome: async (id: string) => {
     const response = await apiClient.delete<ApiResponse<boolean>>(
-      `/curriculum/learningoutcomes/${id}`
+      `/api/curriculum/LearningOutcomes/${id}`
     );
     return response.data.data;
   },
@@ -296,7 +296,7 @@ export const curriculumService = {
   // Simplified methods for Question Create Modal
   async getSubjects(): Promise<Subject[]> {
     try {
-      const response = await apiClient.get<ApiResponse<SubjectDto[]>>('/curriculum/subjects');
+      const response = await apiClient.get<ApiResponse<SubjectDto[]>>('/api/curriculum/Subjects');
       return response.data.data.map(s => ({
         id: s.id,
         code: s.code,
@@ -311,7 +311,7 @@ export const curriculumService = {
 
   async getTopics(params?: { subjectId?: string }): Promise<Topic[]> {
     try {
-      const response = await apiClient.get<ApiResponse<TopicDto[]>>('/curriculum/topics', { params });
+      const response = await apiClient.get<ApiResponse<TopicDto[]>>('/api/curriculum/Topics', { params });
       return response.data.data.map(t => ({
         id: t.id,
         subjectId: t.subjectId,
@@ -329,7 +329,7 @@ export const curriculumService = {
 
   async getLearningOutcomes(params?: { topicId?: string }): Promise<LearningOutcome[]> {
     try {
-      const response = await apiClient.get<ApiResponse<LearningOutcomeDto[]>>('/curriculum/learningoutcomes', { params });
+      const response = await apiClient.get<ApiResponse<LearningOutcomeDto[]>>('/api/curriculum/LearningOutcomes', { params });
       return response.data.data.map(o => ({
         id: o.id,
         curriculumId: o.curriculumId || '',

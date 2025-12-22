@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Zerquiz.Lessons.Infrastructure.Persistence;
+using Zerquiz.Shared.AI.Providers;
+using Zerquiz.Shared.AI.Models;
+using Zerquiz.Shared.AI.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,24 @@ builder.Services.AddSwaggerGen(c =>
 // Database
 builder.Services.AddDbContext<LessonsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// AI Provider
+builder.Services.AddHttpClient(); // For LocalLLM provider
+builder.Services.AddSingleton<AIProviderFactory>();
+builder.Services.AddScoped<IAIProvider>(sp =>
+{
+    var factory = sp.GetRequiredService<AIProviderFactory>();
+    var config = new AIConfig
+    {
+        Provider = builder.Configuration["AI:Provider"] ?? "openai",
+        ApiKey = builder.Configuration["AI:ApiKey"] ?? "",
+        Model = builder.Configuration["AI:Model"] ?? "gpt-4o",
+        Temperature = double.TryParse(builder.Configuration["AI:Temperature"], out var temp) ? temp : 0.7,
+        MaxTokens = int.TryParse(builder.Configuration["AI:MaxTokens"], out var tokens) ? tokens : 2000,
+        Endpoint = builder.Configuration["AI:Endpoint"]
+    };
+    return factory.CreateProvider(config);
+});
 
 // Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

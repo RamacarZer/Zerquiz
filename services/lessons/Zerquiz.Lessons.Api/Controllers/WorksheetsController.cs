@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Lessons.Domain.Entities;
 using Zerquiz.Lessons.Infrastructure.Persistence;
+using Zerquiz.Shared.AI.Interfaces;
+using Zerquiz.Shared.AI.Models;
+using System.Text.Json;
 
 namespace Zerquiz.Lessons.Api.Controllers;
 
@@ -13,11 +16,19 @@ public class WorksheetsController : ControllerBase
 {
     private readonly LessonsDbContext _context;
     private readonly ILogger<WorksheetsController> _logger;
+    private readonly IAIProvider _aiProvider;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public WorksheetsController(LessonsDbContext context, ILogger<WorksheetsController> logger)
+    public WorksheetsController(
+        LessonsDbContext context,
+        ILogger<WorksheetsController> logger,
+        IAIProvider aiProvider,
+        IHttpClientFactory httpClientFactory)
     {
         _context = context;
         _logger = logger;
+        _aiProvider = aiProvider;
+        _httpClientFactory = httpClientFactory;
     }
 
     private string GetTenantId() => User.FindFirst("tenantId")?.Value ?? "";
@@ -57,32 +68,85 @@ public class WorksheetsController : ControllerBase
     [Authorize(Roles = "Teacher,TenantAdmin,SuperAdmin")]
     public async Task<ActionResult<Worksheet>> Generate([FromBody] GenerateWorksheetRequest request)
     {
-        var tenantId = GetTenantId();
-        var userId = GetUserId();
-
-        // TODO: Integrate with AI Provider Service to generate worksheet
-        // For now, create a placeholder
-
-        var worksheet = new Worksheet
+        try
         {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            ContentItemId = request.ContentItemId,
-            Title = request.Title,
-            Instructions = request.Instructions ?? "Complete the following exercises.",
-            Questions = "[]", // Will be populated by AI generation
-            AnswerKey = "[]",
-            Format = request.Format ?? "pdf",
-            CreatedBy = userId,
-            CreatedAt = DateTime.UtcNow
-        };
+            var tenantId = GetTenantId();
+            var userId = GetUserId();
 
-        _context.Worksheets.Add(worksheet);
-        await _context.SaveChangesAsync();
+            // Get content from Content Service if ContentItemId provided
+            string? contentText = null;
+            if (request.ContentItemId.HasValue)
+            {
+                var client = _httpClientFactory.CreateClient();
+                var contentServiceUrl = "http://localhost:5008"; // From config
+                var response = await client.GetAsync($"{contentServiceUrl}/api/Content/{request.ContentItemId.Value}/extract");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var jsonDoc = JsonDocument.Parse(content);
+                    contentText = jsonDoc.RootElement.GetProperty("extractedText").GetString();
+                }
+            }
 
-        _logger.LogInformation("Generated worksheet {Id} for tenant {TenantId}", worksheet.Id, tenantId);
+            // Use provided content or extracted content
+            var inputContent = request.ContentText ?? contentText;
+            if (string.IsNullOrEmpty(inputContent))
+                return BadRequest(new { error = "Content is required (either ContentItemId or ContentText)" });
 
-        return CreatedAtAction(nameof(GetById), new { id = worksheet.Id }, worksheet);
+            // Call AI Provider to generate worksheet
+            var input = new ContentInput
+            {
+                Content = inputContent,
+                Language = request.Language ?? "tr"
+            };
+
+            _logger.LogInformation("Generating AI worksheet for content item {ContentItemId}", request.ContentItemId);
+            var aiResult = await _aiProvider.GenerateWorksheetAsync(input);
+
+            if (!aiResult.Success || aiResult.Data == null)
+            {
+                _logger.LogError("AI worksheet generation failed: {Error}", aiResult.Error);
+                return StatusCode(500, new { error = "AI generation failed", message = aiResult.Error });
+            }
+
+            // Save worksheet
+            var worksheet = new Worksheet
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                ContentItemId = request.ContentItemId,
+                Title = request.Title ?? aiResult.Data.Title ?? "Generated Worksheet",
+                Instructions = request.Instructions ?? aiResult.Data.Instructions ?? "Complete the following exercises.",
+                Questions = JsonSerializer.Serialize(aiResult.Data.Questions),
+                AnswerKey = JsonSerializer.Serialize(aiResult.Data.AnswerKey),
+                Format = request.Format ?? "pdf",
+                CreatedBy = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Worksheets.Add(worksheet);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Generated worksheet {Id} for tenant {TenantId}", worksheet.Id, tenantId);
+
+            return CreatedAtAction(nameof(GetById), new { id = worksheet.Id }, new
+            {
+                worksheet,
+                metadata = new
+                {
+                    tokensUsed = aiResult.TokensUsed,
+                    model = aiResult.Model,
+                    provider = aiResult.Provider,
+                    questionCount = aiResult.Data.Questions?.Count ?? 0
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating worksheet");
+            return StatusCode(500, new { error = "Internal server error", message = ex.Message });
+        }
     }
 
     // GET: api/Worksheets/{id}/download
@@ -136,10 +200,15 @@ public class WorksheetsController : ControllerBase
 public class GenerateWorksheetRequest
 {
     public Guid? ContentItemId { get; set; }
+    public string? ContentText { get; set; } // Direct content text (alternative to ContentItemId)
     public string Title { get; set; } = "";
     public string? Instructions { get; set; }
     public string? Format { get; set; } // pdf, docx, html
     public int QuestionCount { get; set; } = 10;
     public string? Difficulty { get; set; }
+    public string? Language { get; set; }
 }
+
+
+
 

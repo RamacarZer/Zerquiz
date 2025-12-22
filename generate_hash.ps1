@@ -32,3 +32,6 @@ Write-Host "SQL Update Command:" -ForegroundColor Cyan
 Write-Host "UPDATE identity_schema.users SET ""PasswordHash"" = '$hashedPassword' WHERE ""Email"" = 'admin@zerquiz.com';"
 Write-Host ""
 
+
+
+

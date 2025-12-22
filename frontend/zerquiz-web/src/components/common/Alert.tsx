@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast as toastify } from 'react-toastify';
 
 type AlertType = 'info' | 'success' | 'warning' | 'error';
 
@@ -140,6 +141,30 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
       </AnimatePresence>
     </div>
   );
+};
+
+// Toast API using react-toastify
+export const toast = {
+  success: (message: string) => toastify.success(message),
+  error: (message: string) => toastify.error(message),
+  info: (message: string) => toastify.info(message),
+  warning: (message: string) => toastify.warning(message),
+};
+
+// Toast Provider Hook (for custom implementation if needed)
+export const useToastProvider = () => {
+  const [toasts, setToasts] = React.useState<Array<{ id: string; type: AlertType; message: string }>>([]);
+
+  const addToast = (type: AlertType, message: string) => {
+    const id = `toast-${Date.now()}`;
+    setToasts(prev => [...prev, { id, type, message }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  return { toasts, removeToast, addToast };
 };
 
 export default Alert;

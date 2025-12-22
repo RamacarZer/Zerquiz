@@ -15,6 +15,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<QuestionsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// HttpClient for inter-service communication
+builder.Services.AddHttpClient();
+
 // CORS
 builder.Services.AddCors(options =>
 {

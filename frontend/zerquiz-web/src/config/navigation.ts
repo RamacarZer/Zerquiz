@@ -557,6 +557,14 @@ export const quickActions: QuickAction[] = [
 
 // Helper function: Get filtered menu items based on user roles
 export function getFilteredMenu(userRoles: string[]): MenuItem[] {
+  // If no roles or SuperAdmin, show all menus
+  const isSuperAdmin = userRoles.includes('SuperAdmin') || userRoles.includes('superadmin');
+  
+  if (isSuperAdmin || userRoles.length === 0) {
+    // SuperAdmin sees everything
+    return menuItems;
+  }
+  
   return menuItems
     .filter((item) => item.roles.some((role) => userRoles.includes(role)))
     .map((item) => {

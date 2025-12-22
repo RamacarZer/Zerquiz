@@ -48,6 +48,9 @@ public class IdentityDbContext : DbContext
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
+            
             // Relations
             entity.HasOne(e => e.Department)
                 .WithMany(d => d.Users)
@@ -82,6 +85,9 @@ public class IdentityDbContext : DbContext
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
+            
             // Soft delete filter
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
@@ -96,6 +102,9 @@ public class IdentityDbContext : DbContext
             
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             entity.HasOne(e => e.User)
                 .WithMany(u => u.UserRoles)
@@ -141,6 +150,9 @@ public class IdentityDbContext : DbContext
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
+            
             entity.HasOne(e => e.ParentDepartment)
                 .WithMany(d => d.SubDepartments)
                 .HasForeignKey(e => e.ParentDepartmentId)
@@ -163,6 +175,9 @@ public class IdentityDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             // Soft delete filter
             entity.HasQueryFilter(e => e.DeletedAt == null);

@@ -8,3 +8,6 @@
   "prompt_template_tr": "İçerik:\n{{content}}\n\nGörev: {{count}} adet eşleştirme sorusu üret.\n\nKurallar:\n- Sol ve sağ liste oluştur\n- En az 4 eşleştirme çifti\n- İlişkiler net olmalı\n\nÇıktı formatı (JSON):\n{\n  \"questions\": [\n    {\n      \"questionTypeCode\": \"matching_pairs\",\n      \"stem\": \"Aşağıdaki kavramları eşleştiriniz:\",\n      \"options\": [\"1-A\", \"2-B\", \"3-C\", \"4-D\"],\n      \"correctAnswer\": \"{\\\"1\\\":\\\"B\\\",\\\"2\\\":\\\"D\\\",\\\"3\\\":\\\"A\\\",\\\"4\\\":\\\"C\\\"}\",\n      \"explanation\": \"Açıklama\",\n      \"difficulty\": \"{{difficulty}}\",\n      \"points\": 10,\n      \"metadata\": {\"leftList\": [\"1. Kavram1\", \"2. Kavram2\"], \"rightList\": [\"A. Tanım1\", \"B. Tanım2\"]}\n    }\n  ]\n}"
 }
 
+
+
+

@@ -307,3 +307,6 @@ $$ LANGUAGE plpgsql;
 -- Şimdi seed data ekleyebiliriz.
 -- ============================================
 
+
+
+

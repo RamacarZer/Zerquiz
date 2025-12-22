@@ -10,3 +10,7 @@ PDF annotator testleri için `frontend/zerquiz-web/public/sample.pdf` dosyasına
 - PDF annotator özelliği çalışacak
 - Gerçek implementasyonda backend'den PDF URL'i gelecek
 
+
+
+
+

@@ -18,3 +18,6 @@ WHERE "Email" = 'admin@zerquiz.com';
 -- SET "PasswordHash" = 'YOUR_GENERATED_HASH_HERE'
 -- WHERE "Email" = 'admin@zerquiz.com';
 
+
+
+

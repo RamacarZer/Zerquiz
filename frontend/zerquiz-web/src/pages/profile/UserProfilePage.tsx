@@ -136,7 +136,7 @@ interface UserProfile {
   assetAssignments: AssetAssignment[];
 }
 
-export function UserProfilePage() {
+export default function UserProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'permissions' | 'activity' | 'preferences' | 'billing' | 'documents' | 'assets'>('profile');
   const [showPassword, setShowPassword] = useState(false);

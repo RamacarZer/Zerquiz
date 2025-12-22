@@ -72,3 +72,6 @@ FROM core_schema.definition_translations dt
 JOIN core_schema.definitions d ON dt."DefinitionId" = d."Id"
 WHERE d."GroupId" = (SELECT "Id" FROM core_schema.definition_groups WHERE "Code" = 'question_types');
 
+
+
+

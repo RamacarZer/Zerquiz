@@ -8,3 +8,6 @@ WHERE table_schema = 'core_schema'
   AND table_name = 'definition_translations'
 ORDER BY ordinal_position;
 
+
+
+

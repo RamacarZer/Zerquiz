@@ -40,3 +40,6 @@ public class AIResponse<T>
     public string Model { get; set; } = string.Empty;
 }
 
+
+
+

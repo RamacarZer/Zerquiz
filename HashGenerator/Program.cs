@@ -28,3 +28,6 @@ Console.WriteLine(hashedPassword);
 Console.WriteLine($"\nSQL Update Command:");
 Console.WriteLine($"UPDATE identity_schema.users SET \"PasswordHash\" = '{hashedPassword}' WHERE \"Email\" = 'admin@zerquiz.com';");
 
+
+
+

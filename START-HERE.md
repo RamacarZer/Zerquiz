@@ -158,3 +158,6 @@ Eğer hiçbir şey çalışmıyorsa:
 **Durum**: Tüm kodlar hazır, sadece başlatma gerekiyor  
 **İletişim**: Destek gerekirse yardım edin! 🚀
 
+
+
+

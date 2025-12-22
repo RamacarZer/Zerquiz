@@ -361,3 +361,6 @@ WHERE "TenantId" = 'tenant-id'
 
 **Frontend yeniden deploy gerektirmeden menü değişiklikleri yapılabilir!**
 
+
+
+

@@ -95,29 +95,33 @@ export interface UpdateDefinitionRequest {
   isActive: boolean;
 }
 
+// Type aliases for React Query hooks
+export type CreateDefinitionDto = CreateDefinitionRequest;
+export type UpdateDefinitionDto = UpdateDefinitionRequest;
+
 // ==================== DEFINITION GROUPS API ====================
 
 export const getDefinitionGroups = async (): Promise<DefinitionGroupDto[]> => {
-  const response = await apiClient.get<DefinitionGroupDto[]>('/curriculum/definitiongroups');
+  const response = await apiClient.get<DefinitionGroupDto[]>('/api/curriculum/DefinitionGroups');
   return response.data || [];
 };
 
 export const getDefinitionGroup = async (id: string): Promise<DefinitionGroupDto> => {
-  const response = await apiClient.get<DefinitionGroupDto>(`/curriculum/definitiongroups/${id}`);
+  const response = await apiClient.get<DefinitionGroupDto>(`/api/curriculum/DefinitionGroups/${id}`);
   return response.data;
 };
 
 export const createDefinitionGroup = async (request: CreateDefinitionGroupRequest): Promise<DefinitionGroupDto> => {
-  const response = await apiClient.post<DefinitionGroupDto>('/curriculum/definitiongroups', request);
+  const response = await apiClient.post<DefinitionGroupDto>('/api/curriculum/DefinitionGroups', request);
   return response.data;
 };
 
 export const updateDefinitionGroup = async (id: string, request: UpdateDefinitionGroupRequest): Promise<void> => {
-  await apiClient.put(`/curriculum/definitiongroups/${id}`, request);
+  await apiClient.put(`/api/curriculum/DefinitionGroups/${id}`, request);
 };
 
 export const deleteDefinitionGroup = async (id: string): Promise<void> => {
-  await apiClient.delete(`/curriculum/definitiongroups/${id}`);
+  await apiClient.delete(`/api/curriculum/DefinitionGroups/${id}`);
 };
 
 // ==================== DEFINITIONS API ====================
@@ -127,43 +131,52 @@ export const getDefinitions = async (params?: {
   parentId?: string;
   includeChildren?: boolean;
 }): Promise<DefinitionDto[]> => {
-  const response = await apiClient.get<DefinitionDto[]>('/curriculum/definitions', { params });
+  const response = await apiClient.get<DefinitionDto[]>('/api/curriculum/Definitions', { params });
   return response.data || [];
 };
 
 export const getDefinitionTree = async (groupKey?: string): Promise<DefinitionDto[]> => {
   const params = groupKey ? { groupKey } : undefined;
-  const response = await apiClient.get<DefinitionDto[]>('/curriculum/definitions/tree', { params });
+  const response = await apiClient.get<DefinitionDto[]>('/api/curriculum/Definitions/tree', { params });
   return response.data || [];
 };
 
 export const getDefinition = async (id: string): Promise<DefinitionDto> => {
-  const response = await apiClient.get<DefinitionDto>(`/curriculum/definitions/${id}`);
+  const response = await apiClient.get<DefinitionDto>(`/api/curriculum/Definitions/${id}`);
   return response.data;
 };
 
+export const getDefinitionById = async (id: string): Promise<DefinitionDto> => {
+  return getDefinition(id);
+};
+
+export const getDefinitionsByGroup = async (groupKey: string): Promise<DefinitionDto[]> => {
+  return getDefinitions({ groupKey, includeChildren: false });
+};
+
 export const getDefinitionChildren = async (id: string): Promise<DefinitionDto[]> => {
-  const response = await apiClient.get<DefinitionDto[]>(`/curriculum/definitions/${id}/children`);
+  const response = await apiClient.get<DefinitionDto[]>(`/api/curriculum/Definitions/${id}/children`);
   return response.data || [];
 };
 
 export const createDefinition = async (request: CreateDefinitionRequest): Promise<DefinitionDto> => {
-  const response = await apiClient.post<DefinitionDto>('/curriculum/definitions', request);
+  const response = await apiClient.post<DefinitionDto>('/api/curriculum/Definitions', request);
   return response.data;
 };
 
-export const updateDefinition = async (id: string, request: UpdateDefinitionRequest): Promise<void> => {
-  await apiClient.put(`/curriculum/definitions/${id}`, request);
+export const updateDefinition = async (id: string, request: UpdateDefinitionRequest): Promise<DefinitionDto> => {
+  const response = await apiClient.put<DefinitionDto>(`/api/curriculum/Definitions/${id}`, request);
+  return response.data;
 };
 
 export const deleteDefinition = async (id: string): Promise<void> => {
-  await apiClient.delete(`/curriculum/definitions/${id}`);
+  await apiClient.delete(`/api/curriculum/Definitions/${id}`);
 };
 
 // ==================== SEED API ====================
 
 export const seedDefinitionSystem = async (): Promise<any> => {
-  const response = await apiClient.post('/curriculum/seeddefinitions/seed-all');
+  const response = await apiClient.post('/api/curriculum/SeedDefinitions/seed-all');
   return response.data;
 };
 

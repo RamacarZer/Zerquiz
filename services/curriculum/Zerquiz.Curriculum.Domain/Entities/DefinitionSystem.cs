@@ -74,6 +74,8 @@ public class Definition : BaseEntity
     // is_active, status, version, source, metadata, tags, ip_address, user_agent, 
     // request_id, correlation_id inherited
     
+    public new string? Metadata { get; set; } // Override to use string instead of JsonDocument
+    
     public Guid? OrganizationId { get; set; }
     public Guid? AppId { get; set; }
     

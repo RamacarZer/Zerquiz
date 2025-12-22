@@ -110,3 +110,7 @@ Sistem şu an %95 çalışır durumda. Kalan küçük eksiklikler:
 
 Kalan 2 ufak eksikliği de düzeltmemi ister misin?
 
+
+
+
+

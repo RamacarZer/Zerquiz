@@ -10,7 +10,15 @@ import type {
   AssetUploadResponse,
 } from "../../types/question.types";
 
-const API_BASE = "/api/questions";
+// Questions Service URL (Port 5004)
+const QUESTIONS_API_URL = import.meta.env.VITE_QUESTIONS_API_URL || 'http://localhost:5004';
+const API_BASE = `${QUESTIONS_API_URL}/api/Questions`;
+
+// Configure axios instance with auth
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const questionService = {
   // Questions
@@ -30,6 +38,7 @@ export const questionService = {
         pageSize,
         ...otherParams,
       },
+      headers: getAuthHeaders()
     });
     // Handle ApiResponse wrapper
     const data = response.data.data || response.data;
@@ -41,12 +50,16 @@ export const questionService = {
   },
 
   async getQuestion(id: string): Promise<Question> {
-    const response = await axios.get(`${API_BASE}/${id}`);
+    const response = await axios.get(`${API_BASE}/${id}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   async createQuestion(data: CreateQuestionRequest): Promise<Question> {
-    const response = await axios.post(`${API_BASE}`, data);
+    const response = await axios.post(`${API_BASE}`, data, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
@@ -54,46 +67,105 @@ export const questionService = {
     id: string,
     data: UpdateQuestionRequest
   ): Promise<Question> {
-    const response = await axios.put(`${API_BASE}/${id}`, data);
+    const response = await axios.put(`${API_BASE}/${id}`, data, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   async deleteQuestion(id: string): Promise<void> {
-    await axios.delete(`${API_BASE}/${id}`);
+    await axios.delete(`${API_BASE}/${id}`, {
+      headers: getAuthHeaders()
+    });
+  },
+
+  // Question Types (NEW - from backend QuestionTypesController)
+  async getQuestionTypes(): Promise<any[]> {
+    const response = await axios.get(`${QUESTIONS_API_URL}/api/QuestionTypes`, {
+      headers: getAuthHeaders()
+    });
+    return response.data.data || response.data;
+  },
+
+  async getQuestionType(code: string): Promise<any> {
+    const response = await axios.get(`${QUESTIONS_API_URL}/api/QuestionTypes/${code}`, {
+      headers: getAuthHeaders()
+    });
+    return response.data.data || response.data;
+  },
+
+  async getQuestionTypeSchema(code: string): Promise<any> {
+    const response = await axios.get(`${QUESTIONS_API_URL}/api/QuestionTypes/${code}/schema`, {
+      headers: getAuthHeaders()
+    });
+    return response.data.data || response.data;
   },
 
   // Question Format Types
   async getFormatTypes(): Promise<QuestionFormatType[]> {
-    const response = await axios.get(`${API_BASE}/formats`);
+    const response = await axios.get(`${API_BASE}/formats`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   async getFormatType(id: string): Promise<QuestionFormatType> {
-    const response = await axios.get(`${API_BASE}/formats/${id}`);
+    const response = await axios.get(`${API_BASE}/formats/${id}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Pedagogical Types
   async getPedagogicalTypes(): Promise<QuestionPedagogicalType[]> {
-    const response = await axios.get(`${API_BASE}/pedagogical-types`);
+    const response = await axios.get(`${API_BASE}/pedagogical-types`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Presentation Types
   async getPresentationTypes(): Promise<any[]> {
-    const response = await axios.get(`${API_BASE}/presentation-types`);
+    const response = await axios.get(`${API_BASE}/presentation-types`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Difficulty Levels
   async getDifficultyLevels(): Promise<any[]> {
-    const response = await axios.get(`${API_BASE}/difficulty-levels`);
+    const response = await axios.get(`${API_BASE}/difficulty-levels`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  },
+
+  // AI Generation (NEW)
+  async generateWithAI(request: {
+    prompt: string;
+    questionType: string;
+    difficulty?: string;
+    count?: number;
+  }): Promise<any> {
+    const response = await axios.post(`${API_BASE}/generate-from-ai`, request, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  },
+
+  // Bulk Import (NEW)
+  async bulkImport(questions: any[]): Promise<any> {
+    const response = await axios.post(`${API_BASE}/bulk-import`, questions, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Question Versions
   async getQuestionVersions(questionId: string): Promise<QuestionVersion[]> {
-    const response = await axios.get(`${API_BASE}/${questionId}/versions`);
+    const response = await axios.get(`${API_BASE}/${questionId}/versions`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
@@ -102,7 +174,8 @@ export const questionService = {
     versionId: string
   ): Promise<QuestionVersion> {
     const response = await axios.get(
-      `${API_BASE}/${questionId}/versions/${versionId}`
+      `${API_BASE}/${questionId}/versions/${versionId}`,
+      { headers: getAuthHeaders() }
     );
     return response.data;
   },
@@ -122,8 +195,9 @@ export const questionService = {
       formData.append("assetType", assetType);
     }
 
-    const response = await axios.post(`/api/assets/upload`, formData, {
+    const response = await axios.post(`${QUESTIONS_API_URL}/api/assets/upload`, formData, {
       headers: {
+        ...getAuthHeaders(),
         "Content-Type": "multipart/form-data",
       },
     });
@@ -134,12 +208,15 @@ export const questionService = {
     questionVersionId: string
   ): Promise<QuestionAsset[]> {
     const response = await axios.get(
-      `/api/assets/by-version/${questionVersionId}`
+      `${QUESTIONS_API_URL}/api/assets/by-version/${questionVersionId}`,
+      { headers: getAuthHeaders() }
     );
     return response.data;
   },
 
   async deleteAsset(assetId: string): Promise<void> {
-    await axios.delete(`/api/assets/${assetId}`);
+    await axios.delete(`${QUESTIONS_API_URL}/api/assets/${assetId}`, {
+      headers: getAuthHeaders()
+    });
   },
 };

@@ -80,3 +80,7 @@ export function PolotnoSlidesEditor({ documentId, onReady }: PolotnoSlidesEditor
   );
 }
 
+
+
+
+

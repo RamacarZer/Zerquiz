@@ -7,7 +7,7 @@ import {
   Menu, X, Shield, Book, GraduationCap, DollarSign, CreditCard, Calendar,
   Key, Package, Coins, MessageSquare, Plug, Activity, MapPin, Wand2, FileEdit,
   Image, BookMarked, Presentation, Cpu, FileSearch, Library, Network,
-  FileBarChart, Link2
+  FileBarChart, Link2, Award, List, Zap, Code, Monitor
 } from 'lucide-react';
 import { useDynamicMenu } from '../../hooks/useDynamicMenu';
 import { useAuth } from '../../hooks/useAuth';
@@ -21,7 +21,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   GraduationCap, DollarSign, CreditCard, Calendar, Key, Package, Coins,
   MessageSquare, Plug, Activity, MapPin, Wand2, FileEdit, Image, BookMarked,
   Presentation, Cpu, FileSearch, Library, Network, FileBarChart, Link2,
-  Menu, X, ChevronDown, ChevronRight,
+  Menu, X, ChevronDown, ChevronRight, Award, List, Zap, Code, Monitor,
 };
 
 interface MenuItem {
@@ -54,6 +54,12 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Debug logging
+  console.log('🎨 Sidebar - Loading:', loading);
+  console.log('🎨 Sidebar - Error:', error);
+  console.log('🎨 Sidebar - Menu Items:', menuItems);
+  console.log('🎨 Sidebar - Menu Items Count:', menuItems.length);
 
   const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
 
@@ -99,24 +105,40 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
     const isExpanded = expandedItems.includes(item.menu_code);
     const active = isActive(item.path);
 
-    // Divider type
+    // Divider type - only show if not collapsed
     if (item.menu_type === 'divider') {
-      return <div key={item.menu_id} className="my-4 border-t border-gray-200 dark:border-gray-700" />;
+      if (isCollapsed) return null;
+      return <div key={item.menu_id} className="my-3 border-t border-gray-200 dark:border-gray-700" />;
     }
 
-    // Group header type
+    // Group header type - only show if not collapsed
     if (item.menu_type === 'group') {
+      if (isCollapsed) return null;
       return (
         <div key={item.menu_id} className="px-4 pt-4 pb-2">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            {item.label}
-          </span>
+          {!isCollapsed && item.icon_name && (
+            <div className="flex items-center gap-2 mb-1">
+              {renderIcon(item.icon_name, 'w-4 h-4 text-gray-400')}
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {item.label}
+              </span>
+            </div>
+          )}
+          {!isCollapsed && !item.icon_name && (
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              {item.label}
+            </span>
+          )}
         </div>
       );
     }
 
+    // Calculate indentation for nested items
+    const indentClass = level > 0 && !isCollapsed ? `ml-${Math.min(level * 4, 12)}` : '';
+    const textSizeClass = level > 0 ? 'text-sm' : 'text-base';
+
     return (
-      <div key={item.menu_id} className="mb-1">
+      <div key={item.menu_id} className="mb-0.5">
         <Link
           to={!hasChildren ? (item.path || '#') : '#'}
           onClick={(e) => {
@@ -127,35 +149,65 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
               setIsMobileMenuOpen(false);
             }
           }}
+          title={isCollapsed ? item.label : undefined}
           className={`
-            flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all
-            ${active ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}
-            ${level > 0 ? 'ml-4 text-sm' : ''}
+            flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
+            ${active 
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md' 
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }
+            ${indentClass}
+            ${textSizeClass}
             ${isCollapsed ? 'justify-center' : ''}
+            group relative
           `}
         >
-          {renderIcon(item.icon_name, `w-5 h-5 ${active ? 'text-white' : ''}`)}
+          {/* Icon with better spacing */}
+          <div className={`flex-shrink-0 ${active ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-600'}`}>
+            {renderIcon(item.icon_name, `w-5 h-5 transition-colors`)}
+          </div>
           
           {!isCollapsed && (
             <>
-              <span className="flex-1">{item.label}</span>
+              {/* Label */}
+              <span className="flex-1 font-medium">{item.label}</span>
               
+              {/* Badge */}
               {item.badge_text && (
-                <span className={`px-2 py-0.5 text-xs rounded-full ${getBadgeColor(item.badge_color)} text-white`}>
+                <span className={`
+                  px-2 py-0.5 text-xs font-semibold rounded-full 
+                  ${getBadgeColor(item.badge_color)} text-white
+                  shadow-sm
+                `}>
                   {item.badge_text}
                 </span>
               )}
               
+              {/* Dropdown indicator */}
               {hasChildren && (
-                isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
+                  <ChevronDown size={16} className={active ? 'text-white' : 'text-gray-400'} />
+                </div>
               )}
             </>
           )}
+
+          {/* Tooltip for collapsed state */}
+          {isCollapsed && (
+            <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+              {item.label}
+              {item.badge_text && (
+                <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${getBadgeColor(item.badge_color)}`}>
+                  {item.badge_text}
+                </span>
+              )}
+            </div>
+          )}
         </Link>
 
-        {/* Render children */}
+        {/* Render children with smooth animation */}
         {hasChildren && isExpanded && !isCollapsed && (
-          <div className="mt-1">
+          <div className="mt-0.5 space-y-0.5 animate-slideDown">
             {item.children.map(child => renderMenuItem(child, level + 1))}
           </div>
         )}
@@ -253,8 +305,14 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
           )}
 
           {/* Menu Items */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-            {menuItems.map(item => renderMenuItem(item))}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-0.5 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+            {menuItems.length === 0 ? (
+              <div className="text-center text-gray-500 text-sm py-8">
+                <p>{t('noMenuItems')}</p>
+              </div>
+            ) : (
+              menuItems.map(item => renderMenuItem(item))
+            )}
           </nav>
 
           {/* Footer - Collapse Button */}

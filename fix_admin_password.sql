@@ -11,3 +11,6 @@ SELECT "Id", "Email", "FirstName", "LastName", "IsActive", LENGTH("PasswordHash"
 FROM identity_schema.users 
 WHERE "Email" = 'admin@zerquiz.com';
 
+
+
+

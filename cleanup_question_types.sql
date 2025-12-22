@@ -37,3 +37,6 @@ SELECT
 FROM core_schema.definitions
 WHERE "GroupId" = (SELECT "Id" FROM core_schema.definition_groups WHERE "Code" = 'question_types');
 
+
+
+

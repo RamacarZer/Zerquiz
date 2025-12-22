@@ -22,7 +22,7 @@ public class MenuController : ControllerBase
     }
 
     /// <summary>
-    /// Get user's menu - 100% dynamic from database
+    /// Get user's menu - 100% dynamic from database with role-based filtering
     /// </summary>
     [HttpGet("user-menu")]
     public async Task<ActionResult<UserMenuResponse>> GetUserMenu([FromQuery] string language = "en")
@@ -35,20 +35,87 @@ public class MenuController : ControllerBase
                 return Unauthorized("User ID not found");
             }
 
-            // Call database function to get user's menu
-            var menuItems = await _context.Database
-                .SqlQueryRaw<MenuItemDto>(@"
-                    SELECT * FROM core_schema.get_user_menu({0}, {1})",
-                    userId, language)
+            var tenantId = GetTenantId();
+            var userRoles = GetUserRoles();
+
+            _logger.LogInformation("Getting menu for user {UserId} with roles: {Roles}", userId, string.Join(", ", userRoles));
+
+            // SuperAdmin sees everything, no filtering needed
+            bool isSuperAdmin = userRoles.Contains("SuperAdmin", StringComparer.OrdinalIgnoreCase);
+
+            // Get menu items with role-based filtering
+            var query = _context.MenuItems
+                .Include(m => m.Module)
+                .Include(m => m.Translations)
+                .Include(m => m.Permissions)
+                .Where(m => m.IsActive && m.IsVisible)
+                .AsQueryable();
+
+            // Apply role-based filtering (SuperAdmin bypasses this)
+            if (!isSuperAdmin)
+            {
+                query = query.Where(m =>
+                    // Either no permissions defined (public menu) or user has matching role
+                    !m.Permissions.Any() ||
+                    m.Permissions.Any(p => 
+                        userRoles.Contains(GetRoleName(p.RoleId)) && 
+                        p.CanView == true
+                    )
+                );
+            }
+
+            // Apply tenant module filtering
+            if (tenantId.HasValue && !isSuperAdmin)
+            {
+                query = query.Where(m =>
+                    m.ModuleId == null || // System menus without module
+                    _context.Set<TenantModule>().Any(tm =>
+                        tm.TenantId == tenantId &&
+                        tm.ModuleId == m.ModuleId &&
+                        tm.IsEnabled &&
+                        (tm.ExpiresAt == null || tm.ExpiresAt > DateTime.UtcNow)
+                    )
+                );
+            }
+
+            var menuItems = await query
+                .OrderBy(m => m.DisplayOrder)
+                .ThenBy(m => m.Level)
+                .Select(m => new MenuItemDto
+                {
+                    menu_id = m.Id,
+                    menu_code = m.Code,
+                    parent_menu_id = m.ParentMenuId,
+                    label = m.Translations.FirstOrDefault(t => t.LanguageCode == language) != null 
+                        ? m.Translations.First(t => t.LanguageCode == language).Label 
+                        : m.Label,
+                    icon_name = m.IconName,
+                    path = m.Path,
+                    display_order = m.DisplayOrder,
+                    level = m.Level,
+                    menu_type = m.MenuType,
+                    badge_text = m.BadgeText,
+                    badge_color = m.BadgeColor,
+                    has_children = _context.MenuItems.Any(child => child.ParentMenuId == m.Id),
+                    module_code = m.Module != null ? m.Module.Code : null
+                })
                 .ToListAsync();
+
+            _logger.LogInformation("Found {Count} menu items for user", menuItems.Count);
 
             // Build hierarchical structure
             var rootItems = menuItems.Where(m => m.parent_menu_id == null).ToList();
+            var menuTree = BuildMenuTree(rootItems, menuItems);
+
+            // Filter out parent items with no accessible children
+            menuTree = FilterEmptyParents(menuTree);
+
             var response = new UserMenuResponse
             {
-                Items = BuildMenuTree(rootItems, menuItems),
-                TotalCount = menuItems.Count,
-                Language = language
+                Items = menuTree,
+                TotalCount = menuTree.Count,
+                Language = language,
+                UserRoles = userRoles
             };
 
             return Ok(response);
@@ -56,7 +123,7 @@ public class MenuController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting user menu");
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
         }
     }
 
@@ -178,6 +245,32 @@ public class MenuController : ControllerBase
         return Guid.TryParse(tenantIdClaim, out var tenantId) ? tenantId : null;
     }
 
+    private List<string> GetUserRoles()
+    {
+        var roles = User.FindAll(ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        // Also check for "role" claim (some JWT tokens use this)
+        var rolesClaim = User.FindAll("role")
+            .Select(c => c.Value)
+            .ToList();
+
+        return roles.Concat(rolesClaim).Distinct().ToList();
+    }
+
+    private string GetRoleName(Guid? roleId)
+    {
+        if (!roleId.HasValue) return string.Empty;
+        
+        // Cache role names to avoid repeated DB queries
+        var roleName = _context.Database
+            .SqlQuery<string>($"SELECT \"Name\" FROM identity_schema.roles WHERE \"Id\" = {roleId}")
+            .FirstOrDefault();
+        
+        return roleName ?? string.Empty;
+    }
+
     private List<MenuItemDto> BuildMenuTree(List<MenuItemDto> items, List<MenuItemDto> allItems)
     {
         foreach (var item in items)
@@ -188,6 +281,28 @@ public class MenuController : ControllerBase
             );
         }
         return items;
+    }
+
+    private List<MenuItemDto> FilterEmptyParents(List<MenuItemDto> items)
+    {
+        var result = new List<MenuItemDto>();
+        
+        foreach (var item in items)
+        {
+            // Recursively filter children
+            if (item.children.Any())
+            {
+                item.children = FilterEmptyParents(item.children);
+            }
+
+            // Include if: it's a leaf node, or it has accessible children
+            if (!item.has_children || item.children.Any())
+            {
+                result.Add(item);
+            }
+        }
+        
+        return result;
     }
 }
 
@@ -200,6 +315,7 @@ public class UserMenuResponse
     public List<MenuItemDto> Items { get; set; } = new();
     public int TotalCount { get; set; }
     public string Language { get; set; } = "en";
+    public List<string> UserRoles { get; set; } = new();
 }
 
 public class MenuItemDto

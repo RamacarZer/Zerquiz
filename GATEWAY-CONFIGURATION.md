@@ -72,3 +72,6 @@ export const API_ENDPOINTS = {
 | **Content** | **5008** | **PDF Upload, AI Generation** |
 | **Lessons** | **5009** | **Lesson Plans, Assignments** |
 
+
+
+

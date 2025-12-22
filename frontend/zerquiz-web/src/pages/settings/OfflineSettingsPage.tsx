@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, RefreshCw, Database, Clock, Info 
 } from 'lucide-react';
 
-export function OfflineSettingsPage() {
+export default function OfflineSettingsPage() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageQuota, setStorageQuota] = useState(0);

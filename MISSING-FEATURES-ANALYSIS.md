@@ -290,3 +290,6 @@ Frontend'de tüm sayfalar var **fakat API'ler yok**.
 
 **Özet**: Platform %70 tamamlanmış. Kalan %30 **tamamen AI integration** kısmı.
 
+
+
+

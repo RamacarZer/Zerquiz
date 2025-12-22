@@ -292,3 +292,6 @@ dotnet ef database update
 
 **Hazır mısınız?** Başlayalım! 💪
 
+
+
+

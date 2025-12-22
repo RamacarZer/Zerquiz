@@ -155,21 +155,21 @@ export const tenantService = {
   // Tenant APIs
   getTenants: async () => {
     const response = await apiClient.get<ApiResponse<TenantDto[]>>(
-      "/core/tenants"
+      "/api/core/Tenants"
     );
     return response.data.data;
   },
 
   getTenant: async (id: string) => {
     const response = await apiClient.get<ApiResponse<TenantDto>>(
-      `/core/tenants/by-id/${id}`
+      `/api/core/Tenants/by-id/${id}`
     );
     return response.data.data;
   },
 
   createTenant: async (data: CreateTenantRequest) => {
     const response = await apiClient.post<ApiResponse<TenantDto>>(
-      "/core/tenants",
+      "/api/core/Tenants",
       data
     );
     return response.data.data;
@@ -177,7 +177,7 @@ export const tenantService = {
 
   updateTenant: async (id: string, data: UpdateTenantRequest) => {
     const response = await apiClient.put<ApiResponse<TenantDto>>(
-      `/core/tenants/${id}`,
+      `/api/core/Tenants/${id}`,
       data
     );
     return response.data.data;
@@ -185,14 +185,14 @@ export const tenantService = {
 
   deleteTenant: async (id: string) => {
     const response = await apiClient.delete<ApiResponse<boolean>>(
-      `/core/tenants/${id}`
+      `/api/core/Tenants/${id}`
     );
     return response.data.data;
   },
 
   toggleTenantStatus: async (id: string) => {
     const response = await apiClient.put<ApiResponse<boolean>>(
-      `/core/tenants/${id}/toggle-status`
+      `/api/core/Tenants/${id}/toggle-status`
     );
     return response.data.data;
   },
@@ -200,21 +200,21 @@ export const tenantService = {
   // License Package APIs
   getLicensePackages: async () => {
     const response = await apiClient.get<ApiResponse<LicensePackageDto[]>>(
-      "/core/licensepackages"
+      "/api/core/LicensePackages"
     );
     return response.data.data;
   },
 
   getLicensePackage: async (id: string) => {
     const response = await apiClient.get<ApiResponse<LicensePackageDto>>(
-      `/core/licensepackages/${id}`
+      `/api/core/LicensePackages/${id}`
     );
     return response.data.data;
   },
 
   createLicensePackage: async (data: CreateLicensePackageRequest) => {
     const response = await apiClient.post<ApiResponse<LicensePackageDto>>(
-      "/core/licensepackages",
+      "/api/core/LicensePackages",
       data
     );
     return response.data.data;
@@ -222,7 +222,7 @@ export const tenantService = {
 
   toggleLicensePackageStatus: async (id: string) => {
     const response = await apiClient.put<ApiResponse<boolean>>(
-      `/core/licensepackages/${id}/toggle-status`
+      `/api/core/LicensePackages/${id}/toggle-status`
     );
     return response.data.data;
   },
@@ -230,14 +230,14 @@ export const tenantService = {
   // Tenant License APIs
   getTenantLicenses: async (tenantId: string) => {
     const response = await apiClient.get<ApiResponse<TenantLicenseDto[]>>(
-      `/core/tenantlicenses/tenant/${tenantId}`
+      `/api/core/TenantLicenses/tenant/${tenantId}`
     );
     return response.data.data;
   },
 
   createTenantLicense: async (data: CreateTenantLicenseRequest) => {
     const response = await apiClient.post<ApiResponse<TenantLicenseDto>>(
-      "/core/tenantlicenses",
+      "/api/core/TenantLicenses",
       data
     );
     return response.data.data;
@@ -245,14 +245,14 @@ export const tenantService = {
 
   suspendTenantLicense: async (id: string) => {
     const response = await apiClient.put<ApiResponse<boolean>>(
-      `/core/tenantlicenses/${id}/suspend`
+      `/api/core/TenantLicenses/${id}/suspend`
     );
     return response.data.data;
   },
 
   activateTenantLicense: async (id: string) => {
     const response = await apiClient.put<ApiResponse<boolean>>(
-      `/core/tenantlicenses/${id}/activate`
+      `/api/core/TenantLicenses/${id}/activate`
     );
     return response.data.data;
   },

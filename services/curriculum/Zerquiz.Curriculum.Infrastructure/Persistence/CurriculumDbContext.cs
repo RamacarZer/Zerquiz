@@ -39,6 +39,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
+            
             // Soft delete filter
             entity.HasQueryFilter(e => e.DeletedAt == null);
         });
@@ -55,6 +58,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.CurriculumVersion).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             entity.HasOne(e => e.EducationModel)
                 .WithMany(em => em.Curricula)
@@ -73,6 +79,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
             // Soft delete filter
@@ -90,6 +99,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(300);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             entity.HasOne(e => e.Subject)
                 .WithMany(s => s.Topics)
@@ -116,6 +128,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.Description).IsRequired().HasMaxLength(1000);
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             entity.HasOne(e => e.Curriculum)
                 .WithMany(c => c.LearningOutcomes)
@@ -168,6 +183,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
             
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
+            
             // Education Model relationship (optional)
             entity.HasOne(e => e.EducationModel)
                 .WithMany()
@@ -210,6 +228,9 @@ public class CurriculumDbContext : DbContext
             entity.Property(e => e.AltNames).HasColumnType("text[]");
             entity.Property(e => e.Metadata).HasColumnType("jsonb");
             entity.Property(e => e.Tags).HasColumnType("text[]");
+            
+            // Ignore ModuleId from BaseEntity (not in migration)
+            entity.Ignore(e => e.ModuleId);
             
             // Education Model relationship (optional)
             entity.HasOne(e => e.EducationModel)

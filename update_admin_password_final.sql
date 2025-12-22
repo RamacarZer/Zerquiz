@@ -43,3 +43,6 @@ WHERE "Email" = 'admin@zerquiz.com';
 -- Expected hash_length: ~64 characters
 -- Expected format: Pure Base64 string (no dots or special characters)
 
+
+
+

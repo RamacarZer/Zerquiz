@@ -12,7 +12,6 @@ import {
   UploadCloud,
   Shield,
   PenLine,
-  Signature,
   CheckCircle2,
   X,
 } from 'lucide-react';
@@ -1029,7 +1028,7 @@ export default function ContractManagementPage() {
                 <X className="h-5 w-5" />
               </button>
               <div className="flex items-center gap-2 text-indigo-600 text-sm font-semibold mb-4">
-                <Signature className="h-5 w-5" />
+                <PenLine className="h-5 w-5" />
                 Dijital İmza Akışı
               </div>
               <div className="space-y-4">

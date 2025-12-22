@@ -198,3 +198,6 @@ COMMENT ON TABLE lessons_schema.assignments IS 'Homework, projects, and other st
 COMMENT ON TABLE lessons_schema.assignment_submissions IS 'Student submissions for assignments';
 COMMENT ON TABLE lessons_schema.worksheets IS 'AI-generated or manual worksheets';
 
+
+
+

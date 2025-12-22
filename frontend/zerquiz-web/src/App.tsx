@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { LanguageProvider } from './hooks/useLanguage';
 import Layout from './components/layout/Layout';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Lazy load pages for better performance
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -22,14 +24,19 @@ const AssignmentManagePage = lazy(() => import('./pages/assignments/AssignmentMa
 
 // Analytics pages
 const StudentProgressPage = lazy(() => import('./pages/analytics/StudentProgressPage'));
+const LearningStyleAnalysisPage = lazy(() => import('./pages/analytics/LearningStyleAnalysisPage'));
+const ClassroomDashboardPage = lazy(() => import('./pages/analytics/ClassroomDashboardPage'));
 
 // AI Assistant pages
 const WritingAssistantPage = lazy(() => import('./pages/ai/WritingAssistantPage'));
 const AutoModuleGeneratorPage = lazy(() => import('./pages/ai/AutoModuleGeneratorPage'));
+const ProjectAnalysisPage = lazy(() => import('./pages/ai/ProjectAnalysisPage'));
+const FileRefactorPage = lazy(() => import('./pages/ai/FileRefactorPage'));
 
 // Question pages
 const QuestionGeneratorAdvanced = lazy(() => import('./pages/questions/QuestionGeneratorAdvanced'));
 const QuestionCreationModeSelector = lazy(() => import('./pages/questions/QuestionCreationModeSelector'));
+const QuestionBankPage = lazy(() => import('./pages/questions/QuestionBankPage'));
 
 // Profile & Settings pages
 const UserProfilePage = lazy(() => import('./pages/profile/UserProfilePage'));
@@ -40,6 +47,10 @@ const OrganizationSettings = lazy(() => import('./pages/settings/OrganizationSet
 // Admin pages
 const TenantListPage = lazy(() => import('./pages/tenants/TenantListPage'));
 const TenantManagementPage = lazy(() => import('./pages/tenants/TenantManagementPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminRolesPage = lazy(() => import('./pages/admin/AdminRolesPage'));
+const AdminDepartmentsPage = lazy(() => import('./pages/admin/AdminDepartmentsPage'));
+const AdminSystemPage = lazy(() => import('./pages/admin/AdminSystemPage'));
 
 // User management pages (will be created)
 // const UsersListPage = lazy(() => import('./pages/users/UsersListPage'));
@@ -63,17 +74,21 @@ const PresentationBuilderPageEnhanced = lazy(() => import('./pages/presentations
 
 // Courses & Certificates
 const CoursesPage = lazy(() => import('./pages/courses/CoursesPage'));
+const CertificatesModulePage = lazy(() => import('./pages/certificates/CertificatesModulePage'));
 const CertificatesPage = lazy(() => import('./pages/certificates/CertificatesPage'));
 
 // Finance pages
+const FinanceModulePage = lazy(() => import('./pages/finance/FinanceModulePage'));
 const AdvancedFinancePage = lazy(() => import('./pages/finance/AdvancedFinancePage'));
 const PaymentsPage = lazy(() => import('./pages/finance/PaymentsPage'));
 const SubscriptionsPage = lazy(() => import('./pages/finance/SubscriptionsPage'));
+const InvoicesPage = lazy(() => import('./pages/finance/InvoicesPage'));
 
 // License & Royalty pages
 const LicensePackagesPage = lazy(() => import('./pages/licenses/LicensePackagesPage'));
 const RoyaltyManagementPage = lazy(() => import('./pages/royalty/RoyaltyManagementPage'));
 const AuthorDashboard = lazy(() => import('./pages/royalty/AuthorDashboard'));
+const RoyaltyReportsPage = lazy(() => import('./pages/royalty/RoyaltyReportsPage'));
 const ContractManagementPage = lazy(() => import('./pages/contracts/ContractManagementPage'));
 
 // Communication pages
@@ -136,6 +151,18 @@ function App() {
       <AuthProvider>
         <LanguageProvider>
           <BrowserRouter>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public routes */}
@@ -233,6 +260,26 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/analytics/learning-style"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <LearningStyleAnalysisPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics/classroom-dashboard"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <ClassroomDashboardPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
 
                 {/* AI Assistants */}
                 <Route
@@ -241,6 +288,26 @@ function App() {
                     <ProtectedRoute>
                       <AppLayout>
                         <WritingAssistantPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ai-assistants/project-analysis"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <ProjectAnalysisPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ai-assistants/file-refactor"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Developer']}>
+                      <AppLayout>
+                        <FileRefactorPage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
@@ -273,6 +340,16 @@ function App() {
                     <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
                       <AppLayout>
                         <QuestionGeneratorAdvanced />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/questions/bank"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <QuestionBankPage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
@@ -337,6 +414,70 @@ function App() {
                     <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
                       <AppLayout>
                         <TenantManagementPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Admin - User Management */}
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <AdminUsersPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/roles"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <AdminRolesPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/departments"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <AdminDepartmentsPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Admin - System Management */}
+                <Route
+                  path="/admin/system/definitions"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin']}>
+                      <AppLayout>
+                        <AdminSystemPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/system/ai-config"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin']}>
+                      <AppLayout>
+                        <AdminSystemPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/system/audit-logs"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin']}>
+                      <AppLayout>
+                        <AdminSystemPage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
@@ -438,19 +579,99 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <AppLayout>
-                        <CertificatesPage />
+                        <CertificatesModulePage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Finance */}
+                {/* Finance - Unified Module */}
                 <Route
                   path="/finance"
                   element={
                     <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
                       <AppLayout>
-                        <AdvancedFinancePage />
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/overview"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/cash"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/transactions"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/budgets"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/perdiem"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/invoices"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/subscriptions"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance/payment-gateways"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <FinanceModulePage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
@@ -466,11 +687,11 @@ function App() {
                   }
                 />
                 <Route
-                  path="/finance/subscriptions"
+                  path="/finance/advanced"
                   element={
                     <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
                       <AppLayout>
-                        <SubscriptionsPage />
+                        <AdvancedFinancePage />
                       </AppLayout>
                     </ProtectedRoute>
                   }
@@ -503,6 +724,16 @@ function App() {
                     <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
                       <AppLayout>
                         <AuthorDashboard />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/royalty/reports"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin']}>
+                      <AppLayout>
+                        <RoyaltyReportsPage />
                       </AppLayout>
                     </ProtectedRoute>
                   }

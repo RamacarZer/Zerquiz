@@ -198,3 +198,6 @@ taskkill /PID [PID] /F
 
 **BAŞARILAR!** 💪
 
+
+
+

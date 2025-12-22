@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Textarea from "../../components/common/Textarea";
+import { toast } from 'react-toastify';
 import {
   getRoles,
   createRole,
@@ -48,6 +49,7 @@ const RolesManagementPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleDto | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -64,8 +66,9 @@ const RolesManagementPage: React.FC = () => {
       setLoading(true);
       const data = await getRoles();
       setRoles(Array.isArray(data) ? data : []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load roles:", error);
+      toast.error(error?.response?.data?.message || "Roller yüklenirken hata oluştu!");
       setRoles([]);
     } finally {
       setLoading(false);
@@ -93,10 +96,11 @@ const RolesManagementPage: React.FC = () => {
 
     try {
       await deleteRole(id);
-      alert("✅ Rol başarıyla silindi!");
+      toast.success("✅ Rol başarıyla silindi!");
       loadRoles();
-    } catch (error) {
-      alert("❌ Rol silinirken hata oluştu!");
+    } catch (error: any) {
+      console.error("Delete error:", error);
+      toast.error(error?.response?.data?.message || "❌ Rol silinirken hata oluştu!");
     }
   };
 
@@ -104,22 +108,26 @@ const RolesManagementPage: React.FC = () => {
     e.preventDefault();
 
     if (!formData.name) {
-      alert("⚠️ Rol adı zorunludur!");
+      toast.warning("⚠️ Rol adı zorunludur!");
       return;
     }
 
     try {
+      setSubmitting(true);
       if (editingRole) {
         await updateRole(editingRole.id, formData);
-        alert("✅ Rol başarıyla güncellendi!");
+        toast.success("✅ Rol başarıyla güncellendi!");
       } else {
         await createRole(formData);
-        alert("✅ Rol başarıyla oluşturuldu!");
+        toast.success("✅ Rol başarıyla oluşturuldu!");
       }
       setShowModal(false);
       loadRoles();
-    } catch (error) {
-      alert("❌ İşlem sırasında hata oluştu!");
+    } catch (error: any) {
+      console.error("Submit error:", error);
+      toast.error(error?.response?.data?.message || "❌ İşlem sırasında hata oluştu!");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -153,6 +161,7 @@ const RolesManagementPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Yükleniyor...</span>
       </div>
     );
   }
@@ -160,16 +169,16 @@ const RolesManagementPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">🎭 Rol Yönetimi</h1>
-          <p className="text-gray-600 mt-1">Toplam {roles.length} rol</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">🎭 Rol Yönetimi</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Toplam {roles.length} rol</p>
         </div>
         <Button onClick={handleCreate}>+ Yeni Rol</Button>
       </div>
 
       {/* Search */}
-      <div className="bg-white p-4 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <Input
           placeholder="🔍 Rol ara..."
           value={searchTerm}
@@ -180,43 +189,43 @@ const RolesManagementPage: React.FC = () => {
       {/* Roles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredRoles.map(role => (
-          <div key={role.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
+          <div key={role.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">{role.name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{role.description || "Açıklama yok"}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{role.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{role.description || "Açıklama yok"}</p>
               </div>
               <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                role.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                role.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
               }`}>
-                {role.isActive ? '✓' : '✗'}
+                {role.isActive ? '✓ Aktif' : '✗ Pasif'}
               </span>
             </div>
 
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">İzinler:</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">İzinler:</p>
               <div className="flex flex-wrap gap-1">
                 {(role.permissions || []).slice(0, 6).map((perm, idx) => (
-                  <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                  <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
                     {perm}
                   </span>
                 ))}
                 {(role.permissions || []).length > 6 && (
-                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded">
                     +{role.permissions.length - 6}
                   </span>
                 )}
                 {(role.permissions || []).length === 0 && (
-                  <span className="text-sm text-gray-500">İzin yok</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">İzin yok</span>
                 )}
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => handleEdit(role)}>
+              <Button variant="secondary" onClick={() => handleEdit(role)} className="flex-1">
                 ✏️ Düzenle
               </Button>
-              <Button variant="secondary" onClick={() => handleDelete(role.id)}>
+              <Button variant="secondary" onClick={() => handleDelete(role.id)} className="flex-1">
                 🗑️ Sil
               </Button>
             </div>
@@ -225,7 +234,7 @@ const RolesManagementPage: React.FC = () => {
       </div>
 
       {filteredRoles.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg">
           {searchTerm ? "🔍 Arama sonucu bulunamadı" : "🎭 Henüz rol eklenmemiş"}
         </div>
       )}
@@ -233,7 +242,7 @@ const RolesManagementPage: React.FC = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">
@@ -241,7 +250,8 @@ const RolesManagementPage: React.FC = () => {
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-white hover:text-gray-200 text-2xl font-bold"
+                className="text-white hover:text-gray-200 text-2xl font-bold transition"
+                disabled={submitting}
               >
                 ×
               </button>
@@ -260,6 +270,8 @@ const RolesManagementPage: React.FC = () => {
                         setFormData({ ...formData, name: e.target.value })
                       }
                       placeholder="Örn: Öğretmen, Admin, Koordinatör"
+                      disabled={submitting}
+                      required
                     />
 
                     <Textarea
@@ -270,12 +282,13 @@ const RolesManagementPage: React.FC = () => {
                       }
                       placeholder="Bu rolün açıklaması..."
                       rows={2}
+                      disabled={submitting}
                     />
                   </div>
 
                   {/* Permissions */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">🔐 İzinler</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">🔐 İzinler</h3>
                     <div className="space-y-4">
                       {Object.entries(PERMISSION_CATEGORIES).map(([categoryKey, category]) => {
                         const allSelected = category.permissions.every(p =>
@@ -283,13 +296,14 @@ const RolesManagementPage: React.FC = () => {
                         );
 
                         return (
-                          <div key={categoryKey} className="border border-gray-200 rounded-lg p-4">
+                          <div key={categoryKey} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
                             <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-semibold text-gray-900">{category.label}</h4>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{category.label}</h4>
                               <button
                                 type="button"
                                 onClick={() => toggleCategoryPermissions(categoryKey as keyof typeof PERMISSION_CATEGORIES)}
-                                className="text-sm text-blue-600 hover:text-blue-800"
+                                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition"
+                                disabled={submitting}
                               >
                                 {allSelected ? "❌ Tümünü Kaldır" : "✅ Tümünü Seç"}
                               </button>
@@ -298,15 +312,16 @@ const RolesManagementPage: React.FC = () => {
                               {category.permissions.map(permission => (
                                 <label
                                   key={permission}
-                                  className="flex items-center gap-2 cursor-pointer"
+                                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded transition"
                                 >
                                   <input
                                     type="checkbox"
                                     checked={formData.permissions.includes(permission)}
                                     onChange={() => togglePermission(permission)}
                                     className="rounded"
+                                    disabled={submitting}
                                   />
-                                  <span className="text-sm text-gray-700">{permission}</span>
+                                  <span className="text-sm text-gray-700 dark:text-gray-300">{permission}</span>
                                 </label>
                               ))}
                             </div>
@@ -317,8 +332,8 @@ const RolesManagementPage: React.FC = () => {
                   </div>
 
                   {/* Selected Count */}
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
                       <strong>Seçili İzin Sayısı:</strong> {formData.permissions.length}
                     </p>
                   </div>
@@ -326,12 +341,26 @@ const RolesManagementPage: React.FC = () => {
               </div>
 
               {/* Footer */}
-              <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-2 border-t">
-                <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
+              <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex items-center justify-end gap-2 border-t dark:border-gray-600">
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={() => setShowModal(false)}
+                  disabled={submitting}
+                >
                   İptal
                 </Button>
-                <Button type="submit">
-                  {editingRole ? "💾 Güncelle" : "✅ Oluştur"}
+                <Button 
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>⏳ İşleniyor...</>
+                  ) : editingRole ? (
+                    "💾 Güncelle"
+                  ) : (
+                    "✅ Oluştur"
+                  )}
                 </Button>
               </div>
             </form>
@@ -343,4 +372,3 @@ const RolesManagementPage: React.FC = () => {
 };
 
 export default RolesManagementPage;
-

@@ -253,3 +253,6 @@ DROP TABLE IF EXISTS core_schema.definition_groups CASCADE;
 
 Şimdi backend API'leri ve frontend dropdown'ları güncelleyebiliriz! 🚀
 
+
+
+

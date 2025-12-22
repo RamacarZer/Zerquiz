@@ -1,5 +1,14 @@
 // Content API Service
 import { apiClient } from '../../lib/api-client';
+import axios from 'axios';
+
+// Content Service URL (Port 5008)
+const CONTENT_API_URL = import.meta.env.VITE_CONTENT_API_URL || 'http://localhost:5008';
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export interface ContentFile {
   id: string;
@@ -88,13 +97,17 @@ export const contentService = {
     });
     if (contentType) params.append('contentType', contentType);
     
-    const response = await apiClient.get(`/content/list?${params}`);
+    const response = await axios.get(`${CONTENT_API_URL}/api/Content/list?${params}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Get single content file with metadata
   async getById(id: string): Promise<ContentFile> {
-    const response = await apiClient.get(`/content/${id}`);
+    const response = await axios.get(`${CONTENT_API_URL}/api/Content/${id}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
@@ -106,8 +119,9 @@ export const contentService = {
     if (tenantId) formData.append('tenantId', tenantId);
     if (userId) formData.append('userId', userId);
     
-    const response = await apiClient.post('/content/upload', formData, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/Content/upload`, formData, {
       headers: {
+        ...getAuthHeaders(),
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -116,12 +130,16 @@ export const contentService = {
 
   // Delete content file
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/content/${id}`);
+    await axios.delete(`${CONTENT_API_URL}/api/Content/${id}`, {
+      headers: getAuthHeaders()
+    });
   },
 
   // Get extracted text
   async getExtractedText(id: string): Promise<{ extractedText: string }> {
-    const response = await apiClient.get(`/content/${id}/extract`);
+    const response = await axios.get(`${CONTENT_API_URL}/api/Content/${id}/extract`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
@@ -129,44 +147,58 @@ export const contentService = {
 
   // Generate Quiz
   async generateQuiz(request: QuizGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await apiClient.post('/AIGeneration/generate/quiz', request);
+    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/quiz`, request, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Generate Flashcards
   async generateFlashcards(request: FlashcardGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await apiClient.post('/AIGeneration/generate/flashcards', request);
+    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/flashcards`, request, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Generate Summary
   async generateSummary(request: SummaryGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await apiClient.post('/AIGeneration/generate/summary', request);
+    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/summary`, request, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Generate Worksheet
   async generateWorksheet(request: WorksheetGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await apiClient.post('/AIGeneration/generate/worksheet', request);
+    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/worksheet`, request, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Get generation job status
   async getJobStatus(jobId: string): Promise<GenerationJobStatus> {
-    const response = await apiClient.get(`/AIGeneration/job/${jobId}/status`);
+    const response = await axios.get(`${CONTENT_API_URL}/api/AIGeneration/job/${jobId}/status`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Get generated content for a content item
   async getGeneratedContent(contentId: string, type?: string): Promise<GeneratedContentItem[]> {
     const params = type ? `?type=${type}` : '';
-    const response = await apiClient.get(`/AIGeneration/content/${contentId}/generated${params}`);
+    const response = await axios.get(`${CONTENT_API_URL}/api/AIGeneration/content/${contentId}/generated${params}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   // Approve generated content
   async approveGenerated(id: string): Promise<{ message: string }> {
-    const response = await apiClient.post(`/AIGeneration/${id}/approve`);
+    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/${id}/approve`, {}, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 };

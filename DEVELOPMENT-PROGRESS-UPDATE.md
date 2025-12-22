@@ -472,3 +472,6 @@ Seed Data:      8 Templates ✅
 
 **🚀 GELİŞTİRMEYE DEVAM! 🚀**
 
+
+
+

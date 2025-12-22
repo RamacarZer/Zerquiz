@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Lessons.Domain.Entities;
 using Zerquiz.Lessons.Infrastructure.Persistence;
+using Zerquiz.Shared.AI.Interfaces;
+using Zerquiz.Shared.AI.Models;
 
 namespace Zerquiz.Lessons.Api.Controllers;
 
@@ -13,11 +15,16 @@ public class LessonPlansController : ControllerBase
 {
     private readonly LessonsDbContext _context;
     private readonly ILogger<LessonPlansController> _logger;
+    private readonly IAIProvider _aiProvider;
 
-    public LessonPlansController(LessonsDbContext context, ILogger<LessonPlansController> logger)
+    public LessonPlansController(
+        LessonsDbContext context,
+        ILogger<LessonPlansController> logger,
+        IAIProvider aiProvider)
     {
         _context = context;
         _logger = logger;
+        _aiProvider = aiProvider;
     }
 
     private string GetTenantId() => User.FindFirst("tenantId")?.Value ?? "";
@@ -203,16 +210,107 @@ public class LessonPlansController : ControllerBase
     [HttpPost("generate-ai")]
     public async Task<ActionResult<LessonPlan>> GenerateWithAI([FromBody] AILessonPlanRequest request)
     {
-        // TODO: Implement AI generation
-        // This would call the AI service to generate a lesson plan
-        
-        return StatusCode(501, new { message = "AI generation not yet implemented" });
+        try
+        {
+            var tenantId = GetTenantId();
+            var userId = GetUserId();
+
+            // Validate request
+            if (string.IsNullOrEmpty(request.Topic))
+                return BadRequest(new { error = "Topic is required" });
+
+            // Call AI Provider
+            var input = new LessonPlanInput
+            {
+                Topic = request.Topic,
+                Subject = request.Subject ?? "General",
+                Grade = request.Grade ?? "9",
+                Duration = request.Duration ?? 45,
+                TemplateCode = request.TemplateCode ?? "direct_instruction",
+                Language = request.Language ?? "tr"
+            };
+
+            _logger.LogInformation("Generating AI lesson plan for topic: {Topic}", request.Topic);
+            var aiResult = await _aiProvider.GenerateLessonPlanAsync(input);
+
+            if (!aiResult.Success || aiResult.Data == null)
+            {
+                _logger.LogError("AI lesson plan generation failed: {Error}", aiResult.Error);
+                return StatusCode(500, new { error = "AI generation failed", message = aiResult.Error });
+            }
+
+            // Create lesson plan from AI result
+            var lessonPlan = new LessonPlan
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CreatedBy = userId,
+                Title = aiResult.Data.Title ?? request.Topic,
+                Subject = request.Subject ?? "General",
+                Grade = request.Grade ?? "9",
+                Duration = request.Duration ?? 45,
+                LessonTemplateId = null, // Can be fetched from template code
+                Objectives = aiResult.Data.Objectives != null 
+                    ? string.Join("; ", aiResult.Data.Objectives) 
+                    : "",
+                MaterialsNeeded = aiResult.Data.MaterialsNeeded != null 
+                    ? string.Join("; ", aiResult.Data.MaterialsNeeded) 
+                    : "",
+                Status = "draft",
+                GenerationSource = "ai",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Create activities from AI result
+            if (aiResult.Data.Activities != null)
+            {
+                lessonPlan.Activities = aiResult.Data.Activities.Select((a, index) => new LessonActivity
+                {
+                    Id = Guid.NewGuid(),
+                    LessonPlanId = lessonPlan.Id,
+                    ActivityType = a.Type ?? "activity",
+                    Title = a.Title ?? $"Activity {index + 1}",
+                    Description = a.Description ?? "",
+                    Duration = a.Duration ?? 10,
+                    Instructions = a.Instructions ?? "",
+                    DisplayOrder = index + 1
+                }).ToList();
+            }
+
+            _context.LessonPlans.Add(lessonPlan);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("AI lesson plan created {Id} for tenant {TenantId}", lessonPlan.Id, tenantId);
+
+            return CreatedAtAction(nameof(GetById), new { id = lessonPlan.Id }, new
+            {
+                lessonPlan,
+                metadata = new
+                {
+                    tokensUsed = aiResult.TokensUsed,
+                    model = aiResult.Model,
+                    provider = aiResult.Provider
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating AI lesson plan");
+            return StatusCode(500, new { error = "Internal server error", message = ex.Message });
+        }
     }
 }
 
 public class AILessonPlanRequest
 {
-    public string? Topic { get; set; }
+    public string Topic { get; set; } = string.Empty;
+    public string? Subject { get; set; }
+    public string? Grade { get; set; }
+    public int? Duration { get; set; }
+    public string? TemplateCode { get; set; }
+    public string? Language { get; set; }
+}
     public string? Subject { get; set; }
     public string? Grade { get; set; }
     public int Duration { get; set; }

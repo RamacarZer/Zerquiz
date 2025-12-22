@@ -26,7 +26,7 @@ public class LearningOutcomesController : ControllerBase
         [FromQuery] string? gradeLevel = null)
     {
         var query = _context.Definitions
-            .Where(d => d.DefinitionGroupKey == "LEARNING_OUTCOME" && d.IsActive);
+            .Where(d => d.GroupKey == "LEARNING_OUTCOME" && d.IsActive);
 
         // Apply filters via metadata (stored in JSONB)
         var outcomes = await query
@@ -80,7 +80,7 @@ public class LearningOutcomesController : ControllerBase
     public async Task<ActionResult> GetById(Guid id)
     {
         var outcome = await _context.Definitions
-            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+            .FirstOrDefaultAsync(d => d.Id == id && d.GroupKey == "LEARNING_OUTCOME");
 
         if (outcome == null)
             return NotFound();
@@ -96,7 +96,7 @@ public class LearningOutcomesController : ControllerBase
     {
         var outcome = new Definition
         {
-            DefinitionGroupKey = "LEARNING_OUTCOME",
+            GroupKey = "LEARNING_OUTCOME",
             Code = request.Code,
             Name = request.Name,
             Description = request.Description,
@@ -127,7 +127,7 @@ public class LearningOutcomesController : ControllerBase
     public async Task<ActionResult> Update(Guid id, [FromBody] UpdateLearningOutcomeRequest request)
     {
         var outcome = await _context.Definitions
-            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+            .FirstOrDefaultAsync(d => d.Id == id && d.GroupKey == "LEARNING_OUTCOME");
 
         if (outcome == null)
             return NotFound();
@@ -171,7 +171,7 @@ public class LearningOutcomesController : ControllerBase
     public async Task<ActionResult> Delete(Guid id)
     {
         var outcome = await _context.Definitions
-            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+            .FirstOrDefaultAsync(d => d.Id == id && d.GroupKey == "LEARNING_OUTCOME");
 
         if (outcome == null)
             return NotFound();
@@ -189,7 +189,7 @@ public class LearningOutcomesController : ControllerBase
     public async Task<ActionResult> GetBySubject(Guid subjectId)
     {
         var outcomes = await _context.Definitions
-            .Where(d => d.DefinitionGroupKey == "LEARNING_OUTCOME" && d.IsActive)
+            .Where(d => d.GroupKey == "LEARNING_OUTCOME" && d.IsActive)
             .ToListAsync();
 
         var filtered = outcomes.Where(o =>
@@ -224,7 +224,7 @@ public class LearningOutcomesController : ControllerBase
         // For now, just confirm the learning outcome exists
 
         var outcome = await _context.Definitions
-            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+            .FirstOrDefaultAsync(d => d.Id == id && d.GroupKey == "LEARNING_OUTCOME");
 
         if (outcome == null)
             return NotFound();
@@ -244,7 +244,7 @@ public class LearningOutcomesController : ControllerBase
     public async Task<ActionResult> GetStatistics(Guid id)
     {
         var outcome = await _context.Definitions
-            .FirstOrDefaultAsync(d => d.Id == id && d.DefinitionGroupKey == "LEARNING_OUTCOME");
+            .FirstOrDefaultAsync(d => d.Id == id && d.GroupKey == "LEARNING_OUTCOME");
 
         if (outcome == null)
             return NotFound();

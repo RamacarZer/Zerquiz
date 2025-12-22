@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export function ParentPortalPage() {
+export default function ParentPortalPage() {
   const [selectedChild, setSelectedChild] = useState('student-1');
 
   // Mock data for parent portal

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Zerquiz.Identity.Domain.Entities;
 using Zerquiz.Identity.Infrastructure.Persistence;
 using Zerquiz.Shared.Contracts.DTOs;
+using Zerquiz.Identity.Api.DTOs;
 
 namespace Zerquiz.Identity.Api.Controllers;
 
@@ -18,12 +19,15 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<UserDto>>>> GetUsers(
+    public async Task<ActionResult<ApiResponse<List<Api.DTOs.UserDto>>>> GetUsers(
         [FromQuery] int page = 1, 
         [FromQuery] int pageSize = 10,
         [FromQuery] string? search = null)
     {
         var query = _context.Users
+            .Include(u => u.Department)
+            .Include(u => u.Position)
+            .Include(u => u.PrimaryRole)
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
             .AsQueryable();
@@ -42,7 +46,7 @@ public class UsersController : ControllerBase
             .Take(pageSize)
             .ToListAsync();
 
-        var result = users.Select(u => new UserDto
+        var result = users.Select(u => new Api.DTOs.UserDto
         {
             Id = u.Id,
             Email = u.Email,
@@ -51,15 +55,35 @@ public class UsersController : ControllerBase
             Phone = u.Phone,
             IsActive = u.IsActive,
             EmailConfirmed = u.EmailConfirmed,
+            Department = u.Department != null ? new Api.DTOs.DepartmentDto 
+            { 
+                Id = u.Department.Id, 
+                Name = u.Department.Name, 
+                Code = u.Department.Code 
+            } : null,
+            Position = u.Position != null ? new Api.DTOs.PositionDto 
+            { 
+                Id = u.Position.Id, 
+                Name = u.Position.Name, 
+                Code = u.Position.Code,
+                Level = u.Position.Level,
+                DisplayOrder = u.Position.DisplayOrder
+            } : null,
+            PrimaryRole = u.PrimaryRole != null ? new Api.DTOs.RoleDto 
+            { 
+                Id = u.PrimaryRole.Id, 
+                Name = u.PrimaryRole.Name, 
+                Description = u.PrimaryRole.Description 
+            } : null,
             Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList(),
             CreatedAt = u.CreatedAt
         }).ToList();
 
-        return Ok(ApiResponse<List<UserDto>>.SuccessResult(result, $"Found {total} users"));
+        return Ok(ApiResponse<List<Api.DTOs.UserDto>>.SuccessResult(result, $"Found {total} users"));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
+    public async Task<ActionResult<ApiResponse<Api.DTOs.UserDto>>> GetUser(Guid id)
     {
         var user = await _context.Users
             .Include(u => u.UserRoles)
@@ -67,9 +91,9 @@ public class UsersController : ControllerBase
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user == null)
-            return NotFound(ApiResponse<UserDto>.ErrorResult("User not found"));
+            return NotFound(ApiResponse<Api.DTOs.UserDto>.ErrorResult("User not found"));
 
-        var result = new UserDto
+        var result = new Api.DTOs.UserDto
         {
             Id = user.Id,
             Email = user.Email,
@@ -83,11 +107,11 @@ public class UsersController : ControllerBase
             CreatedAt = user.CreatedAt
         };
 
-        return Ok(ApiResponse<UserDto>.SuccessResult(result));
+        return Ok(ApiResponse<Api.DTOs.UserDto>.SuccessResult(result));
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
+    public async Task<ActionResult<ApiResponse<Api.DTOs.UserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null)

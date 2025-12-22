@@ -6,7 +6,8 @@ import {
   FileCheck, Database, FilePlus, TrendingUp, Users, Brain, PenTool, Search,
   Zap, Award, Building, ChevronDown, ChevronRight, Menu, X, Bell, User, Shield, Book,
   Monitor, GraduationCap, DollarSign, CreditCard, Calendar, Key, Package, Coins,
-  FileSignature, MessageSquare, Plug, Link2, Activity, MapPin
+  FileSignature, MessageSquare, Plug, Link2, Activity, MapPin, Library, Wand2,
+  FileSearch, Code, CheckSquare, UserPlus, FileBarChart, BookPlus
 } from 'lucide-react';
 import { getFilteredMenu, getMenuLabel, getQuickActions, MenuItem } from '../../config/navigation';
 import { useAuth } from '../../hooks/useAuth';
@@ -19,7 +20,8 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   FileCheck, Database, FilePlus, TrendingUp, Users, Brain, PenTool, Search,
   Zap, Award, Building, Shield, Book, Monitor, GraduationCap, DollarSign,
   CreditCard, Calendar, Key, Package, Coins, FileSignature, MessageSquare,
-  Plug, Link: Link2, Activity, MapPin
+  Plug, Link: Link2, Activity, MapPin, Library, Wand2, FileSearch, Code,
+  CheckSquare, UserPlus, FileBarChart, BookPlus
 };
 
 interface SidebarProps {
@@ -34,10 +36,6 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Debug: Log user and roles
-  console.log('🔍 Sidebar - User:', user);
-  console.log('🔍 Sidebar - Roles:', roles);
 
   const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
 
@@ -57,9 +55,6 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
 
   const filteredMenu = getFilteredMenu(roles || []);
   const quickActions = getQuickActions(roles || []);
-  
-  console.log('📋 Sidebar - Filtered Menu:', filteredMenu);
-  console.log('⚡ Sidebar - Quick Actions:', quickActions);
 
   const renderIcon = (iconName: string, className: string = '') => {
     const Icon = iconMap[iconName];

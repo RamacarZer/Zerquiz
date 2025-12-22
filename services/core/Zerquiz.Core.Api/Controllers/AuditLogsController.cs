@@ -1,5 +1,3 @@
-// TEMPORARY: Disabled due to entity schema mismatch
-/*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Zerquiz.Core.Infrastructure.Persistence;
@@ -11,10 +9,12 @@ namespace Zerquiz.Core.Api.Controllers;
 public class AuditLogsController : ControllerBase
 {
     private readonly CoreDbContext _context;
+    private readonly ILogger<AuditLogsController> _logger;
 
-    public AuditLogsController(CoreDbContext context)
+    public AuditLogsController(CoreDbContext context, ILogger<AuditLogsController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -23,7 +23,7 @@ public class AuditLogsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAll(
         [FromQuery] Guid? userId = null,
-        [FromQuery] string? entityType = null,
+        [FromQuery] string? entityName = null,
         [FromQuery] string? action = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
@@ -35,40 +35,41 @@ public class AuditLogsController : ControllerBase
         if (userId.HasValue)
             query = query.Where(a => a.UserId == userId.Value);
 
-        if (!string.IsNullOrEmpty(entityType))
-            query = query.Where(a => a.EntityType == entityType);
+        if (!string.IsNullOrEmpty(entityName))
+            query = query.Where(a => a.EntityName == entityName);
 
         if (!string.IsNullOrEmpty(action))
             query = query.Where(a => a.Action == action);
 
         if (from.HasValue)
-            query = query.Where(a => a.CreatedAt >= from.Value);
+            query = query.Where(a => a.Timestamp >= from.Value);
 
         if (to.HasValue)
-            query = query.Where(a => a.CreatedAt <= to.Value);
+            query = query.Where(a => a.Timestamp <= to.Value);
 
         var total = await query.CountAsync();
 
         var logs = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Timestamp)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(a => new
             {
                 a.Id,
                 a.UserId,
-                a.EntityType,
+                EntityType = a.EntityName,
                 a.EntityId,
                 a.Action,
                 a.IpAddress,
                 a.UserAgent,
-                a.CreatedAt
+                CreatedAt = a.Timestamp,
+                Details = a.Changes
             })
             .ToListAsync();
 
         return Ok(new
         {
-            logs,
+            data = logs,
             pagination = new
             {
                 page,
@@ -89,24 +90,24 @@ public class AuditLogsController : ControllerBase
         if (log == null)
             return NotFound();
 
-        return Ok(log);
+        return Ok(new { data = log });
     }
 
     /// <summary>
     /// Get audit trail for specific entity
     /// </summary>
-    [HttpGet("entity/{entityType}/{entityId}")]
-    public async Task<ActionResult> GetEntityTrail(string entityType, Guid entityId)
+    [HttpGet("entity/{entityName}/{entityId}")]
+    public async Task<ActionResult> GetEntityTrail(string entityName, Guid entityId)
     {
         var logs = await _context.AuditLogs
-            .Where(a => a.EntityType == entityType && a.EntityId == entityId)
-            .OrderBy(a => a.CreatedAt)
+            .Where(a => a.EntityName == entityName && a.EntityId == entityId)
+            .OrderBy(a => a.Timestamp)
             .Select(a => new
             {
                 a.Id,
                 a.Action,
                 a.UserId,
-                a.CreatedAt,
+                CreatedAt = a.Timestamp,
                 a.Changes,
                 a.IpAddress
             })
@@ -114,10 +115,13 @@ public class AuditLogsController : ControllerBase
 
         return Ok(new
         {
-            entityType,
-            entityId,
-            totalChanges = logs.Count,
-            history = logs
+            data = new
+            {
+                entityType = entityName,
+                entityId,
+                totalChanges = logs.Count,
+                history = logs
+            }
         });
     }
 
@@ -133,10 +137,10 @@ public class AuditLogsController : ControllerBase
         var query = _context.AuditLogs.Where(a => a.UserId == userId);
 
         if (from.HasValue)
-            query = query.Where(a => a.CreatedAt >= from.Value);
+            query = query.Where(a => a.Timestamp >= from.Value);
 
         if (to.HasValue)
-            query = query.Where(a => a.CreatedAt <= to.Value);
+            query = query.Where(a => a.Timestamp <= to.Value);
 
         var logs = await query.ToListAsync();
 
@@ -148,22 +152,22 @@ public class AuditLogsController : ControllerBase
                 .Select(g => new { action = g.Key, count = g.Count() })
                 .OrderByDescending(x => x.count)
                 .ToList(),
-            byEntityType = logs.GroupBy(a => a.EntityType)
+            byEntityType = logs.GroupBy(a => a.EntityName)
                 .Select(g => new { entityType = g.Key, count = g.Count() })
                 .OrderByDescending(x => x.count)
                 .ToList(),
-            recentActivity = logs.OrderByDescending(a => a.CreatedAt)
+            recentActivity = logs.OrderByDescending(a => a.Timestamp)
                 .Take(10)
                 .Select(a => new
                 {
                     a.Action,
-                    a.EntityType,
-                    a.CreatedAt
+                    EntityType = a.EntityName,
+                    CreatedAt = a.Timestamp
                 })
                 .ToList()
         };
 
-        return Ok(activity);
+        return Ok(new { data = activity });
     }
 
     /// <summary>
@@ -175,10 +179,10 @@ public class AuditLogsController : ControllerBase
         var query = _context.AuditLogs.AsQueryable();
 
         if (from.HasValue)
-            query = query.Where(a => a.CreatedAt >= from.Value);
+            query = query.Where(a => a.Timestamp >= from.Value);
 
         if (to.HasValue)
-            query = query.Where(a => a.CreatedAt <= to.Value);
+            query = query.Where(a => a.Timestamp <= to.Value);
 
         var logs = await query.ToListAsync();
 
@@ -190,11 +194,11 @@ public class AuditLogsController : ControllerBase
                 .Select(g => new { action = g.Key, count = g.Count() })
                 .OrderByDescending(x => x.count)
                 .ToList(),
-            byEntityType = logs.GroupBy(a => a.EntityType)
+            byEntityType = logs.GroupBy(a => a.EntityName)
                 .Select(g => new { entityType = g.Key, count = g.Count() })
                 .OrderByDescending(x => x.count)
                 .ToList(),
-            byHour = logs.GroupBy(a => a.CreatedAt.Hour)
+            byHour = logs.GroupBy(a => a.Timestamp.Hour)
                 .Select(g => new { hour = g.Key, count = g.Count() })
                 .OrderBy(x => x.hour)
                 .ToList(),
@@ -205,7 +209,7 @@ public class AuditLogsController : ControllerBase
                 .ToList()
         };
 
-        return Ok(stats);
+        return Ok(new { data = stats });
     }
 
     /// <summary>
@@ -217,19 +221,19 @@ public class AuditLogsController : ControllerBase
         var query = _context.AuditLogs.AsQueryable();
 
         if (request.UserIds != null && request.UserIds.Any())
-            query = query.Where(a => request.UserIds.Contains(a.UserId));
+            query = query.Where(a => a.UserId.HasValue && request.UserIds.Contains(a.UserId.Value));
 
         if (request.EntityTypes != null && request.EntityTypes.Any())
-            query = query.Where(a => request.EntityTypes.Contains(a.EntityType));
+            query = query.Where(a => request.EntityTypes.Contains(a.EntityName));
 
         if (request.Actions != null && request.Actions.Any())
             query = query.Where(a => request.Actions.Contains(a.Action));
 
         if (request.FromDate.HasValue)
-            query = query.Where(a => a.CreatedAt >= request.FromDate.Value);
+            query = query.Where(a => a.Timestamp >= request.FromDate.Value);
 
         if (request.ToDate.HasValue)
-            query = query.Where(a => a.CreatedAt <= request.ToDate.Value);
+            query = query.Where(a => a.Timestamp <= request.ToDate.Value);
 
         if (!string.IsNullOrEmpty(request.IpAddress))
             query = query.Where(a => a.IpAddress == request.IpAddress);
@@ -237,14 +241,14 @@ public class AuditLogsController : ControllerBase
         var total = await query.CountAsync();
 
         var logs = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Timestamp)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync();
 
         return Ok(new
         {
-            logs,
+            data = logs,
             pagination = new
             {
                 page = request.Page,
@@ -264,28 +268,29 @@ public class AuditLogsController : ControllerBase
         var query = _context.AuditLogs.AsQueryable();
 
         if (request.FromDate.HasValue)
-            query = query.Where(a => a.CreatedAt >= request.FromDate.Value);
+            query = query.Where(a => a.Timestamp >= request.FromDate.Value);
 
         if (request.ToDate.HasValue)
-            query = query.Where(a => a.CreatedAt <= request.ToDate.Value);
+            query = query.Where(a => a.Timestamp <= request.ToDate.Value);
 
         var logs = await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Timestamp)
             .Take(10000) // Limit export size
             .ToListAsync();
 
         // In real implementation, generate CSV/Excel file
         return Ok(new
         {
-            message = "Export prepared",
-            recordCount = logs.Count,
-            format = request.Format
+            data = new
+            {
+                message = "Export prepared",
+                recordCount = logs.Count,
+                format = request.Format
+            }
         });
     }
 }
-*/
 
-/*
 public record SearchAuditLogsRequest(
     List<Guid>? UserIds,
     List<string>? EntityTypes,
@@ -298,4 +303,3 @@ public record SearchAuditLogsRequest(
 );
 
 public record ExportAuditLogsRequest(DateTime? FromDate, DateTime? ToDate, string Format = "csv");
-*/

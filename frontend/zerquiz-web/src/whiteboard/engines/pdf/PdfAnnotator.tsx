@@ -256,3 +256,7 @@ export function PdfAnnotator({ documentId, onReady }: PdfAnnotatorProps) {
   );
 }
 
+
+
+
+

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { LineChart as RechartsLine, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
-export function AIAnalyticsDashboardPage() {
+export default function AIAnalyticsDashboardPage() {
   const [selectedStudent, setSelectedStudent] = useState('student-1');
   const [selectedExamType, setSelectedExamType] = useState('all');
 

@@ -7,7 +7,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { ZercodeWhiteboardShell } from '../../whiteboard/shell/ZercodeWhiteboardShell';
 
-export function WhiteboardPage() {
+export default function WhiteboardPage() {
   const { documentId } = useParams<{ documentId?: string }>();
 
   return (
@@ -16,4 +16,8 @@ export function WhiteboardPage() {
     </div>
   );
 }
+
+
+
+
 

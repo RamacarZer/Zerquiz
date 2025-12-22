@@ -1,15 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { questionService } from "../../services/api/questionService";
+import { useQuestions, useDeleteQuestion } from "../../hooks/useQuestionQueries";
 import type { Question } from "../../types/question.types";
 import { QuestionCreateModal } from "../../components/modals/QuestionCreateModal";
 import { QuestionDetailModal } from "../../components/modals/QuestionDetailModal";
+import { toast } from "react-toastify";
 
 export default function QuestionListPage() {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -18,34 +16,22 @@ export default function QuestionListPage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const pageSize = 20;
 
-  useEffect(() => {
-    loadQuestions();
-  }, [page, statusFilter, difficultyFilter]);
+  // React Query - Auto fetch, cache, refetch
+  const { data, isLoading, isError, error } = useQuestions({
+    page,
+    pageSize,
+    status: statusFilter || undefined,
+    difficulty: difficultyFilter || undefined,
+    search: searchQuery || undefined
+  });
 
-  const loadQuestions = async () => {
-    try {
-      setLoading(true);
-      const response = await questionService.getQuestions({
-        page,
-        pageSize,
-        status: statusFilter || undefined,
-        difficulty: difficultyFilter || undefined,
-        search: searchQuery || undefined
-      });
-      setQuestions(response.items || []);
-      setTotalPages(Math.ceil((response.total || response.totalCount || 0) / pageSize));
-    } catch (error) {
-      console.error("Failed to load questions:", error);
-      setQuestions([]);
-      // alert("Sorular yüklenemedi");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { mutate: deleteQuestion, isPending: isDeleting } = useDeleteQuestion();
+
+  const questions = data?.items || [];
+  const totalPages = Math.ceil((data?.total || data?.totalCount || 0) / pageSize);
 
   const handleSearch = () => {
-    setPage(1);
-    loadQuestions();
+    setPage(1); // Reset to first page on new search
   };
 
   const handleViewDetail = (questionId: string) => {
@@ -53,16 +39,17 @@ export default function QuestionListPage() {
     setShowDetailModal(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Bu soruyu silmek istediğinizden emin misiniz?")) return;
     
-    try {
-      await questionService.deleteQuestion(id);
-      loadQuestions();
-    } catch (error) {
-      console.error("Failed to delete question:", error);
-      alert("Soru silinemedi");
-    }
+    deleteQuestion(id, {
+      onSuccess: () => {
+        toast.success("Soru başarıyla silindi");
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || "Soru silinemedi");
+      }
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -170,10 +157,24 @@ export default function QuestionListPage() {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {loading ? (
+          {isLoading ? (
             <div className="p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               <p className="mt-4 text-gray-600">Yükleniyor...</p>
+            </div>
+          ) : isError ? (
+            <div className="p-12 text-center">
+              <p className="text-red-600">❌ {error?.message || "Sorular yüklenemedi"}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 text-blue-600 hover:underline"
+              >
+                Yeniden Dene
+              </button>
+            </div>
+          ) : questions.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <p>Henüz soru bulunmuyor</p>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">

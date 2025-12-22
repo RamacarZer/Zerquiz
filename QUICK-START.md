@@ -114,3 +114,6 @@ Login için test kullanıcısı gerekiyorsa, Auth Service'de seed data olması l
 - Auth Service çalışıyor mu?
 - JWT SecretKey tüm servislerde aynı mı?
 
+
+
+

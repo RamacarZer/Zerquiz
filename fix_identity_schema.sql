@@ -44,3 +44,6 @@ WHERE table_schema = 'identity_schema'
   AND column_name IN ('ModuleId', 'AppId', 'CorrelationId', 'RequestId', 'IpAddress', 'UserAgent', 'Source', 'OrganizationId', 'Version')
 ORDER BY column_name;
 
+
+
+

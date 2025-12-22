@@ -409,12 +409,23 @@ public class CoreDbContext : DbContext
             entity.ToTable("modules");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Code).IsUnique();
+            entity.HasIndex(e => e.ParentModuleId);
             
-            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.IconName).HasMaxLength(50);
+            entity.Property(e => e.Version).HasMaxLength(20);
+            entity.Property(e => e.LicenseFeatureCode).HasMaxLength(100);
             
-            entity.HasQueryFilter(e => e.DeletedAt == null);
+            // Ignore TenantId as DB table doesn't have it
+            entity.Ignore(e => e.TenantId);
+            
+            entity.HasOne(e => e.ParentModule)
+                .WithMany(m => m.ChildModules)
+                .HasForeignKey(e => e.ParentModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.Ignore(e => e.ChildModules);
         });
 
         // ModuleTranslation configuration
@@ -424,8 +435,9 @@ public class CoreDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => new { e.ModuleId, e.LanguageCode }).IsUnique();
             
-            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(5);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasColumnType("text");
             
             entity.HasOne(e => e.Module)
                 .WithMany(m => m.Translations)
@@ -438,16 +450,22 @@ public class CoreDbContext : DbContext
         {
             entity.ToTable("menu_items");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => new { e.ModuleId, e.Code }).IsUnique();
+            entity.HasIndex(e => e.Code).IsUnique();
             entity.HasIndex(e => e.ParentMenuId);
+            entity.HasIndex(e => e.ModuleId);
             
             entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Label).HasColumnName("LabelKey").IsRequired().HasMaxLength(200);
             entity.Property(e => e.IconName).HasMaxLength(50);
             entity.Property(e => e.Path).HasMaxLength(500);
-            entity.Property(e => e.MenuType).HasMaxLength(20);
+            entity.Property(e => e.MenuType).HasMaxLength(50);
             entity.Property(e => e.BadgeText).HasMaxLength(50);
-            entity.Property(e => e.BadgeColor).HasMaxLength(20);
+            entity.Property(e => e.BadgeColor).HasMaxLength(50);
+            entity.Property(e => e.CssClass).HasMaxLength(200);
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            
+            // Ignore TenantId as DB table doesn't have it
+            entity.Ignore(e => e.TenantId);
             
             entity.HasOne(e => e.Module)
                 .WithMany(m => m.MenuItems)
@@ -457,9 +475,7 @@ public class CoreDbContext : DbContext
             entity.HasOne(e => e.ParentMenu)
                 .WithMany(m => m.ChildMenus)
                 .HasForeignKey(e => e.ParentMenuId)
-                .OnDelete(DeleteBehavior.Restrict);
-            
-            entity.HasQueryFilter(e => e.DeletedAt == null);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // MenuItemTranslation configuration
@@ -469,9 +485,10 @@ public class CoreDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => new { e.MenuItemId, e.LanguageCode }).IsUnique();
             
-            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.LanguageCode).IsRequired().HasMaxLength(5);
             entity.Property(e => e.Label).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.BadgeText).HasMaxLength(50);
+            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.Tooltip).HasMaxLength(500);
             
             entity.HasOne(e => e.MenuItem)
                 .WithMany(m => m.Translations)
@@ -484,9 +501,7 @@ public class CoreDbContext : DbContext
         {
             entity.ToTable("menu_permissions");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => new { e.MenuItemId, e.RoleName }).IsUnique();
-            
-            entity.Property(e => e.RoleName).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => new { e.MenuItemId, e.RoleId }).IsUnique();
             
             entity.HasOne(e => e.MenuItem)
                 .WithMany(m => m.Permissions)

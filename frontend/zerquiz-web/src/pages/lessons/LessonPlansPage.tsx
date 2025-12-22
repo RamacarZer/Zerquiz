@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useLessonPlans, useGenerateLessonPlanWithAI } from '../../hooks/useLessonQueries';
+import { toast } from 'react-toastify';
 import {
   BookOpen,
   Plus,
@@ -17,25 +19,26 @@ import {
   Trash2,
 } from 'lucide-react';
 
-interface LessonPlan {
-  id: string;
-  title: string;
-  subject: string;
-  grade: string;
-  duration: number;
-  templateName: string;
-  status: 'draft' | 'published' | 'archived';
-  isPinned: boolean;
-  updatedAt: string;
-}
-
 const LessonPlansPage: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiFormData, setAIFormData] = useState({
+    subject: '',
+    grade: '',
+    topic: '',
+    duration: 45,
+    objectives: [] as string[]
+  });
 
-  const mockPlans: LessonPlan[] = [
+  // React Query hooks (scaffold - will work when backend is connected)
+  const { data: plansData, isLoading } = useLessonPlans({ status: filterStatus !== 'all' ? filterStatus : undefined });
+  const { mutate: generateWithAI, isPending: isGenerating } = useGenerateLessonPlanWithAI();
+
+  // Fallback to mock data if backend not connected
+  const mockPlans = [
     {
       id: '1',
       title: 'Geometri: Üçgenler ve Özellikler',
@@ -43,7 +46,7 @@ const LessonPlansPage: React.FC = () => {
       grade: '10. Sınıf',
       duration: 45,
       templateName: '5E Modeli',
-      status: 'published',
+      status: 'published' as const,
       isPinned: true,
       updatedAt: '2024-01-20T10:00:00Z',
     },
@@ -54,13 +57,31 @@ const LessonPlansPage: React.FC = () => {
       grade: '11. Sınıf',
       duration: 90,
       templateName: 'Proje Tabanlı Öğrenme',
-      status: 'draft',
+      status: 'draft' as const,
       isPinned: false,
       updatedAt: '2024-01-19T14:30:00Z',
     },
   ];
 
-  const [plans, setPlans] = useState<LessonPlan[]>(mockPlans);
+  const plans = plansData?.items || mockPlans;
+
+  const handleGenerateWithAI = () => {
+    if (!aiFormData.subject || !aiFormData.topic || !aiFormData.grade) {
+      toast.error('Lütfen tüm alanları doldurun');
+      return;
+    }
+
+    generateWithAI(aiFormData, {
+      onSuccess: (response) => {
+        toast.success(`✨ AI ile ders planı oluşturuluyor... (Job ID: ${response.jobId})`);
+        setShowAIModal(false);
+        setAIFormData({ subject: '', grade: '', topic: '', duration: 45, objectives: [] });
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Ders planı oluşturulamadı');
+      }
+    });
+  };
 
   const filteredPlans = plans.filter((plan) => {
     const matchesSearch =
@@ -116,8 +137,28 @@ const LessonPlansPage: React.FC = () => {
           </div>
           <div className="flex gap-3">
             <button
+              onClick={() => setShowAIModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 shadow-lg transition-all"
+              disabled={isGenerating}
+            >
+              <Sparkles className="w-5 h-5" />
+              {isGenerating ? 'Oluşturuluyor...' : (language === 'tr' ? 'AI ile Oluştur' : 'Generate with AI')}
+            </button>
+            <button
               onClick={() => navigate('/lessons/templates')}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              <LayoutTemplate className="w-5 h-5" />
+              {language === 'tr' ? 'Şablonlar' : 'Templates'}
+            </button>
+            <button
+              onClick={() => navigate('/lessons/create')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <Plus className="w-5 h-5" />
+              {language === 'tr' ? 'Yeni Plan' : 'New Plan'}
+            </button>
+          </div>
             >
               <LayoutTemplate className="w-5 h-5" />
               {language === 'tr' ? 'Şablonlar' : 'Templates'}
@@ -295,6 +336,84 @@ const LessonPlansPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* AI Generation Modal */}
+      {showAIModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">✨ AI ile Ders Planı Oluştur</h2>
+              <button onClick={() => setShowAIModal(false)} className="text-gray-500 hover:text-gray-700">
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Ders</label>
+                <input
+                  type="text"
+                  value={aiFormData.subject}
+                  onChange={(e) => setAIFormData({...aiFormData, subject: e.target.value})}
+                  placeholder="Örn: Matematik, Fizik, Tarih"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Sınıf</label>
+                <select
+                  value={aiFormData.grade}
+                  onChange={(e) => setAIFormData({...aiFormData, grade: e.target.value})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Seçiniz</option>
+                  {[...Array(12)].map((_, i) => (
+                    <option key={i} value={`${i+1}. Sınıf`}>{i+1}. Sınıf</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Konu</label>
+                <input
+                  type="text"
+                  value={aiFormData.topic}
+                  onChange={(e) => setAIFormData({...aiFormData, topic: e.target.value})}
+                  placeholder="Örn: Üçgenler ve Özellikleri"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Süre (dakika)</label>
+                <input
+                  type="number"
+                  value={aiFormData.duration}
+                  onChange={(e) => setAIFormData({...aiFormData, duration: parseInt(e.target.value)})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleGenerateWithAI}
+                  disabled={isGenerating}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? 'Oluşturuluyor...' : '✨ AI ile Oluştur'}
+                </button>
+                <button
+                  onClick={() => setShowAIModal(false)}
+                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

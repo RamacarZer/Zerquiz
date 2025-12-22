@@ -43,3 +43,6 @@ public interface IAIProvider
     Task<AIResponse<EssayAnalysis>> AnalyzeEssayAsync(string essay, string rubric, CancellationToken cancellationToken = default);
 }
 
+
+
+

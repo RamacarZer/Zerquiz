@@ -364,3 +364,6 @@ BEGIN
     RAISE NOTICE '✅ Seeded 8 lesson templates';
 END $$;
 
+
+
+
