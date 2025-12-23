@@ -7,7 +7,9 @@ import {
   Zap, Award, Building, ChevronDown, ChevronRight, Menu, X, Bell, User, Shield, Book,
   Monitor, GraduationCap, DollarSign, CreditCard, Calendar, Key, Package, Coins,
   FileSignature, MessageSquare, Plug, Link2, Activity, MapPin, Library, Wand2,
-  FileSearch, Code, CheckSquare, UserPlus, FileBarChart, BookPlus
+  FileSearch, Code, CheckSquare, UserPlus, FileBarChart, BookPlus, FileQuestion,
+  Presentation, Copyright, Wallet, Receipt, PieChart, Plane, BookMarked, Palette,
+  Calculator, BookText, ClipboardCheck, KeyRound, BarChart2
 } from 'lucide-react';
 import { getFilteredMenu, getMenuLabel, getQuickActions, MenuItem } from '../../config/navigation';
 import { useAuth } from '../../hooks/useAuth';
@@ -20,8 +22,10 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   FileCheck, Database, FilePlus, TrendingUp, Users, Brain, PenTool, Search,
   Zap, Award, Building, Shield, Book, Monitor, GraduationCap, DollarSign,
   CreditCard, Calendar, Key, Package, Coins, FileSignature, MessageSquare,
-  Plug, Link: Link2, Activity, MapPin, Library, Wand2, FileSearch, Code,
-  CheckSquare, UserPlus, FileBarChart, BookPlus
+  Plug, Link: Link2, Link2, Activity, MapPin, Library, Wand2, FileSearch, Code,
+  CheckSquare, UserPlus, FileBarChart, BookPlus, FileQuestion, Presentation, Copyright,
+  Wallet, Receipt, PieChart, Plane, BookMarked, Palette, Calculator, BookText,
+  ClipboardCheck, KeyRound, BarChart2, BookCheck: BookMarked, ClipboardList
 };
 
 interface SidebarProps {

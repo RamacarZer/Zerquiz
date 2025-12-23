@@ -1,19 +1,11 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
 export default function PaymentsPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Payments</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Payment management coming soon...</p>
-        </CardContent>
-      </Card>
+    <div className="card bg-white shadow-xl">
+      <div className="card-body">
+        <h2 className="card-title">Ödemeler</h2>
+        <p className="text-gray-600">Ödeme geçmişinizi ve bekleyen ödemelerinizi görüntüleyin.</p>
+        {/* PaymentsPage içeriği buraya gelecek */}
+      </div>
     </div>
   );
 }
-

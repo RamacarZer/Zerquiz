@@ -118,9 +118,9 @@ public class AuditLogsController : ControllerBase
             data = new
             {
                 entityType = entityName,
-                entityId,
-                totalChanges = logs.Count,
-                history = logs
+            entityId,
+            totalChanges = logs.Count,
+            history = logs
             }
         });
     }
@@ -282,10 +282,10 @@ public class AuditLogsController : ControllerBase
         return Ok(new
         {
             data = new
-            {
-                message = "Export prepared",
-                recordCount = logs.Count,
-                format = request.Format
+        {
+            message = "Export prepared",
+            recordCount = logs.Count,
+            format = request.Format
             }
         });
     }

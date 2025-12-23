@@ -2,6 +2,7 @@
 
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../hooks/useLanguage';
+import { Link } from 'react-router-dom';
 import {
   BookOpen,
   FileText,
@@ -11,6 +12,7 @@ import {
   Sparkles,
   BarChart3,
   Clock,
+  Grid3X3,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -41,14 +43,25 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">
-          {t('welcome')}, {user?.name || 'User'}! 👋
-        </h1>
-        <p className="text-blue-100">
-          {isTeacher
-            ? 'Manage your lessons, track student progress, and create amazing content with AI.'
-            : 'Continue your learning journey and achieve your goals!'}
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              {t('welcome')}, {user?.name || 'User'}! 👋
+            </h1>
+            <p className="text-blue-100">
+              {isTeacher
+                ? 'Manage your lessons, track student progress, and create amazing content with AI.'
+                : 'Continue your learning journey and achieve your goals!'}
+            </p>
+          </div>
+          <Link
+            to="/modules"
+            className="hidden lg:flex btn btn-lg gap-2 bg-white text-blue-600 hover:bg-blue-50 border-0"
+          >
+            <Grid3X3 size={20} />
+            Tüm Modüller
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}

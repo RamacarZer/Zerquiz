@@ -23,23 +23,27 @@ export function ExcalidrawBoard({ documentId, onReady }: ExcalidrawBoardProps) {
   const onExcalidrawAPI = useCallback(
     (api: ExcalidrawImperativeAPI) => {
       excalidrawAPIRef.current = api;
-      engineRef.current = new ExcalidrawEngine(api);
-      setEngine(engineRef.current);
       
-      // Load document
-      setLoading(true);
-      engineRef.current
-        .loadDocument(documentId)
-        .then(() => {
-          setIsInitialized(true);
-          onReady?.();
-        })
-        .catch((error) => {
-          console.error('Failed to initialize Excalidraw:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      // Delay engine initialization to avoid setState warnings
+      requestAnimationFrame(() => {
+        engineRef.current = new ExcalidrawEngine(api);
+        setEngine(engineRef.current);
+        
+        // Load document
+        setLoading(true);
+        engineRef.current
+          .loadDocument(documentId)
+          .then(() => {
+            setIsInitialized(true);
+            onReady?.();
+          })
+          .catch((error) => {
+            console.error('Failed to initialize Excalidraw:', error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      });
     },
     [documentId, setEngine, setLoading, onReady]
   );

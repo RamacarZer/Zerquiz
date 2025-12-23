@@ -1,4 +1,8 @@
 import { apiClient } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/config/api';
+
+// Base URL for Core API (System Definitions & Audit Logs)
+const CORE_API = API_ENDPOINTS.core;
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -64,52 +68,50 @@ export interface AIConfiguration {
 export const getSystemDefinitions = async (category?: string): Promise<SystemDefinition[]> => {
   try {
     if (category) {
-      const response = await apiClient.get<{ data: SystemDefinition[] }>(
-        `/api/SystemDefinitions/category/${category}`
+      const response = await apiClient<{ data: SystemDefinition[] }>(
+        `${CORE_API}/api/SystemDefinitions/category/${category}`
       );
-      return response.data?.data || [];
+      return response.data || [];
     } else {
       // Get all categories first, then get all definitions
-      const categoriesResponse = await apiClient.get<{ data: string[] }>(
-        `/api/SystemDefinitions/categories`
+      const categoriesResponse = await apiClient<{ data: string[] }>(
+        `${CORE_API}/api/SystemDefinitions/categories`
       );
-      const categories = categoriesResponse.data?.data || [];
+      const categories = categoriesResponse.data || [];
       
       const allDefinitions: SystemDefinition[] = [];
       for (const cat of categories) {
-        const response = await apiClient.get<{ data: SystemDefinition[] }>(
-          `/api/SystemDefinitions/category/${cat}`
+        const response = await apiClient<{ data: SystemDefinition[] }>(
+          `${CORE_API}/api/SystemDefinitions/category/${cat}`
         );
-        allDefinitions.push(...(response.data?.data || []));
+        allDefinitions.push(...(response.data || []));
       }
       return allDefinitions;
     }
   } catch (error) {
-    console.error('Error fetching system definitions:', error);
+    // Silent fail, return empty array for demo mode
     return [];
   }
 };
 
 export const getSystemDefinitionById = async (id: string): Promise<SystemDefinition | null> => {
   try {
-    const response = await apiClient.get<{ data: SystemDefinition }>(
-      `/api/SystemDefinitions/${id}`
+    const response = await apiClient<{ data: SystemDefinition }>(
+      `${CORE_API}/api/SystemDefinitions/${id}`
     );
-    return response.data?.data || null;
+    return response.data || null;
   } catch (error) {
-    console.error('Error fetching system definition:', error);
     return null;
   }
 };
 
 export const getSystemDefinitionCategories = async (): Promise<string[]> => {
   try {
-    const response = await apiClient.get<{ data: string[] }>(
-      `/api/SystemDefinitions/categories`
+    const response = await apiClient<{ data: string[] }>(
+      `${CORE_API}/api/SystemDefinitions/categories`
     );
-    return response.data?.data || [];
+    return response.data || [];
   } catch (error) {
-    console.error('Error fetching categories:', error);
     return [];
   }
 };
@@ -117,36 +119,43 @@ export const getSystemDefinitionCategories = async (): Promise<string[]> => {
 export const createSystemDefinition = async (
   definition: Partial<SystemDefinition>
 ): Promise<SystemDefinition> => {
-  const response = await apiClient.post<{ data: SystemDefinition }>(
-    '/api/SystemDefinitions',
-    definition
+  const response = await apiClient<{ data: SystemDefinition }>(
+    `${CORE_API}/api/SystemDefinitions`,
+    {
+      method: 'POST',
+      body: JSON.stringify(definition),
+    }
   );
-  return response.data?.data!;
+  return response.data!;
 };
 
 export const updateSystemDefinition = async (
   id: string,
   definition: Partial<SystemDefinition>
 ): Promise<SystemDefinition> => {
-  const response = await apiClient.put<{ data: SystemDefinition }>(
-    `/api/SystemDefinitions/${id}`,
-    definition
+  const response = await apiClient<{ data: SystemDefinition }>(
+    `${CORE_API}/api/SystemDefinitions/${id}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(definition),
+    }
   );
-  return response.data?.data!;
+  return response.data!;
 };
 
 export const deleteSystemDefinition = async (id: string): Promise<void> => {
-  await apiClient.delete(`/api/SystemDefinitions/${id}`);
+  await apiClient(`${CORE_API}/api/SystemDefinitions/${id}`, {
+    method: 'DELETE',
+  });
 };
 
 export const getSystemDefinitionChildren = async (parentId: string): Promise<SystemDefinition[]> => {
   try {
-    const response = await apiClient.get<{ data: SystemDefinition[] }>(
-      `/api/SystemDefinitions/${parentId}/children`
+    const response = await apiClient<{ data: SystemDefinition[] }>(
+      `${CORE_API}/api/SystemDefinitions/${parentId}/children`
     );
-    return response.data?.data || [];
+    return response.data || [];
   } catch (error) {
-    console.error('Error fetching children definitions:', error);
     return [];
   }
 };
@@ -163,20 +172,18 @@ export const getAuditLogs = async (params?: {
   pageSize?: number;
 }): Promise<AuditLogsResponse> => {
   try {
-    const response = await apiClient.get<AuditLogsResponse>('/api/AuditLogs', {
-      params: {
-        userId: params?.userId,
-        entityName: params?.entityName,
-        action: params?.action,
-        from: params?.from,
-        to: params?.to,
-        page: params?.page || 1,
-        pageSize: params?.pageSize || 50,
-      },
+    const queryParams = new URLSearchParams({
+      ...(params?.userId && { userId: params.userId }),
+      ...(params?.entityName && { entityName: params.entityName }),
+      ...(params?.action && { action: params.action }),
+      ...(params?.from && { from: params.from }),
+      ...(params?.to && { to: params.to }),
+      page: String(params?.page || 1),
+      pageSize: String(params?.pageSize || 50),
     });
-    return response.data;
+    const response = await apiClient<AuditLogsResponse>(`${CORE_API}/api/AuditLogs?${queryParams}`);
+    return response;
   } catch (error) {
-    console.error('Error fetching audit logs:', error);
     return {
       data: [],
       pagination: {
@@ -191,10 +198,9 @@ export const getAuditLogs = async (params?: {
 
 export const getAuditLogById = async (id: string): Promise<AuditLog | null> => {
   try {
-    const response = await apiClient.get<{ data: AuditLog }>(`/api/AuditLogs/${id}`);
-    return response.data?.data || null;
+    const response = await apiClient<{ data: AuditLog }>(`${CORE_API}/api/AuditLogs/${id}`);
+    return response.data || null;
   } catch (error) {
-    console.error('Error fetching audit log:', error);
     return null;
   }
 };
@@ -205,24 +211,26 @@ export const getUserActivity = async (
   to?: string
 ): Promise<any> => {
   try {
-    const response = await apiClient.get(`/api/AuditLogs/user/${userId}/activity`, {
-      params: { from, to },
+    const queryParams = new URLSearchParams({
+      ...(from && { from }),
+      ...(to && { to }),
     });
-    return response.data?.data || null;
+    const response = await apiClient(`${CORE_API}/api/AuditLogs/user/${userId}/activity?${queryParams}`);
+    return response || null;
   } catch (error) {
-    console.error('Error fetching user activity:', error);
     return null;
   }
 };
 
 export const getAuditStatistics = async (from?: string, to?: string): Promise<any> => {
   try {
-    const response = await apiClient.get('/api/AuditLogs/statistics', {
-      params: { from, to },
+    const queryParams = new URLSearchParams({
+      ...(from && { from }),
+      ...(to && { to }),
     });
-    return response.data?.data || null;
+    const response = await apiClient(`${CORE_API}/api/AuditLogs/statistics?${queryParams}`);
+    return response || null;
   } catch (error) {
-    console.error('Error fetching audit statistics:', error);
     return null;
   }
 };

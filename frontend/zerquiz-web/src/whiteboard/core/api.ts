@@ -116,11 +116,33 @@ export const whiteboardApi = {
   
   // ==================== PDF ANNOTATIONS ====================
   
-  async getPdf(id: string): Promise<{ url: string; pages: number }> {
-    // Mock PDF
+  async getPdf(id: string): Promise<{ url: string; pages: number; annotations?: any[] }> {
+    // Demo PDF - Mozilla'nın örnek PDF'i veya local demo
+    const demoPdfs: Record<string, { url: string; pages: number }> = {
+      'demo': {
+        // Mozilla'nın resmi test PDF'i
+        url: 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf',
+        pages: 14,
+      },
+      'sample': {
+        // Alternatif: Mozilla'nın başka bir test PDF'i
+        url: 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf',
+        pages: 1,
+      },
+      'guide': {
+        // Kısa bir test PDF
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        pages: 1,
+      }
+    };
+    
+    // ID'ye göre PDF seç, yoksa demo kullan
+    const pdf = demoPdfs[id] || demoPdfs['demo'];
+    
     return {
-      url: '/sample.pdf', // public klasöründe olmalı
-      pages: 10,
+      url: pdf.url,
+      pages: pdf.pages,
+      annotations: [], // Mevcut annotation'lar varsa buradan gelir
     };
     
     // Real implementation:

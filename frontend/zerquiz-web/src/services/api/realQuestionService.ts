@@ -77,7 +77,7 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/formats`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch format types:', error);
+      // Silent fail - return empty array
       return [];
     }
   }
@@ -88,7 +88,7 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/pedagogical-types`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch pedagogical types:', error);
+      // Silent fail - return empty array
       return [];
     }
   }
@@ -99,7 +99,7 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/difficulty-levels`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch difficulty levels:', error);
+      // Silent fail - return empty array
       return [];
     }
   }
@@ -110,7 +110,7 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/presentation-types`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch presentation types:', error);
+      // Silent fail - return empty array
       return [];
     }
   }

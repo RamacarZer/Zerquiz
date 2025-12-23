@@ -14,8 +14,9 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Configure PDF.js worker - Use exact version to match installed pdfjs-dist
+// This fixes the version mismatch warning between API and Worker
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PdfAnnotatorProps {
   documentId: string;

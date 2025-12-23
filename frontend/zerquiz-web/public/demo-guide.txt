@@ -1,0 +1,188 @@
+# 📄 Zerquiz Platform - Demo Belgesi
+
+## Sınav Sistemi Kullanım Kılavuzu
+
+Bu belge Zerquiz AI Education Platform'un temel özelliklerini açıklar.
+
+---
+
+### 1. Soru Oluşturma
+
+Zerquiz platformunda **65 farklı soru tipi** bulunmaktadır:
+
+#### Temel Soru Tipleri:
+- ✅ Çoktan Seçmeli
+- ✅ Doğru/Yanlış
+- ✅ Boşluk Doldurma
+- ✅ Eşleştirme
+- ✅ Sıralama
+- ✅ Kısa Cevap
+- ✅ Uzun Cevap
+
+#### Gelişmiş Soru Tipleri:
+- 🎯 Hotspot (Görsel üzerinde işaretleme)
+- 🎯 Drag & Drop
+- 🎯 Matrix (Tablo bazlı)
+- 🎯 Gap Match
+- 🎯 Inline Choice
+
+---
+
+### 2. Sınav Oluşturma
+
+**Adım 1:** Dashboard'dan "Yeni Sınav" butonuna tıklayın  
+**Adım 2:** Sınav bilgilerini doldurun  
+**Adım 3:** Soru bankasından soru seçin  
+**Adım 4:** Sınav ayarlarını yapılandırın  
+**Adım 5:** Yayınlayın!
+
+---
+
+### 3. AI Destekli Özellikler
+
+Zerquiz'in yapay zeka özellikleri:
+
+1. **AI Soru Üretimi**
+   - Konu başlığı girin
+   - Zorluk seviyesi seçin
+   - AI otomatik soru üretir
+
+2. **AI Grading**
+   - Otomatik puanlama
+   - Akıllı değerlendirme
+   - Geribildirim önerileri
+
+3. **AI Analytics**
+   - Öğrenci performans analizi
+   - Zayıf konuları tespit etme
+   - Öğrenme stili analizi
+
+---
+
+### 4. Whiteboard & Çizim Araçları
+
+Bu PDF'e annotation ekleyebilirsiniz:
+
+- 🖊️ **Kalem:** Serbest çizim yapın
+- 🎨 **Highlighter:** Önemli kısımları işaretleyin
+- ✏️ **Text:** Not ekleyin
+- ⬜ **Şekiller:** Geometrik şekiller çizin
+
+**Kullanım:** Üstteki araç çubuğundan bir araç seçin ve PDF üzerine çizmeye başlayın!
+
+---
+
+### 5. Raporlama & Analytics
+
+#### Öğrenci Raporları:
+- Sınav sonuçları
+- Performans grafikleri
+- Konu bazlı analiz
+- İlerleme takibi
+
+#### Öğretmen Raporları:
+- Sınıf ortalaması
+- Soru analizi
+- Başarı istatistikleri
+- Karşılaştırmalı raporlar
+
+#### Okul Raporları:
+- Genel başarı oranı
+- Departman bazlı analiz
+- Yıllık raporlar
+- Benchmark karşılaştırma
+
+---
+
+### 6. Entegrasyonlar
+
+Zerquiz platformu şu sistemlerle entegre çalışır:
+
+- 📚 **LMS:** Moodle, Canvas, Blackboard
+- 💳 **Ödeme:** Stripe, Iyzico
+- 📧 **E-posta:** SMTP, SendGrid
+- 🔐 **SSO:** SAML, OAuth 2.0
+- 📊 **Analytics:** Google Analytics
+- ☁️ **Depolama:** AWS S3, Azure Blob
+
+---
+
+### 7. Modül Listesi
+
+1. ✅ **Content Library** - İçerik yönetimi
+2. ✅ **Questions** - Soru bankası (65 tip)
+3. ✅ **Exams** - Sınav yönetimi
+4. ✅ **Grading** - Puanlama sistemi
+5. ✅ **Analytics** - Raporlama & analitik
+6. ✅ **Classroom** - Sınıf yönetimi
+7. ✅ **Presentations** - Sunum araçları
+8. ✅ **Whiteboard** - Dijital tahta
+9. ✅ **Finance** - Mali işlemler
+10. ✅ **Royalty** - Telif hakları
+11. ✅ **Integration** - 3. parti entegrasyonlar
+12. ✅ **Admin** - Sistem yönetimi
+
+---
+
+### 8. İletişim & Destek
+
+**Teknik Destek:**  
+📧 support@zerquiz.com  
+📞 +90 212 555 0001  
+
+**Satış:**  
+📧 sales@zerquiz.com  
+📞 +90 212 555 0002  
+
+**Web:**  
+🌐 https://zerquiz.com  
+📚 https://docs.zerquiz.com  
+
+---
+
+### 9. Lisanslama
+
+Zerquiz üç lisans paketi sunar:
+
+| Paket | Özellikler | Fiyat |
+|-------|-----------|-------|
+| **Basic** | 50 kullanıcı, 500 soru | ₺999/ay |
+| **Professional** | 200 kullanıcı, 2000 soru | ₺2499/ay |
+| **Enterprise** | Sınırsız, tüm özellikler | ₺4999/ay |
+
+---
+
+### 10. Güvenlik
+
+Zerquiz platformu aşağıdaki güvenlik standartlarına uygundur:
+
+- 🔒 **SSL/TLS:** Şifreli veri iletimi
+- 🔐 **2FA:** İki faktörlü doğrulama
+- 🛡️ **GDPR:** Veri koruma uyumlu
+- 📋 **ISO 27001:** Bilgi güvenliği sertifikası
+- 🔑 **Encryption:** End-to-end şifreleme
+- 📊 **Audit Logs:** Detaylı log kayıtları
+
+---
+
+**© 2025 Zerquiz AI Education Platform - Tüm hakları saklıdır.**
+
+**Bu belge üzerinde whiteboard araçları ile çizim yapabilirsiniz!**  
+**Kalem, highlighter, text ve şekil araçlarını deneyin!**
+
+---
+
+### Test Notları:
+
+Bu alan test için kullanılabilir. Aşağıya notlarınızı ekleyin:
+
+________________________________________
+
+________________________________________
+
+________________________________________
+
+________________________________________
+
+________________________________________
+

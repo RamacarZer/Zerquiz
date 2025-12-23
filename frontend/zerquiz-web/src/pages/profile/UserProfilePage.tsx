@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   User, Mail, Phone, MapPin, Calendar, Building, Shield, Key, 
   Edit2, Save, X, Upload, Camera, Award, Clock, Activity,
   CreditCard, Users, Lock, Bell, Globe, Eye, EyeOff, Download,
   CheckCircle, AlertCircle, XCircle, TrendingUp, Package, FileText,
-  RefreshCw, Trash2, Plus, Laptop, Smartphone, Briefcase, IdCard,
+  RefreshCw, Trash2, Plus, Laptop, Smartphone, Briefcase,
   CreditCard as CardIcon, Car, Home, Tag, Search, Filter
 } from 'lucide-react';
 
@@ -137,32 +138,35 @@ interface UserProfile {
 }
 
 export default function UserProfilePage() {
+  const { user, loading } = useAuth();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'permissions' | 'activity' | 'preferences' | 'billing' | 'documents' | 'assets'>('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [documentFilter, setDocumentFilter] = useState<string>('all');
   const [assetFilter, setAssetFilter] = useState<string>('all');
-  const [profile, setProfile] = useState<UserProfile>({
-    id: 'user-001',
-    firstName: 'Ahmet',
-    lastName: 'Yılmaz',
-    email: 'ahmet.yilmaz@zerquiz.com',
-    phone: '+90 555 123 4567',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    role: 'Super Admin',
-    tenant: 'Zerquiz Headquarters',
-    license: 'Enterprise Pro',
-    permissions: [
-      'users.create', 'users.edit', 'users.delete', 'users.view',
-      'exams.create', 'exams.edit', 'exams.delete', 'exams.view',
-      'questions.create', 'questions.edit', 'questions.delete', 'questions.view',
-      'reports.view', 'reports.export',
-      'settings.manage', 'roles.manage', 'tenants.manage'
-    ],
-    createdAt: '2023-01-15T10:30:00Z',
-    lastLogin: '2025-01-28T14:22:00Z',
-    status: 'active',
+  
+  // Initialize profile state
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Update profile when user data is available
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        id: user.id || 'user-001',
+        firstName: user.name?.split(' ')[0] || 'Admin',
+        lastName: user.name?.split(' ').slice(1).join(' ') || 'ZerQuiz',
+        email: user.email || 'superadmin@zerquiz.com',
+        phone: '+90 555 123 4567',
+        avatar: 'https://i.pravatar.cc/150?img=12',
+        role: user.roles?.[0] || 'Super Admin',
+        tenant: user.tenantId || 'Zerquiz Headquarters',
+        license: 'Enterprise Pro',
+        permissions: user.permissions || ['*'],
+        createdAt: '2023-01-15T10:30:00Z',
+        lastLogin: new Date().toISOString(),
+        status: 'active',
     address: {
       street: 'Atatürk Cad. No: 123/5',
       city: 'İstanbul',
@@ -491,24 +495,50 @@ export default function UserProfilePage() {
         assignedBy: 'IT Departmanı'
       }
     ]
-  });
+      });
+    }
+  }, [user]); // Re-run when user changes
 
-  const [formData, setFormData] = useState(profile);
+  const [formData, setFormData] = useState<UserProfile | null>(null);
+  
+  // Update formData when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFormData(profile);
+    }
+  }, [profile]);
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
+  // Show loading state
+  if (loading || !profile || !formData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Profil yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleSave = () => {
-    setProfile(formData);
-    setIsEditing(false);
-    alert('✅ Profil başarıyla güncellendi!');
+    if (formData) {
+      setProfile(formData);
+      setIsEditing(false);
+      alert('✅ Profil başarıyla güncellendi!');
+    }
   };
 
   const handleCancel = () => {
-    setFormData(profile);
-    setIsEditing(false);
+    if (profile) {
+      setFormData(profile);
+      setIsEditing(false);
+    }
   };
 
   const handlePasswordChange = () => {
@@ -1397,7 +1427,7 @@ export default function UserProfilePage() {
 
               <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <div className="flex items-center justify-between mb-2">
-                  <IdCard className="h-6 w-6 text-purple-600" />
+                  <CardIcon className="h-6 w-6 text-purple-600" />
                   <span className="text-2xl font-bold text-purple-600">
                     {profile.assetAssignments.filter(a => (a.assetType === 'access_card' || a.assetType === 'meal_card') && a.status === 'assigned').length}
                   </span>
@@ -1439,7 +1469,7 @@ export default function UserProfilePage() {
                     asset.assetType === 'laptop' ? Laptop :
                     asset.assetType === 'phone' ? Smartphone :
                     asset.assetType === 'tablet' ? Smartphone :
-                    asset.assetType === 'access_card' ? IdCard :
+                    asset.assetType === 'access_card' ? CardIcon :
                     asset.assetType === 'meal_card' ? CardIcon :
                     asset.assetType === 'parking' ? Car :
                     asset.assetType === 'office_key' ? Home :

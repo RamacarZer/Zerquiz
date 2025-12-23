@@ -67,18 +67,18 @@ export default function LTIIntegrationPage() {
   const handleSync = async (platformId: string) => {
     setIsSyncing(platformId);
     try {
-      // Simulate sync
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setPlatforms(prev => prev.map(p => 
-        p.id === platformId 
-          ? { ...p, lastSync: new Date().toISOString(), status: 'connected' as const }
-          : p
-      ));
+    // Simulate sync
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setPlatforms(prev => prev.map(p => 
+      p.id === platformId 
+        ? { ...p, lastSync: new Date().toISOString(), status: 'connected' as const }
+        : p
+    ));
       toast.success('Senkronizasyon tamamlandı!');
     } catch (error) {
       toast.error('Senkronizasyon başarısız!');
     } finally {
-      setIsSyncing(null);
+    setIsSyncing(null);
     }
   };
 

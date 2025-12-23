@@ -126,8 +126,8 @@ export function Sidebar({ isCollapsed: externalCollapsed, onToggleCollapse }: Si
           )}
           {!isCollapsed && !item.icon_name && (
             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              {item.label}
-            </span>
+            {item.label}
+          </span>
           )}
         </div>
       );

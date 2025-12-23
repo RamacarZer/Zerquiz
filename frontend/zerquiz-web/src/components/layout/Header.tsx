@@ -3,16 +3,22 @@
 import { Bell, Globe, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 function Header() {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const goToProfile = () => {
+    navigate('/profile');
   };
 
   return (
@@ -89,7 +95,10 @@ function Header() {
               </span>
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
+              <button 
+                onClick={goToProfile}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2"
+              >
                 <User className="w-4 h-4" />
                 <span>{t('my_profile')}</span>
               </button>

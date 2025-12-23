@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useLessonPlans, useGenerateLessonPlanWithAI } from '../../hooks/useLessonQueries';
 import { toast } from 'react-toastify';
 import {
@@ -150,25 +150,6 @@ const LessonPlansPage: React.FC = () => {
             >
               <LayoutTemplate className="w-5 h-5" />
               {language === 'tr' ? 'Şablonlar' : 'Templates'}
-            </button>
-            <button
-              onClick={() => navigate('/lessons/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <Plus className="w-5 h-5" />
-              {language === 'tr' ? 'Yeni Plan' : 'New Plan'}
-            </button>
-          </div>
-            >
-              <LayoutTemplate className="w-5 h-5" />
-              {language === 'tr' ? 'Şablonlar' : 'Templates'}
-            </button>
-            <button
-              onClick={() => navigate('/lessons/ai-create')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700"
-            >
-              <Sparkles className="w-5 h-5" />
-              {language === 'tr' ? 'AI ile Oluştur' : 'AI Create'}
             </button>
             <button
               onClick={() => navigate('/lessons/create')}

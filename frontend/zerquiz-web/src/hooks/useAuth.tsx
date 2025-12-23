@@ -5,6 +5,7 @@ export interface User {
   email: string;
   name?: string;
   roles: string[];
+  permissions?: string[];
   tenantId: string;
   language?: string;
 }
@@ -14,11 +15,14 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   roles: string[];
+  permissions: string[];
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
+  hasPermission: (permission: string) => boolean;
+  hasAllPermissions: (permissions: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +54,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🔐 Login attempt:', { email });
       
-      // Direct connection to Identity Service (no gateway yet)
+      // 🚀 DEVELOPMENT MODE: Auto SuperAdmin Login
+      // TODO: Remove this in production!
+      console.log('⚠️ DEVELOPMENT MODE: Auto SuperAdmin Login Enabled');
+      
+      const superAdminUser: User = {
+        id: 'dev-superadmin-001',
+        email: email || 'superadmin@zerquiz.com',
+        name: 'Super Admin (Dev)',
+        roles: ['SuperAdmin', 'TenantAdmin', 'Teacher', 'Student', 'Parent', 'Publisher', 'Developer'],
+        permissions: ['*'], // All permissions
+        tenantId: 'dev-tenant-001',
+        language: 'tr'
+      };
+
+      const devToken = 'dev-token-superadmin-' + Date.now();
+
+      setUser(superAdminUser);
+      setToken(devToken);
+      
+      // Persist to localStorage
+      localStorage.setItem('token', devToken);
+      localStorage.setItem('user', JSON.stringify(superAdminUser));
+      localStorage.setItem('userId', superAdminUser.id);
+      localStorage.setItem('tenantId', superAdminUser.tenantId);
+      
+      console.log('🎉 SuperAdmin login successful!');
+      console.log('👤 User Roles:', superAdminUser.roles);
+      console.log('🔑 Permissions:', superAdminUser.permissions);
+      
+      return;
+
+      // Original backend login code (commented out for dev mode)
+      /*
       const response = await fetch('http://localhost:5001/api/Auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,7 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const apiResponse = await response.json();
       console.log('✅ API Response:', apiResponse);
       
-      // Backend returns: { success: true, data: { accessToken, refreshToken, user: { id, email, roles, ... } } }
       if (!apiResponse.success || !apiResponse.data) {
         console.error('❌ Invalid response format:', apiResponse);
         throw new Error(apiResponse.message || 'Login failed');
@@ -82,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: backendUser.email,
         name: `${backendUser.firstName || ''} ${backendUser.lastName || ''}`.trim(),
         roles: backendUser.roles || [],
+        permissions: backendUser.permissions || ['*'],
         tenantId: backendUser.tenantId || '',
         language: backendUser.language || 'tr'
       };
@@ -89,7 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       setToken(accessToken);
       
-      // Persist to localStorage
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userId', backendUser.id);
@@ -98,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       console.log('🎉 Login successful!');
+      */
     } catch (error) {
       console.error('💥 Login error:', error);
       throw error;
@@ -121,16 +157,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roles.some(role => user?.roles.includes(role)) || false;
   };
 
+  const hasPermission = (permission: string): boolean => {
+    // Admin wildcard - if user has '*' permission, they have all permissions
+    if (user?.permissions?.includes('*')) return true;
+    
+    // Check exact permission
+    return user?.permissions?.includes(permission) || false;
+  };
+
+  const hasAllPermissions = (permissions: string[]): boolean => {
+    // Admin wildcard
+    if (user?.permissions?.includes('*')) return true;
+    
+    // Check all permissions
+    return permissions.every(perm => user?.permissions?.includes(perm)) || false;
+  };
+
   const value: AuthContextType = {
     user,
     token,
     loading,
     roles: user?.roles || [],
+    permissions: user?.permissions || [],
     login,
     logout,
     isAuthenticated: !!user && !!token,
     hasRole,
-    hasAnyRole
+    hasAnyRole,
+    hasPermission,
+    hasAllPermissions
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

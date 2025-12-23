@@ -29,6 +29,11 @@ public class Invoice : BaseEntity
     public decimal TotalAmount { get; set; }
     public string Currency { get; set; } = "TRY";
     
+    // Payment Integration
+    public string? PaymentIntentId { get; set; } // Stripe/Iyzico payment intent ID
+    public Guid? UserId { get; set; } // User who made the payment
+    public decimal? Amount { get; set; } // Quick access to total amount
+    
     // Invoice Status (different from BaseEntity.Status)
     public new string Status { get; set; } = "pending"; // draft, pending, paid, overdue, cancelled
     public DateTime? PaidAt { get; set; }

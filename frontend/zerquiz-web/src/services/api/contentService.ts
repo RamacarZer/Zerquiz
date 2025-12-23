@@ -2,8 +2,9 @@
 import { apiClient } from '../../lib/api-client';
 import axios from 'axios';
 
-// Content Service URL (Port 5008)
-const CONTENT_API_URL = import.meta.env.VITE_CONTENT_API_URL || 'http://localhost:5008';
+// Content Service URL - Use Gateway for production
+const GATEWAY_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const CONTENT_API_URL = GATEWAY_URL; // Route through Gateway
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -97,7 +98,7 @@ export const contentService = {
     });
     if (contentType) params.append('contentType', contentType);
     
-    const response = await axios.get(`${CONTENT_API_URL}/api/Content/list?${params}`, {
+    const response = await axios.get(`${CONTENT_API_URL}/api/content/Content/list?${params}`, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -105,7 +106,7 @@ export const contentService = {
 
   // Get single content file with metadata
   async getById(id: string): Promise<ContentFile> {
-    const response = await axios.get(`${CONTENT_API_URL}/api/Content/${id}`, {
+    const response = await axios.get(`${CONTENT_API_URL}/api/content/Content/${id}`, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -113,31 +114,43 @@ export const contentService = {
 
   // Upload new file
   async upload(file: File, title?: string, tenantId?: string, userId?: string): Promise<ContentFile> {
+    console.log('📤 contentService.upload çağrıldı:', { fileName: file.name, title, tenantId, userId });
+    
     const formData = new FormData();
     formData.append('file', file);
     if (title) formData.append('title', title);
     if (tenantId) formData.append('tenantId', tenantId);
     if (userId) formData.append('userId', userId);
     
-    const response = await axios.post(`${CONTENT_API_URL}/api/Content/upload`, formData, {
+    console.log('📡 API çağrısı yapılıyor:', `${CONTENT_API_URL}/api/content/Content/upload`);
+    
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/Content/upload`, formData, {
       headers: {
         ...getAuthHeaders(),
         'Content-Type': 'multipart/form-data',
       },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log(`⏳ Upload progress: ${percentCompleted}%`);
+        }
+      }
     });
+    
+    console.log('✅ Upload response:', response.data);
     return response.data;
   },
 
   // Delete content file
   async delete(id: string): Promise<void> {
-    await axios.delete(`${CONTENT_API_URL}/api/Content/${id}`, {
+    await axios.delete(`${CONTENT_API_URL}/api/content/Content/${id}`, {
       headers: getAuthHeaders()
     });
   },
 
   // Get extracted text
   async getExtractedText(id: string): Promise<{ extractedText: string }> {
-    const response = await axios.get(`${CONTENT_API_URL}/api/Content/${id}/extract`, {
+    const response = await axios.get(`${CONTENT_API_URL}/api/content/Content/${id}/extract`, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -147,7 +160,7 @@ export const contentService = {
 
   // Generate Quiz
   async generateQuiz(request: QuizGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/quiz`, request, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/AIGeneration/generate/quiz`, request, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -155,7 +168,7 @@ export const contentService = {
 
   // Generate Flashcards
   async generateFlashcards(request: FlashcardGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/flashcards`, request, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/AIGeneration/generate/flashcards`, request, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -163,7 +176,7 @@ export const contentService = {
 
   // Generate Summary
   async generateSummary(request: SummaryGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/summary`, request, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/AIGeneration/generate/summary`, request, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -171,7 +184,7 @@ export const contentService = {
 
   // Generate Worksheet
   async generateWorksheet(request: WorksheetGenerationRequest): Promise<GenerationJobResponse> {
-    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/generate/worksheet`, request, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/AIGeneration/generate/worksheet`, request, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -179,7 +192,7 @@ export const contentService = {
 
   // Get generation job status
   async getJobStatus(jobId: string): Promise<GenerationJobStatus> {
-    const response = await axios.get(`${CONTENT_API_URL}/api/AIGeneration/job/${jobId}/status`, {
+    const response = await axios.get(`${CONTENT_API_URL}/api/content/AIGeneration/job/${jobId}/status`, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -188,7 +201,7 @@ export const contentService = {
   // Get generated content for a content item
   async getGeneratedContent(contentId: string, type?: string): Promise<GeneratedContentItem[]> {
     const params = type ? `?type=${type}` : '';
-    const response = await axios.get(`${CONTENT_API_URL}/api/AIGeneration/content/${contentId}/generated${params}`, {
+    const response = await axios.get(`${CONTENT_API_URL}/api/content/AIGeneration/content/${contentId}/generated${params}`, {
       headers: getAuthHeaders()
     });
     return response.data;
@@ -196,7 +209,7 @@ export const contentService = {
 
   // Approve generated content
   async approveGenerated(id: string): Promise<{ message: string }> {
-    const response = await axios.post(`${CONTENT_API_URL}/api/AIGeneration/${id}/approve`, {}, {
+    const response = await axios.post(`${CONTENT_API_URL}/api/content/AIGeneration/${id}/approve`, {}, {
       headers: getAuthHeaders()
     });
     return response.data;

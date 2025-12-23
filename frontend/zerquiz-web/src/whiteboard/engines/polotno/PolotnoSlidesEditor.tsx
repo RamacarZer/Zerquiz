@@ -4,13 +4,15 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { PolotnoContainer, SidePanelWrap, Workspace, Toolbar, ZoomButtons } from 'polotno/canvas/canvas';
+// Polotno imports - using default exports
+import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
+import { Toolbar } from 'polotno/toolbar/toolbar';
+import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
 import { createStore, StoreType } from 'polotno/model/store';
 import { PolotnoEngine } from './polotnoEngine';
 import { useModeStore } from '../../core/modeStore';
 
-// Import Polotno CSS
-import 'polotno/polotno.css';
+// Polotno CSS is loaded automatically by the package
 
 interface PolotnoSlidesEditorProps {
   documentId: string;
@@ -51,7 +53,7 @@ export function PolotnoSlidesEditor({ documentId, onReady }: PolotnoSlidesEditor
 
   // Listen for store changes (auto-save)
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || !store) return;
 
     const handleChange = () => {
       if (engineRef.current) {
@@ -59,10 +61,25 @@ export function PolotnoSlidesEditor({ documentId, onReady }: PolotnoSlidesEditor
       }
     };
 
-    store.on('change', handleChange);
+    // Polotno uses addEventListener pattern
+    try {
+      if (store.on) {
+        store.on('change', handleChange);
+      }
+    } catch (error) {
+      console.warn('Could not attach Polotno change listener:', error);
+    }
 
     return () => {
-      store.off('change', handleChange);
+      // Safe cleanup - only call off if it exists
+      try {
+        if (store && typeof store.off === 'function') {
+          store.off('change', handleChange);
+        }
+      } catch (error) {
+        // Ignore cleanup errors
+        console.debug('Polotno cleanup skipped:', error);
+      }
     };
   }, [store, isInitialized]);
 
@@ -72,7 +89,7 @@ export function PolotnoSlidesEditor({ documentId, onReady }: PolotnoSlidesEditor
         <SidePanelWrap store={store} />
         <div className="flex flex-col flex-1">
           <Toolbar store={store} />
-          <Workspace store={store} />
+          <WorkspaceWrap store={store} />
           <ZoomButtons store={store} />
         </div>
       </PolotnoContainer>
