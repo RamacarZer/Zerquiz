@@ -187,3 +187,4 @@ systemService.ts:179 Error fetching audit logs: TypeError: apiClient.get is not 
 **Durum:** ✅ Tamamlandı  
 **Etkilenen Modüller:** Admin Panel, Profile Management, System Definitions, Audit Logs
 
+

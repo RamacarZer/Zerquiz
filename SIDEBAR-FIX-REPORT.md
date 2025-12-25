@@ -48,3 +48,4 @@ const CurriculumPage = lazy(() => import('./pages/curriculum/CurriculumPage'));
 **Durum**: ✅ Düzeltildi
 **Tarih**: 2024-01-19 23:50
 
+

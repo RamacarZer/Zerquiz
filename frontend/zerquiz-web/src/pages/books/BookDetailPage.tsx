@@ -111,7 +111,7 @@ export default function BookDetailPage() {
             {/* Cover Image */}
             <div className="flex-shrink-0">
               <img
-                src={book.coverImageUrl || 'https://via.placeholder.com/200x300/3B82F6/FFFFFF?text=NO+COVER'}
+                src={book.coverImageUrl || 'https://https://via.placeholder.com/200x300/3B82F6/FFFFFF?text=NO+COVER'}
                 alt={book.title}
                 className="w-48 h-64 object-cover rounded-lg shadow-md"
               />

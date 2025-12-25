@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Package, Plus, Edit, Trash2, CheckCircle, XCircle, Crown,
+  Users, BookOpen, FileQuestion, ClipboardList, DollarSign,
+  TrendingUp, Award, Zap, Shield, Star, Eye, Settings
+} from 'lucide-react';
 import Tabs from '../../components/common/Tabs';
 import Button from '../../components/common/Button';
 import {
@@ -17,7 +22,7 @@ const LicensePackagesPage: React.FC = () => {
     {
       id: '1',
       name: 'Starter',
-      description: 'Küçük okullar ve bireysel eğitmenler için',
+      description: 'Küçük okullar ve bireysel eğitmenler için ideal başlangıç paketi',
       code: 'STARTER',
       durationDays: 365,
       maxUsers: 10,
@@ -25,7 +30,7 @@ const LicensePackagesPage: React.FC = () => {
       maxCourses: 10,
       maxQuestions: 500,
       maxExams: 20,
-      features: ['Temel Özellikler', 'E-posta Desteği', '10 Kullanıcı'],
+      features: ['Temel Özellikler', 'E-posta Desteği', '10 Kullanıcı', 'Temel Raporlama'],
       price: 99,
       currency: 'USD',
       isActive: true,
@@ -35,7 +40,7 @@ const LicensePackagesPage: React.FC = () => {
     {
       id: '2',
       name: 'Professional',
-      description: 'Orta ölçekli eğitim kurumları için',
+      description: 'Orta ölçekli eğitim kurumları ve okullar için',
       code: 'PRO',
       durationDays: 365,
       maxUsers: 50,
@@ -43,7 +48,7 @@ const LicensePackagesPage: React.FC = () => {
       maxCourses: 50,
       maxQuestions: 5000,
       maxExams: 100,
-      features: ['Tüm Özellikler', 'Öncelikli Destek', '50 Kullanıcı', 'API Erişimi'],
+      features: ['Tüm Özellikler', 'Öncelikli Destek', '50 Kullanıcı', 'API Erişimi', 'Gelişmiş Raporlama', 'AI Asistan'],
       price: 299,
       currency: 'USD',
       isActive: true,
@@ -53,7 +58,7 @@ const LicensePackagesPage: React.FC = () => {
     {
       id: '3',
       name: 'Enterprise',
-      description: 'Büyük kurumlar ve üniversiteler için',
+      description: 'Büyük kurumlar, üniversiteler ve holding grupları için',
       code: 'ENTERPRISE',
       durationDays: 365,
       maxUsers: -1,
@@ -61,7 +66,7 @@ const LicensePackagesPage: React.FC = () => {
       maxCourses: -1,
       maxQuestions: -1,
       maxExams: -1,
-      features: ['Sınırsız Kullanım', '7/24 Destek', 'Özel Entegrasyon', 'White Label'],
+      features: ['Sınırsız Kullanım', '7/24 Premium Destek', 'Özel Entegrasyon', 'White Label', 'SLA Garantisi', 'Özel Eğitim'],
       price: 999,
       currency: 'USD',
       isActive: true,
@@ -81,47 +86,43 @@ const LicensePackagesPage: React.FC = () => {
     description: '',
     code: '',
     durationDays: 365,
-    maxUsers: 100,
-    maxStudents: 1000,
-    maxCourses: 50,
-    maxQuestions: 5000,
-    maxExams: 100,
+    maxUsers: 10,
+    maxStudents: 100,
+    maxCourses: 10,
+    maxQuestions: 500,
+    maxExams: 20,
     features: [],
     price: 0,
     currency: 'USD',
     isActive: true,
   });
 
-  useEffect(() => {
-    loadPackages();
-  }, []);
-
-  const loadPackages = async () => {
-    try {
-      setLoading(true);
-      // Using mock data instead of API for demo
-      // const data = await getLicensePackages();
-      // setPackages(data);
-      setPackages(mockPackages);
-    } catch (error) {
-      console.error('Error loading packages:', error);
-    } finally {
-      setLoading(false);
-    }
+  const getPackageIcon = (name: string) => {
+    if (name.toLowerCase().includes('starter')) return <Users className="w-8 h-8" />;
+    if (name.toLowerCase().includes('pro')) return <Crown className="w-8 h-8" />;
+    if (name.toLowerCase().includes('enterprise')) return <Shield className="w-8 h-8" />;
+    return <Package className="w-8 h-8" />;
   };
 
-  const handleCreate = () => {
+  const getPackageGradient = (name: string) => {
+    if (name.toLowerCase().includes('starter')) return 'from-blue-500 to-cyan-500';
+    if (name.toLowerCase().includes('pro')) return 'from-purple-500 to-pink-500';
+    if (name.toLowerCase().includes('enterprise')) return 'from-orange-500 to-red-500';
+    return 'from-gray-500 to-gray-600';
+  };
+
+  const handleCreatePackage = () => {
     setSelectedPackage(null);
     setFormData({
       name: '',
       description: '',
       code: '',
       durationDays: 365,
-      maxUsers: 100,
-      maxStudents: 1000,
-      maxCourses: 50,
-      maxQuestions: 5000,
-      maxExams: 100,
+      maxUsers: 10,
+      maxStudents: 100,
+      maxCourses: 10,
+      maxQuestions: 500,
+      maxExams: 20,
       features: [],
       price: 0,
       currency: 'USD',
@@ -131,214 +132,254 @@ const LicensePackagesPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleEdit = (pkg: LicensePackageDto) => {
+  const handleEditPackage = (pkg: LicensePackageDto) => {
     setSelectedPackage(pkg);
-    setFormData(pkg);
+    setFormData({
+      name: pkg.name,
+      description: pkg.description,
+      code: pkg.code,
+      durationDays: pkg.durationDays,
+      maxUsers: pkg.maxUsers,
+      maxStudents: pkg.maxStudents,
+      maxCourses: pkg.maxCourses,
+      maxQuestions: pkg.maxQuestions,
+      maxExams: pkg.maxExams,
+      features: pkg.features,
+      price: pkg.price,
+      currency: pkg.currency,
+      isActive: pkg.isActive,
+    });
     setCurrentStep(0);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Bu paketi silmek istediğinizden emin misiniz?')) return;
-    
-    try {
-      // Mock deletion
+  const handleDeletePackage = async (id: string) => {
+    if (window.confirm('Bu paketi silmek istediğinize emin misiniz?')) {
       setPackages(packages.filter(p => p.id !== id));
-      // await deleteLicensePackage(id);
-      // await loadPackages();
-    } catch (error) {
-      console.error('Error deleting package:', error);
+      alert('Paket başarıyla silindi!');
     }
   };
-
-  const handleSubmit = async () => {
-    try {
-      if (selectedPackage) {
-        // Mock update
-        setPackages(packages.map(p => p.id === selectedPackage.id ? { ...p, ...formData } : p));
-        // await updateLicensePackage(selectedPackage.id, formData as CreateLicensePackageRequest);
-      } else {
-        // Mock create
-        const newPackage = {
-          ...formData,
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as LicensePackageDto;
-        setPackages([...packages, newPackage]);
-        // await createLicensePackage(formData as CreateLicensePackageRequest);
-      }
-      setIsModalOpen(false);
-      // await loadPackages();
-    } catch (error) {
-      console.error('Error saving package:', error);
-    }
-  };
-
-  const steps = [
-    { label: 'Basic Info', component: <BasicInfoForm data={formData} onChange={setFormData} /> },
-    { label: 'Quotas', component: <QuotasForm data={formData} onChange={setFormData} /> },
-    { label: 'Features', component: <FeaturesForm data={formData} onChange={setFormData} /> },
-    { label: 'Pricing', component: <PricingForm data={formData} onChange={setFormData} /> },
-  ];
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lisans Paketleri</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">Kurum için lisans paketlerini yönetin</p>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Lisans Paketleri</h1>
+              <p className="text-gray-600">Abonelik paketlerini yönetin ve özelleştirin</p>
+            </div>
+            <button
+              onClick={handleCreatePackage}
+              className="px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Yeni Paket Oluştur
+            </button>
           </div>
-          <button
-            onClick={handleCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Yeni Paket
-          </button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <Package className="w-7 h-7 text-white" />
+              </div>
+              <TrendingUp className="w-6 h-6 text-green-500" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{packages.length}</div>
+            <div className="text-sm text-gray-600">Toplam Paket</div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {packages.map((pkg) => (
-              <div 
-                key={pkg.id} 
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow"
-              >
+
+          <div className="bg-white rounded-2xl shadow-lg border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-7 h-7 text-white" />
+              </div>
+              <Star className="w-6 h-6 text-green-500" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{packages.filter(p => p.isActive).length}</div>
+            <div className="text-sm text-gray-600">Aktif Paket</div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Users className="w-7 h-7 text-white" />
+              </div>
+              <Award className="w-6 h-6 text-purple-500" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              {packages.reduce((sum, p) => sum + (p.maxUsers === -1 ? 0 : p.maxUsers), 0)}
+            </div>
+            <div className="text-sm text-gray-600">Toplam Kullanıcı Kotası</div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <DollarSign className="w-7 h-7 text-white" />
+              </div>
+              <TrendingUp className="w-6 h-6 text-orange-500" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              ${packages.reduce((sum, p) => sum + p.price, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Toplam Değer</div>
+          </div>
+        </div>
+
+        {/* Packages Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {packages.map((pkg, index) => (
+            <div
+              key={pkg.id}
+              className={`bg-white rounded-2xl shadow-xl border-2 transition-all hover:shadow-2xl hover:-translate-y-2 ${
+                pkg.name.toLowerCase().includes('pro') ? 'border-purple-500 ring-4 ring-purple-100' : 'border-transparent'
+              }`}
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animation: 'fadeInUp 0.6s ease-out forwards',
+              }}
+            >
+              {pkg.name.toLowerCase().includes('pro') && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-current" />
+                  En Popüler
+                </div>
+              )}
+
+              <div className="p-8">
+                {/* Icon */}
+                <div className={`w-16 h-16 bg-gradient-to-r ${getPackageGradient(pkg.name)} rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg`}>
+                  {getPackageIcon(pkg.name)}
+                </div>
+
+                {/* Package Name & Status */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{pkg.name}</h3>
-                    <span className="inline-block mt-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs rounded">
-                      {pkg.code}
-                    </span>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
+                    <p className="text-gray-600 text-sm mb-3">{pkg.description}</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      ${pkg.price}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">/{pkg.durationDays} gün</div>
+                  {pkg.isActive ? (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                      <CheckCircle className="w-4 h-4" />
+                      Aktif
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">
+                      <XCircle className="w-4 h-4" />
+                      Pasif
+                    </span>
+                  )}
+                </div>
+
+                {/* Price */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-5xl font-extrabold text-gray-900">${pkg.price}</span>
+                    <span className="text-lg text-gray-600">/yıl</span>
+                  </div>
+                  <div className="text-sm text-gray-500">Kod: {pkg.code}</div>
+                </div>
+
+                {/* Quotas */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-blue-50 rounded-xl p-3">
+                    <Users className="w-5 h-5 text-blue-600 mb-1" />
+                    <div className="text-xl font-bold text-gray-900">{pkg.maxUsers === -1 ? '∞' : pkg.maxUsers}</div>
+                    <div className="text-xs text-gray-600">Kullanıcı</div>
+                  </div>
+                  <div className="bg-green-50 rounded-xl p-3">
+                    <Users className="w-5 h-5 text-green-600 mb-1" />
+                    <div className="text-xl font-bold text-gray-900">{pkg.maxStudents === -1 ? '∞' : pkg.maxStudents}</div>
+                    <div className="text-xs text-gray-600">Öğrenci</div>
+                  </div>
+                  <div className="bg-purple-50 rounded-xl p-3">
+                    <BookOpen className="w-5 h-5 text-purple-600 mb-1" />
+                    <div className="text-xl font-bold text-gray-900">{pkg.maxCourses === -1 ? '∞' : pkg.maxCourses}</div>
+                    <div className="text-xs text-gray-600">Ders</div>
+                  </div>
+                  <div className="bg-orange-50 rounded-xl p-3">
+                    <ClipboardList className="w-5 h-5 text-orange-600 mb-1" />
+                    <div className="text-xl font-bold text-gray-900">{pkg.maxExams === -1 ? '∞' : pkg.maxExams}</div>
+                    <div className="text-xs text-gray-600">Sınav</div>
                   </div>
                 </div>
 
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{pkg.description}</p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Kullanıcı:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {pkg.maxUsers === -1 ? 'Sınırsız' : pkg.maxUsers}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Öğrenci:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {pkg.maxStudents === -1 ? 'Sınırsız' : pkg.maxStudents}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Kurs:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {pkg.maxCourses === -1 ? 'Sınırsız' : pkg.maxCourses}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Sınav:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {pkg.maxExams === -1 ? 'Sınırsız' : pkg.maxExams}
-                    </span>
-                  </div>
+                {/* Features */}
+                <div className="mb-6">
+                  <p className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Özellikler:</p>
+                  <ul className="space-y-2">
+                    {pkg.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                {pkg.features && pkg.features.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Özellikler:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {pkg.features.map((feature, idx) => (
-                        <span 
-                          key={idx} 
-                          className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"
-                        >
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                {/* Actions */}
+                <div className="flex gap-3">
                   <button
-                    onClick={() => handleEdit(pkg)}
-                    className="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={() => handleEditPackage(pkg)}
+                    className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      pkg.name.toLowerCase().includes('pro')
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                   >
+                    <Edit className="w-5 h-5" />
                     Düzenle
                   </button>
                   <button
-                    onClick={() => handleDelete(pkg.id)}
-                    className="flex-1 px-3 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                    onClick={() => handleDeletePackage(pkg.id)}
+                    className="py-3 px-4 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition-all"
                   >
-                    Sil
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Modal for Create/Edit (Simplified - just alert for now) */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {selectedPackage ? 'Paketi Düzenle' : 'Yeni Paket Oluştur'}
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Bu özellik yapım aşamasında. Paket formu eklenecek.
+              </p>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all"
+              >
+                Kapat
+              </button>
+            </div>
           </div>
         )}
-
-        {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
-              {selectedPackage ? 'Edit Package' : 'Create Package'}
-            </h2>
-            
-            <Tabs
-              tabs={steps.map(s => s.label)}
-              activeTab={currentStep}
-              onChange={setCurrentStep}
-            />
-
-            <div className="mt-4">
-              {steps[currentStep].component}
-            </div>
-
-            <div className="mt-6 flex justify-between">
-              <Button
-                onClick={() => setIsModalOpen(false)}
-                variant="secondary"
-              >
-                Cancel
-              </Button>
-              <div className="flex gap-2">
-                {currentStep > 0 && (
-                  <Button
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                    variant="secondary"
-                  >
-                    Previous
-                  </Button>
-                )}
-                {currentStep < steps.length - 1 ? (
-                  <Button onClick={() => setCurrentStep(currentStep + 1)}>
-                    Next
-                  </Button>
-                ) : (
-                  <Button onClick={handleSubmit}>
-                    {selectedPackage ? 'Update' : 'Create'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       </div>
+
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -81,9 +81,9 @@ export default function ExamGradingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-10 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -104,9 +104,9 @@ export default function ExamGradingPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleExportResults}
-                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-xl transition-all font-semibold shadow-lg"
               >
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
                 Sonuçları İndir
               </button>
             </div>
@@ -120,10 +120,10 @@ export default function ExamGradingPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+                  className={`flex items-center gap-2 px-6 py-4 border-b-3 transition-all font-semibold rounded-t-xl ${
                     activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                      ? 'border-emerald-600 text-emerald-600 bg-emerald-50'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <Icon className="h-4 w-4" />

@@ -98,7 +98,7 @@ const slideTemplatesSeedData: SlideTemplate[] = [
       type: 'two_column',
       title: 'Görsel ve İçerik',
       content: '<p>Sol taraf içerik...</p>',
-      imageUrl: 'https://via.placeholder.com/600x400',
+      imageUrl: 'https://https://https://via.placeholder.com/600x400',
     },
   },
   {
@@ -235,7 +235,7 @@ class PresentationService extends MockApiService<Presentation> {
         type: 'two_column',
         title: 'Detaylar',
         content: '<p>Sol taraf içerik...</p>',
-        imageUrl: 'https://via.placeholder.com/600x400',
+        imageUrl: 'https://https://https://via.placeholder.com/600x400',
         transition: 'zoom',
       },
     ];

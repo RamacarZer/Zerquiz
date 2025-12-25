@@ -63,7 +63,7 @@ export const presentationTemplates: PresentationTemplate[] = [
     id: 'tpl-001',
     name: 'Eğitim Sunumu',
     description: 'Ders anlatımı için ideal şablon',
-    thumbnail: 'https://via.placeholder.com/400x300/3B82F6/ffffff?text=Eğitim',
+    thumbnail: 'https://https://https://via.placeholder.com/400x300/3B82F6/ffffff?text=Eğitim',
     category: 'education',
     slides: [
       {
@@ -96,7 +96,7 @@ export const presentationTemplates: PresentationTemplate[] = [
     id: 'tpl-002',
     name: 'Minimal Sunum',
     description: 'Sade ve şık tasarım',
-    thumbnail: 'https://via.placeholder.com/400x300/1F2937/ffffff?text=Minimal',
+    thumbnail: 'https://https://https://via.placeholder.com/400x300/1F2937/ffffff?text=Minimal',
     category: 'minimal',
     slides: [
       {
@@ -116,7 +116,7 @@ export const presentationTemplates: PresentationTemplate[] = [
     id: 'tpl-003',
     name: 'İş Sunumu',
     description: 'Profesyonel iş sunumları için',
-    thumbnail: 'https://via.placeholder.com/400x300/7C3AED/ffffff?text=İş',
+    thumbnail: 'https://https://https://via.placeholder.com/400x300/7C3AED/ffffff?text=İş',
     category: 'business',
     slides: [
       {
@@ -142,7 +142,7 @@ export const demoPresentations: Presentation[] = [
     id: 'pres-001',
     title: 'Matematik - Cebir Dersi',
     description: 'Cebirin temel kavramları',
-    thumbnailUrl: 'https://via.placeholder.com/400x300/3B82F6/ffffff?text=Matematik',
+    thumbnailUrl: 'https://https://https://via.placeholder.com/400x300/3B82F6/ffffff?text=Matematik',
     slides: [
       {
         id: generateUUID(),
@@ -198,7 +198,7 @@ export const demoPresentations: Presentation[] = [
     id: 'pres-002',
     title: 'Türkçe - Noktalama İşaretleri',
     description: 'Noktalama işaretlerinin kullanımı',
-    thumbnailUrl: 'https://via.placeholder.com/400x300/10B981/ffffff?text=Türkçe',
+    thumbnailUrl: 'https://https://https://via.placeholder.com/400x300/10B981/ffffff?text=Türkçe',
     slides: [
       {
         id: generateUUID(),
@@ -242,7 +242,7 @@ export const demoPresentations: Presentation[] = [
     id: 'pres-003',
     title: 'Fen Bilgisi - Güneş Sistemi',
     description: 'Gezegenler ve özellikleri',
-    thumbnailUrl: 'https://via.placeholder.com/400x300/F59E0B/ffffff?text=Fen',
+    thumbnailUrl: 'https://https://https://via.placeholder.com/400x300/F59E0B/ffffff?text=Fen',
     slides: [
       {
         id: generateUUID(),

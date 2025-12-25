@@ -114,3 +114,4 @@ Kalan 2 ufak eksikliği de düzeltmemi ister misin?
 
 
 
+

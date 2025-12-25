@@ -66,3 +66,4 @@ GET    /api/EducationModels         # Eğitim modelleri
 **Durum**: 🟢 Backend Çalışıyor | 🟡 Frontend Modülerleştirme Devam Ediyor
 **Tarih**: 2024-01-19 23:45
 
+

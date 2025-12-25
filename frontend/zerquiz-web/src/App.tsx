@@ -505,6 +505,18 @@ function App() {
                   }
                 />
 
+                {/* Questions Module */}
+                <Route
+                  path="/questions"
+                  element={
+                    <ProtectedRoute roles={['SuperAdmin', 'TenantAdmin', 'Teacher']}>
+                      <AppLayout>
+                        <QuestionsModule />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Grading */}
                 <Route
                   path="/grading"

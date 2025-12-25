@@ -77,8 +77,14 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/formats`);
       return response.data;
     } catch (error) {
-      // Silent fail - return empty array
-      return [];
+      // Return demo data when backend is not available
+      return [
+        { id: '1', code: 'MULTIPLE_CHOICE', name: 'Çoktan Seçmeli', description: 'Klasik test sorusu' },
+        { id: '2', code: 'TRUE_FALSE', name: 'Doğru/Yanlış', description: 'İki seçenekli soru' },
+        { id: '3', code: 'SHORT_ANSWER', name: 'Kısa Cevap', description: 'Açık uçlu kısa cevap' },
+        { id: '4', code: 'ESSAY', name: 'Kompozisyon', description: 'Uzun açık uçlu cevap' },
+        { id: '5', code: 'FILL_BLANK', name: 'Boşluk Doldurma', description: 'Eksik kelime tamamlama' },
+      ];
     }
   }
 
@@ -88,8 +94,15 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/pedagogical-types`);
       return response.data;
     } catch (error) {
-      // Silent fail - return empty array
-      return [];
+      // Return demo data when backend is not available
+      return [
+        { id: '1', code: 'KNOWLEDGE', name: 'Bilgi', description: 'Bloom: Hatırlama' },
+        { id: '2', code: 'COMPREHENSION', name: 'Kavrama', description: 'Bloom: Anlama' },
+        { id: '3', code: 'APPLICATION', name: 'Uygulama', description: 'Bloom: Uygulama' },
+        { id: '4', code: 'ANALYSIS', name: 'Analiz', description: 'Bloom: Çözümleme' },
+        { id: '5', code: 'SYNTHESIS', name: 'Sentez', description: 'Bloom: Değerlendirme' },
+        { id: '6', code: 'EVALUATION', name: 'Değerlendirme', description: 'Bloom: Yaratma' },
+      ];
     }
   }
 
@@ -99,8 +112,14 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/difficulty-levels`);
       return response.data;
     } catch (error) {
-      // Silent fail - return empty array
-      return [];
+      // Return demo data when backend is not available
+      return [
+        { id: '1', code: 'VERY_EASY', name: 'Çok Kolay', level: 1, color: '#10B981' },
+        { id: '2', code: 'EASY', name: 'Kolay', level: 2, color: '#3B82F6' },
+        { id: '3', code: 'MEDIUM', name: 'Orta', level: 3, color: '#F59E0B' },
+        { id: '4', code: 'HARD', name: 'Zor', level: 4, color: '#EF4444' },
+        { id: '5', code: 'VERY_HARD', name: 'Çok Zor', level: 5, color: '#7C3AED' },
+      ];
     }
   }
 
@@ -110,8 +129,14 @@ class RealQuestionService {
       const response = await axios.get(`${API_BASE_URL}/questions/presentation-types`);
       return response.data;
     } catch (error) {
-      // Silent fail - return empty array
-      return [];
+      // Return demo data when backend is not available
+      return [
+        { id: '1', code: 'TEXT_ONLY', name: 'Sadece Metin', description: 'Sade metin formatı' },
+        { id: '2', code: 'WITH_IMAGE', name: 'Görsel ile', description: 'Resim içeren soru' },
+        { id: '3', code: 'WITH_VIDEO', name: 'Video ile', description: 'Video içeren soru' },
+        { id: '4', code: 'WITH_AUDIO', name: 'Ses ile', description: 'Ses dosyası içeren' },
+        { id: '5', code: 'INTERACTIVE', name: 'Etkileşimli', description: 'İnteraktif içerik' },
+      ];
     }
   }
 

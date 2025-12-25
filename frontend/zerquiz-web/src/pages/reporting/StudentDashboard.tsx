@@ -64,21 +64,21 @@ export default function StudentDashboard() {
           bookTitle: 'Matematik 9. Sınıf',
           progress: 75,
           lastReadAt: '2025-12-22T10:00:00Z',
-          coverImageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=MATH',
+          coverImageUrl: 'https://https://via.placeholder.com/150/FF0000/FFFFFF?text=MATH',
         },
         {
           bookId: '2',
           bookTitle: 'Fizik Ders Kitabı',
           progress: 45,
           lastReadAt: '2025-12-21T15:30:00Z',
-          coverImageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=PHYSICS',
+          coverImageUrl: 'https://https://via.placeholder.com/150/00FF00/FFFFFF?text=PHYSICS',
         },
         {
           bookId: '3',
           bookTitle: 'Kimya Kitabı',
           progress: 30,
           lastReadAt: '2025-12-20T09:15:00Z',
-          coverImageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=CHEM',
+          coverImageUrl: 'https://https://via.placeholder.com/150/0000FF/FFFFFF?text=CHEM',
         },
       ];
 

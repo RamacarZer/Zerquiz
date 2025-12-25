@@ -12,3 +12,4 @@ export default function CurriculumHeader({ title, description }: CurriculumHeade
   );
 }
 
+

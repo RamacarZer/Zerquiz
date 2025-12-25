@@ -158,7 +158,7 @@ export default function BookListPage() {
             <div key={book.id} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
               <figure className="h-64 overflow-hidden bg-gray-100">
                 <img
-                  src={book.coverImageUrl || 'https://via.placeholder.com/300x400/3B82F6/FFFFFF?text=' + encodeURIComponent(book.title)}
+                  src={book.coverImageUrl || 'https://https://via.placeholder.com/300x400/3B82F6/FFFFFF?text=' + encodeURIComponent(book.title)}
                   alt={book.title}
                   className="w-full h-full object-cover"
                 />
